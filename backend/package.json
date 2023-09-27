@@ -9,9 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "mongodb": "^6.1.0",
+    "next": "latest",
     "react": "latest",
-    "react-dom": "latest",
-    "next": "latest"
+    "react-dom": "latest"
   },
   "devDependencies": {
     "eslint": "latest",
