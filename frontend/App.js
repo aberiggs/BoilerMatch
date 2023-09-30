@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Landing from './screens/Landing'
 import Register from './screens/Register'
 import Login from './screens/Login'
+import ManagePreferences from './screens/ManagePreferences';
 import MainTabNavigator from './routes/MainTabNavigator';
 
 const Stack = createStackNavigator();
@@ -23,6 +24,7 @@ export default function App() {
         }}/>
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
+      <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
       </Stack.Navigator>
     </NavigationContainer>
   );
