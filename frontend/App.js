@@ -6,6 +6,7 @@ import Landing from './screens/Landing'
 import Register from './screens/Register'
 import Login from './screens/Login'
 import MainTabNavigator from './routes/MainTabNavigator';
+import ForgotPassword from './screens/ForgotPassword';
 
 const Stack = createStackNavigator();
 
@@ -21,6 +22,7 @@ export default function App() {
         <Stack.Screen name = "Login" component={Login} options={{
           headerShown:true,  headerShadowVisible: false, headerBackTitle: "Back",  title: ""
         }}/>
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
       </Stack.Navigator>

@@ -23,14 +23,13 @@ export default function Landing({navigation}){
         </TouchableOpacity>
        </View>
     )
-
 }
 
 
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor: '#373A36',
       alignItems: 'center',
       justifyContent: 'center',
    

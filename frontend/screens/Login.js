@@ -1,10 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { StyleSheet, Text, View,TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
 
 export default function Login({navigation}){
 
+    const canLogin = () => {
+        
+    }
+
     const handleLogin = () => {
+        
         navigation.navigate("MainTabNavigator")
     }
     
@@ -13,47 +18,44 @@ export default function Login({navigation}){
 
     return(
         <View style={styles.container}>
-        <TextInput
-          autoCapitalize = "none"
-          autoCorrect={false}
-          autoComplete={false}
-          placeholder='Username'
-          placeholderTextColor={"#9D968D"}
+            <TextInput
+            autoCapitalize = "none"
+            autoCorrect={false}
+            autoComplete="off"
+            placeholder='Username'
+            placeholderTextColor={"#9D968D"}
 
-          style={{
-            color:"#CEB888",
-            height: 40,
-            width: "45%",
-            borderColor: '#CEB888',
-            borderWidth: 1,
-            padding: 10,
-            marginBottom: 20,
-            borderRadius: 5,
-          }}
-        />
+            onChangeText={username => setUsername(username)}
 
-        <TextInput
-          autoCapitalize = "none"
-          autoCorrect={false}
-          autoComplete={false}
-          placeholder='Password'
-          placeholderTextColor={"#9D968D"}
+            style={styles.inputField}
+            />
 
-          style={{
-            color:"#CEB888",
-            height: 40,
-            width: "45%",
-            borderColor: '#CEB888',
-            borderWidth: 1,
-            padding: 10,
-            marginBottom: 20,
-            borderRadius: 5,
-          }}
-        />
+          <TextInput
+            autoCapitalize = "none"
+            autoCorrect={false}
+            autoComplete="off"
+            placeholder='Password'
+            placeholderTextColor={"#9D968D"}
+
+            onChangeText={password => setPassword(password)}
+
+            style={styles.inputField}
+          />
+          
+          <TouchableOpacity
+          style={{ marginBottom: 10}}
+            onPress={() => {
+              navigation.navigate("ForgotPassword")
+            }}>
+
+            <Text style={{color: '#9D968D', textDecorationLine: 'underline'}}>
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
        
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Pressable style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}> Sign in</Text>
-        </TouchableOpacity>
+        </Pressable>
       
        </View>
     )
@@ -76,11 +78,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         
         
-      },
-      buttonText: {
+    },
+    buttonText: {
         fontSize: 20,
         alignSelf: "center"
-      },
-      
+    },
+    inputField: {
+      color:"#CEB888",
+      height: 40,
+      width: "45%",
+      borderColor: '#CEB888',
+      borderWidth: 1,
+      padding: 10,
+      marginBottom: 10,
+      borderRadius: 5,
+    },
   });
   
