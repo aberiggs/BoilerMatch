@@ -1,6 +1,8 @@
 import { connectToDatabase } from "@/lib/mongodb";
 
 export default async function handler(req, res) {
+    console.log("Attempting to register a new user")
+
     /* Setup */
     const { database } = await connectToDatabase();
     const userCollection = database.collection("users");

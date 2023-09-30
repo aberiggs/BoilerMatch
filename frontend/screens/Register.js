@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
+import axios from "axios"
 
 export default function Register({navigation}){
 
@@ -10,14 +11,31 @@ export default function Register({navigation}){
     const [errorMessage, setErrorMessage] = useState('')
 
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
       // Trim user credentials of whitespace
       setEmail(email.trim())
       setPassword(password.trim())
       setConfirmedPassword(confirmedPassword.trim())
       if (canRegister()) {
-        navigation.navigate("Landing")
+        const res = await createAccountThroughApi()
+        if (res.success === false) {
+          console.log(res.message)
+        } else {
+          navigation.navigate("Landing")
+        }
       }
+    }
+
+    const createAccountThroughApi = async () => {
+      // TODO: .env for dev/production environments
+      const response = await axios.post('http://localhost:3000/api/account/register', {
+          email: email,
+          password: password,
+      }).catch(error => {
+        console.log("Error occurred when creating user account:", error)
+      })
+
+      return response
     }
 
     const canRegister = () => {
