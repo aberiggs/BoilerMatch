@@ -15,7 +15,8 @@
     "expo": "~49.0.12",
     "expo-status-bar": "~1.6.0",
     "react": "18.2.0",
-    "react-native": "0.72.5"
+    "react-native": "0.72.5",
+    "react-native-picker-select": "^8.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
