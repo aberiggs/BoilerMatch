@@ -13,6 +13,8 @@ export default function Register({navigation}){
 
     const handleRegister = async () => {
       // Trim user credentials of whitespace
+      
+      // TODO: Whitespace is allowed for some reason
       setEmail(email.trim())
       setPassword(password.trim())
       setConfirmedPassword(confirmedPassword.trim())
@@ -28,7 +30,7 @@ export default function Register({navigation}){
 
     const createAccountThroughApi = async () => {
       // TODO: .env for dev/production environments
-      const response = await axios.post('http://localhost:3000/api/account/register', {
+      const response = await axios.post('http://localhost:3000/api/user/register', {
           email: email,
           password: password,
       }).catch(error => {
@@ -73,7 +75,7 @@ export default function Register({navigation}){
     return(
         <View style={styles.container}>
 
-          <TextInput s
+          <TextInput
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="off"
