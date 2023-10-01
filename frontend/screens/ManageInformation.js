@@ -6,9 +6,13 @@ import RNPickerSelect from "react-native-picker-select"
 
 export default function ManageInformation() {
 
-  const [gender, setGender] = useState('');
-  const handleGenderChange = (text) => {
-    setGender(text);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const handleFirstNameChange = (text) => {
+    setFirstName(text);
+  };
+  const handleLastNameChange = (text) => {
+    setLastName(text);
   };
   const handleSubmit = () => {
     console.log("Submit pressed");
@@ -17,16 +21,58 @@ export default function ManageInformation() {
   
   return (
     <View style={styles.container}>
-      <Text>Please fill out your information in the following fields</Text>
+
+      <Text style={styles.title}>Please fill out your information in the following fields</Text>
+
+      <Text style={styles.subtitle}>First Name</Text> 
+
+      <TextInput
+        style={styles.input}
+        placeholder="First Name"
+        value={firstName}
+        onChangeText={handleFirstNameChange}
+      />
+
+      <Text style={styles.subtitle}>Last Name</Text> 
+
+      <TextInput
+        style={styles.input}
+        placeholder="Last Name"
+        value={lastName}
+        onChangeText={handleLastNameChange}
+      />
+
+      <Text style={styles.subtitle}>For what year are you looking for a roommate?</Text>
 
       <RNPickerSelect
+        placeholder={ {label: "Select a semester", value: null}}
+        onValueChange={(value) => console.log(value)}
+        items={[
+            { label: "Fall 2024", value: "fall24" },
+            { label: "Spring 2025", value: "spring25" },
+            { label: "Fall 2025", value: "fall25" },
+            { label: "Spring 2026", value: "spring26" },
+            { label: "Fall 2026", value: "fall26" },
+            { label: "Spring 2027", value: "spring27" },
+            { label: "Fall 2027", value: "fall27" },
+            { label: "Spring 2028", value: "spring28" },
+            { label: "Fall 2028", value: "fall28" },
+        ]}
+        style={pickerSelectStyles}
+      />
+
+      <Text style={styles.subtitle}>Gender</Text>
+
+      <RNPickerSelect
+        placeholder={ {label: "Select your gender", value: null}}
         onValueChange={(value) => console.log(value)}
         items={[
             { label: "Male", value: "male" },
             { label: "Female", value: "female" },
             { label: "Other", value: "other" },
         ]}
-      />
+        style={pickerSelectStyles}
+      /> 
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Submit Information</Text>
@@ -48,20 +94,45 @@ const styles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
+    alignSelf: 'center'
   },
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    padding: 10,
+    marginBottom: 20,
   },
   input: {
     width: '80%',
     height: 40,
+    fontSize: 15,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: 20,
     paddingLeft: 10,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 25,
+    marginBottom: 30,
+  },
+  subtitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'left',
+    marginBottom: 8
   }
 });
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    marginBottom: 20,
+  }
+}
+
+);
