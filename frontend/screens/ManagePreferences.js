@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity } from 'react-native';
 
 
+
+
 export default function ManagePreferences() {
 
   const [name, setName] = useState('');
@@ -14,6 +16,12 @@ export default function ManagePreferences() {
     console.log("Submit pressed");
   }
 
+  const updatePreferencesThroughApi = async() => {
+    const response  = await axios.post('http://localhost:3000/api/user/preferences', {
+      name: name
+    })
+    return response;
+  }
 
   return (
     <View style={styles.container}>
@@ -33,6 +41,9 @@ export default function ManagePreferences() {
     
   );
 }
+
+
+
 
 const styles = StyleSheet.create({
   buttonText: {
