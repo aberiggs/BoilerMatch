@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import axios from "axios"
 
 export default function Login({navigation}){
 
@@ -8,9 +9,29 @@ export default function Login({navigation}){
         
     }
 
-    const handleLogin = () => {
+    const loginThroughApi = async () => {
+        const response = await axios.get('http://localhost:3000/api/user/login', {
+          username: username,
+          password: password,
+        }).catch(error => {
+          console.log("Error occured while signing in:", error)
+        })
+
         
-        navigation.navigate("MainTabNavigator")
+        return response
+    }
+
+    const handleLogin = async () => {
+        setUsername(username.trim())
+        setPassword(password.trim())
+        
+        const res = await loginThroughApi()
+
+        if (res.success === false) {
+          console.log(res.message)
+        } else {
+          navigation.navigate("MainTabNavigator")
+        }
     }
     
     const [username, setUsername] = useState('')

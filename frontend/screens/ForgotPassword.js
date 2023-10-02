@@ -26,13 +26,13 @@ export default function ForgotPassword({navigation}){
             style={styles.inputField}
             />
        
-        <TouchableOpacity style={styles.button}
+        <Pressable style={styles.button}
         onPress={() => {
             //send email
         }}>
 
         <Text style={styles.buttonText}> Reset Password</Text>
-        </TouchableOpacity>
+        </Pressable>
       
        </View>
     )
