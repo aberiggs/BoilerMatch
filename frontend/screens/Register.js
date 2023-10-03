@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
+import Checkbox from 'expo-checkbox';
 import axios from "axios"
 
 export default function Register({navigation}){
@@ -9,19 +10,28 @@ export default function Register({navigation}){
     const [password, setPassword] = useState('')
     const [confirmedPassword, setConfirmedPassword] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    const [acceptedTos, setAcceptedTos] = useState(false)
 
 
     const handleRegister = async () => {
       // Trim user credentials of whitespace
       
       // TODO: Whitespace is allowed for some reason
-      setEmail(email.trim())
-      setPassword(password.trim())
-      setConfirmedPassword(confirmedPassword.trim())
+      const trimmedEmail = email.trim()
+      const trimmedPassword = password.trim()
+      const trimmedConfirmedPassword = confirmedPassword.trim()
+      print(trimmedEmail.length)
+      setEmail(trimmedEmail)
+      setPassword(trimmedPassword)
+      setConfirmedPassword(trimmedConfirmedPassword)
       if (canRegister()) {
         const res = await createAccountThroughApi()
-        if (res.success === false) {
-          console.log(res.message)
+        if (!res || res.success === false) {
+          if (res) {
+            console.log(res.message)
+          } else {
+            setErrorMessage("An unexpected error occurred")
+          }
         } else {
           navigation.navigate("Landing")
         }
@@ -35,6 +45,7 @@ export default function Register({navigation}){
           password: password,
       }).catch(error => {
         console.log("Error occurred when creating user account:", error)
+        return
       })
 
       return response
@@ -62,6 +73,10 @@ export default function Register({navigation}){
         // Passwords do not match
         setErrorMessage("The passwords do not match")
         return false
+      } else if (acceptedTos !== true){
+        // User didn't accept TOS
+        setErrorMessage("Please accept the Terms of Service")
+        return false
       }
 
       return true
@@ -73,7 +88,7 @@ export default function Register({navigation}){
     }
 
     return(
-        <View style={styles.container}>
+      <View style={styles.container}>
 
           <TextInput
             autoCapitalize="none"
@@ -111,13 +126,26 @@ export default function Register({navigation}){
             style={styles.textInput}
           />
 
+          <View style={{
+            flexDirection: 'row'
+          }}> 
+            <Checkbox
+              disabled={false}
+              value={acceptedTos}
+              onValueChange={(newValue) => setAcceptedTos(newValue)}
+            />
+
+            <Text style={styles.otherText}>I agree to the BoilerMatch Terms</Text>
+          </View>
+          
+
           <Text style={styles.buttonText}>{errorMessage}</Text>
        
           <Pressable style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
           </Pressable>
       
-       </View>
+      </View>
     )
 
 }
@@ -133,21 +161,23 @@ const styles = StyleSheet.create({
     button: {
         width: "40%",
         height: 50,
-        backgroundColor: "#CEB888",
+        backgroundColor: "gold",
         borderRadius: 6,
         justifyContent: 'center',
-        
-        
       },
       buttonText: {
         fontSize: 20,
         alignSelf: "center"
       },
+      otherText: {
+        fontSize: 15,
+        paddingLeft: 5
+      },
       textInput: {
         color:"#CEB888",
         height: 40,
         width: "45%",
-        borderColor: '#CEB888',
+        borderColor: 'black',
         borderWidth: 1,
         padding: 10,
         marginBottom: 20,
