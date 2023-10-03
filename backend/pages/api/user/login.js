@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
+const jwt = require( 'jsonwebtoken');
 
 export default async function handler(req, res) {
     console.log("Attempting to sign in the user")
@@ -15,13 +16,11 @@ export default async function handler(req, res) {
     }
 
     const userLoggingIn = await userCollection.findOne({username: req.body.username})
-    if (userLoggingIn && userLoggingIn.verified === true) {
-        if (userLoggingIn.password !== req.body.password) {
-            return res.status(400).json({
-                success: false,
-                message: "Incorrect password. Try again."
-            })
-        }
+    if (userLoggingIn && userLoggingIn.password !== req.body.password) {
+        return res.status(400).json({
+            success: false,
+            message: "Incorrect password. Try again."
+        })
     } else if (userLoggingIn && userLoggingIn.verified === false) {
         return res.status(400).json({
             success: false,
@@ -38,8 +37,7 @@ export default async function handler(req, res) {
         username: userLoggingIn.username
     }
 
-    const newToken = jwt.sign(jwtData, 'ourSecretKey', {});    
-    console.log(newToken)
+    const newToken = jwt.sign(jwtData, 'ourSecretKey', {});
 
     return res.status(201).json({
         success: true,

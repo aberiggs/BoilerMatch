@@ -10,14 +10,17 @@ export default function Login({navigation}){
     }
 
     const loginThroughApi = async () => {
-        const response = await axios.get('http://localhost:3000/api/user/login', {
+        const response = await axios.post('http://localhost:3000/api/user/login', {
           username: username,
           password: password,
-        }).catch(error => {
-          console.log("Error occured while signing in:", error)
+        }).catch((error) => {
+          if (error.response) {
+            return error.response.data
+          }
+
+          return
         })
 
-        
         return response
     }
 
@@ -27,8 +30,10 @@ export default function Login({navigation}){
         
         const res = await loginThroughApi()
 
-        if (res.success === false) {
-          console.log(res.message)
+        if (!res || res.success === false) {
+          if (res) {
+            console.log(res.message)
+          }
         } else {
           navigation.navigate("MainTabNavigator")
         }
