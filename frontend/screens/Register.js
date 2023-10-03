@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Pressable, TextInput, Modal, ScrollView } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import axios from "axios"
 
@@ -11,24 +11,16 @@ export default function Register({navigation}){
     const [confirmedPassword, setConfirmedPassword] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
     const [acceptedTos, setAcceptedTos] = useState(false)
+    const [showTos, setShowTos] = useState(false)
 
 
-    const handleRegister = async () => {
-      // Trim user credentials of whitespace
-      
-      // TODO: Whitespace is allowed for some reason
-      const trimmedEmail = email.trim()
-      const trimmedPassword = password.trim()
-      const trimmedConfirmedPassword = confirmedPassword.trim()
-      print(trimmedEmail.length)
-      setEmail(trimmedEmail)
-      setPassword(trimmedPassword)
-      setConfirmedPassword(trimmedConfirmedPassword)
+    const handleRegister = async () => {    
       if (canRegister()) {
         const res = await createAccountThroughApi()
         if (!res || res.success === false) {
+          print(res)
           if (res) {
-            console.log(res.message)
+            setErrorMessage(res.message)
           } else {
             setErrorMessage("An unexpected error occurred")
           }
@@ -43,26 +35,25 @@ export default function Register({navigation}){
       const response = await axios.post('http://localhost:3000/api/user/register', {
           email: email,
           password: password,
-      }).catch(error => {
-        console.log("Error occurred when creating user account:", error)
-        return
+      }).catch((error) => {
+        if (error.response) return error.response.data
       })
 
       return response
     }
 
     const canRegister = () => {
-      emailExtension = "@purdue.edu"  // Note: Change this to be @gmail.com to create account from gmail for testing purposes
-      if (email.length === 0) {
-        // Email is blank
-        setErrorMessage("Please enter your email")
+      emailExtension = "@gmail.com"  // Note: Change this to be @gmail.com to create account from gmail for testing purposes
+      if (email.length === 0 || email.includes(" ")) {
+        // Email is blank or contains spaces
+        setErrorMessage("Please enter a valid email")
         return false
-      } else if (password.length === 0) {
-        // Password is blank
+      } else if (password.length === 0 || password.includes(" ")) {
+        // Password is blank or contains spaces
         setErrorMessage("Please create a password")
         return false
-      } else if (confirmedPassword.length === 0) {
-        // Confirmed password is blank
+      } else if (confirmedPassword.length === 0 || confirmedPassword.includes(" ")) {
+        // Confirmed password is blank or contains spaces
         setErrorMessage("Please confirm your password")
         return false
       } else if (email.substring(email.length-emailExtension.length, email.length) !== emailExtension || email.length-emailExtension.length === 0) {
@@ -82,73 +73,236 @@ export default function Register({navigation}){
       return true
     }
 
-    const updateAndValidate = (newText, updateFunc) => {
-      () => setConfirmedPassword(newText)
-      console.log(confirmedPassword)
-    }
-
     return(
       <View style={styles.container}>
 
-          <TextInput
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-            placeholder='Purdue Email'
-            placeholderTextColor={"#9D968D"}
-            
-            onChangeText={text => setEmail(text)}
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={showTos}
+          onRequestClose={() => {
+            Alert.alert('Modal has been closed.');
+            setShowTos(!showTos);
+          }}>
+            <View style={styles.container}>
+              <View style={{height: '88%'}}>
+                <ScrollView>
+                  <TOS/>
+                </ScrollView>
+              </View>
+              <View style={{flex:1, justifyContent:'center', alignItems:'center', width: '100%'}}>
+                <Pressable style={styles.button} onPress={() => setShowTos(!showTos)}>
+                  <Text style={styles.buttonText}>Close</Text>
+                </Pressable>
+              </View>
+            </View>
+        </Modal>
 
-            style={styles.textInput}
-          />
-
-          <TextInput 
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-            placeholder='Password'
-            placeholderTextColor={"#9D968D"}
-
-            onChangeText={text => setPassword(text)}
-
-            style={styles.textInput}
-          />
-
-          <TextInput 
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-            placeholder='Confirm Password'
-            placeholderTextColor={"#9D968D"}
-
-            onChangeText={ text => setConfirmedPassword(text)}
-
-            style={styles.textInput}
-          />
-
-          <View style={{
-            flexDirection: 'row'
-          }}> 
-            <Checkbox
-              disabled={false}
-              value={acceptedTos}
-              onValueChange={(newValue) => setAcceptedTos(newValue)}
-            />
-
-            <Text style={styles.otherText}>I agree to the BoilerMatch Terms</Text>
-          </View>
+        <TextInput
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="off"
+          placeholder='Purdue Email'
+          placeholderTextColor={"#9D968D"}
           
+          onChangeText={text => setEmail(text)}
 
-          <Text style={styles.buttonText}>{errorMessage}</Text>
-       
-          <Pressable style={styles.button} onPress={handleRegister}>
+          style={styles.textInput}
+        />
+
+        <TextInput 
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="off"
+          placeholder='Password'
+          placeholderTextColor={"#9D968D"}
+
+          onChangeText={text => setPassword(text)}
+
+          style={styles.textInput}
+        />
+
+        <TextInput 
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="off"
+          placeholder='Confirm Password'
+          placeholderTextColor={"#9D968D"}
+
+          onChangeText={ text => setConfirmedPassword(text)}
+
+          style={styles.textInput}
+        />
+
+        <View style={{
+          flexDirection: 'row'
+        }}> 
+          <Checkbox
+            disabled={false}
+            value={acceptedTos}
+            onValueChange={(newValue) => setAcceptedTos(newValue)}
+          />
+
+          <Text style={styles.otherText}>I agree to the <Text style={{color: 'gold'}} onPress={() => setShowTos(!showTos)}>BoilerMatch Terms</Text></Text>
+        
+        </View>
+        
+
+        <Text style={styles.buttonText}>{errorMessage}</Text>
+      
+        <Pressable style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
-          </Pressable>
+        </Pressable>
       
       </View>
     )
 
 }
+
+const TOS = () => {
+
+  // Maybe swap to styled components later?
+  return(
+    <View style={{flex: 1, alignItems: 'left', justifyContent: 'left', paddingHorizontal: 30, paddingVertical: 50}}>
+      <Text style={tosStyles.title}>BoilerMatch - Terms of Service</Text>
+      
+      <Text style={tosStyles.heading}>Effective Date: 10/03/2023</Text>
+
+      <Text style={tosStyles.section}>
+        Welcome to BoilerMatch! These Terms of Service ("Terms") govern your use of the BoilerMatch mobile application ("App"). BoilerMatch is a mobile application designed to help Purdue University students find compatible roommates. Please read these Terms carefully before using the App.
+      </Text>
+      <Text style={tosStyles.section}>
+        By downloading, creating an account, and using the App, you agree to be bound by these Terms. If you do not agree to these Terms, please do not register or use the app.
+      </Text>
+
+      <Text style={tosStyles.heading}>
+        1. Acceptance of Terms
+      </Text>
+      <Text style={tosStyles.section}>
+        1.1. These Terms constitute a legally binding agreement between you and BoilerMatch. By using the App, you acknowledge that you have read, understood, and agreed to be bound by these Terms.
+      </Text>
+
+      <Text style={tosStyles.heading}>
+        2. Eligibility
+      </Text>
+      <Text style={tosStyles.section}>
+        2.1. To use the App, you must be a Purdue University student or a person affiliated with Purdue University.
+      </Text>
+      <Text style={tosStyles.section}>
+        2.2. You must be at least 18 years old to use the App.
+      </Text>
+
+      <Text style={tosStyles.heading}>
+        3. User Conduct
+      </Text>
+      <Text style={tosStyles.section}>
+        3.1. By using the App, you agree not to:
+      </Text>
+        <Text style={tosStyles.sectionDetail}>
+            a) Attempt to reverse engineer, decompile, disassemble, or hack the App;
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          b) Use the App for any unlawful or fraudulent purpose;
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          c) Post, upload, or transmit explicit, offensive, inappropriate, or harmful content;
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          d) Harass, threaten, or harm other users;
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          e) Impersonate another person or entity;
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          f) Violate any applicable laws, rules, or regulations.
+        </Text>
+      <Text style={tosStyles.section}>
+        3.2. BoilerMatch reserves the right to terminate or suspend your account without notice if you violate these rules or engage in any inappropriate behavior on the App.
+      </Text>
+      
+      <Text style={tosStyles.heading}>
+        4. User Accounts and User-Generated Contributions
+      </Text>
+      <Text style={tosStyles.section}>
+        4.1. User Accounts:
+      </Text>
+        <Text style={tosStyles.sectionDetail}>
+          a) To use the features of the App, you are required to create a user account. You are responsible for maintaining the confidentiality of your account credentials.
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          b) You agree to provide accurate, current, and complete information when creating your user account and to update such information as necessary to keep it accurate and complete.
+        </Text>
+      <Text style={tosStyles.section}>
+        4.2. User-Generated Contributions:
+      </Text>
+        <Text style={tosStyles.sectionDetail}>
+          a) Users may contribute content to the App, including but not limited to text, images, and other materials ("Contributions").
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          b) You retain ownership of your Contributions, but by submitting them to BoilerMatch, you grant BoilerMatch a worldwide, non-exclusive, royalty-free, transferable, sub-licensable license to use, store, display, reproduce, modify, adapt, create derivative works from, and distribute your Contributions in connection with the operation and promotion of the App.
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          c) You are solely responsible for your Contributions. BoilerMatch does not endorse or guarantee the accuracy, quality, or appropriateness of any Contributions posted on the App.
+        </Text>
+        <Text style={tosStyles.sectionDetail}>
+          d) BoilerMatch reserves the right to remove or restrict access to any Contributions that violate these Terms or our content guidelines.
+        </Text>
+
+      <Text style={tosStyles.heading}>
+        5. Termination
+      </Text>
+      <Text style={tosStyles.section}>
+        5.1. BoilerMatch may terminate or suspend your account at any time, with or without notice, for any reason, including but not limited to violation of these Terms.
+      </Text>
+
+      <Text style={tosStyles.heading}>
+        6. Disclaimer
+      </Text>
+      <Text style={tosStyles.section}>
+        6.1. The App is provided "as-is" and "as available." BoilerMatch does not guarantee the accuracy, completeness, or availability of any information on the App.
+      </Text>
+
+      <Text style={tosStyles.heading}>
+        7. Limitation of Liability
+      </Text>
+      <Text style={tosStyles.section}>
+        7.1. BoilerMatch shall not be liable for any indirect, incidental, special, or consequential damages arising out of your use of the App, even if BoilerMatch has been advised of the possibility of such damages.
+      </Text>
+
+      <Text style={tosStyles.heading}>
+        8. Changes to Terms
+      </Text>
+      <Text style={tosStyles.section}>
+        8.1. BoilerMatch reserves the right to modify or update these Terms at any time. You are responsible for checking these Terms periodically for changes.
+      </Text>
+
+      <Text style={tosStyles.heading}>
+        9. Contact Information
+      </Text>
+      <Text style={tosStyles.section}>
+        9.1. If you have any questions or concerns about these Terms, please contact us at boilermatchproj@gmail.com.
+      </Text>
+
+      <Text style={tosStyles.heading}>
+        10. Governing Law
+      </Text>
+      <Text style={tosStyles.section}>
+        10.1. These Terms shall be governed by and construed in accordance with the laws of the state of Indiana, without regard to its conflict of law principles.
+      </Text>
+
+      <Text style={tosStyles.section}></Text>
+
+      <Text style={tosStyles.section}>
+        By using the BoilerMatch application, you acknowledge and agree to these Terms of Service. If you do not agree with these Terms, please do not register or use the App. BoilerMatch reserves the right to take appropriate action against users who violate these Terms or engage in any inappropriate conduct on the App.
+      </Text>
+
+      <Text style={tosStyles.section}>
+        Thank you for using BoilerMatch!
+      </Text>
+    </View>
+  )
+}
+
 
 
 const styles = StyleSheet.create({
@@ -185,4 +339,30 @@ const styles = StyleSheet.create({
       }
       
   });
+
+  const tosStyles = StyleSheet.create({
+    title: {
+      fontSize: 22,
+      fontWeight: 'bold',
+      paddingVertical: 10
+    },
+    heading: {
+      fontWeight: 'bold',
+      fontSize: 16,
+      paddingVertical: 10
+    },
+    section: {
+      fontSize: 15,
+      paddingVertical: 6
+    },
+    sectionDetail: {
+      fontSize: 15,
+      paddingVertical: 3,
+      paddingLeft: 15
+    }
+
+  })
+
+
+
   

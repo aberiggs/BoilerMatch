@@ -34,8 +34,6 @@ export default async function handler(req, res) {
         newUser.username = newUser.email.substring(0, emailDomainIndex)
     } 
     
-
-    // TODO: We will want to write a check here in case the user exists, but isn't verified, and is signing up again for a new code
     if (!preExistingUser) {
         userCollection.insertOne(newUser).catch(err => {
             return res.status(400).json({
