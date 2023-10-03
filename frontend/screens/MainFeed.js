@@ -2,25 +2,23 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import Search from './Search';
 import { StyleSheet, Text, View,TouchableOpacity,TextInput } from 'react-native';
+import axios from "axios"
+
 
 export default function MainFeed({navigation}){
   const [searchTerm, setSearchTerm] = useState('');
   // Function to handle the search button press not yet finished.. need to get info from database
   
-  const handleSearchButtonPress = async () => {
-    try {
-      const response = await fetch(`YOUR_BACKEND_URL/api/users/search?query=${searchTerm}`);
-      if (response.ok) {
-        const data = await response.json();
-        // Update the state with the search results
-        setSearchResults(data); // Assuming you have a state variable for search results
-      } else {
-        console.error('Failed to fetch data');
-      }
-    } catch (error) {
-      console.error('Error:', error);
+  const handleSearchButtonPress = () => {
+    console.log(searchTerm)
+      axios.get(`http://localhost:3000/api/users/search/${searchTerm}`).then((response) => {
+        console.log(response.data.users)
+       return response.data.users
+      }).catch(error => {
+        console.log("Error occured while searching:", error)
+      })
+      
     }
-    };
 
     /*
     plan to use once we get the data from the database.. then we use the userProfile class
