@@ -54,7 +54,7 @@ export default function Login({navigation}){
             autoCorrect={false}
             autoComplete="off"
             placeholder='Enter your username'
-            placeholderTextColor={"#9D968D"}
+            placeholderTextColor={'grey'}
 
             onChangeText={username => setUsername(username)}
 
@@ -68,7 +68,7 @@ export default function Login({navigation}){
             autoCorrect={false}
             autoComplete="off"
             placeholder='Enter your password'
-            placeholderTextColor={"#9D968D"}
+            placeholderTextColor={'grey'}
 
             onChangeText={password => setPassword(password)}
 
@@ -81,7 +81,7 @@ export default function Login({navigation}){
               navigation.navigate("ForgotPassword")
             }}>
 
-            <Text style={{color: '#9D968D', textDecorationLine: 'underline'}}>
+            <Text style={{color: 'grey', textDecorationLine: 'underline'}}>
               Forgot Password?
             </Text>
           </TouchableOpacity>
@@ -95,7 +95,7 @@ export default function Login({navigation}){
               onValueChange={(newValue) => setStayLoggedIn(newValue)}
             />
 
-            <Text style={{paddingLeft: 5, paddingBottom: 10, color: '#9D968D', fontSize: 16, fontWeight: 'bold'}}>
+            <Text style={{paddingLeft: 5, paddingBottom: 10, color: 'black', fontSize: 16}}>
               Stay Logged In?
             </Text>
           </View>
@@ -103,7 +103,7 @@ export default function Login({navigation}){
         <Pressable style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}> Sign in</Text>
         </Pressable>
-        
+
        </View>
     )
 
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
         alignSelf: "center"
     },
     inputField: {
-      color:"#CEB888",
+      color:'black',
       height: 40,
       width: "45%",
       borderColor: 'black',
@@ -160,6 +160,7 @@ const styles = StyleSheet.create({
       textAlign: 'left',
       marginBottom: 8,
       color: 'red',
+      marginHorizontal: 'auto'
     }
   });
   

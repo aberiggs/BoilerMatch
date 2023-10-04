@@ -29,7 +29,7 @@ export default function Landing({navigation}){
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#373A36',
+      backgroundColor: 'white',
       alignItems: 'center',
       justifyContent: 'center',
    
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
       button: {
         width: "40%",
         height: 50,
-        backgroundColor: "#CEB888",
+        backgroundColor: 'gold',
         borderRadius: 6,
         justifyContent: 'center',
         marginTop: 30
