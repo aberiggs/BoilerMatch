@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     button: {
         width: "40%",
         height: 50,
-        backgroundColor: "#CEB888",
+        backgroundColor: "gold",
         borderRadius: 6,
         justifyContent: 'center',
       },
