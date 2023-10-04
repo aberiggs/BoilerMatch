@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import Search from './Search';
-import { StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button } from 'react-native';
+import { StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image } from 'react-native';
 import axios from "axios"
 
 
@@ -49,7 +49,12 @@ export default function MainFeed({navigation}){
       modalContent: {
         backgroundColor: 'white',
         padding: 20,
+        flex: 1,
+        justifyContent: 'center',
         //borderRadius: 10, // Add rounded corners to the content
+      },
+      closeButtonContainer: {
+        marginTop: 20,
       },
     };
 
@@ -62,17 +67,35 @@ export default function MainFeed({navigation}){
      >
        <View style={modalStyles.modalContainer}>
         <View style={modalStyles.modalContent}>
+          
+
+          
           {searchResult && (
             <View>
+          <Image
+          //Once we get the data we can replace the hard coded image
+           source={require('./testImage.png')}
+           resizeMode="cover"
+           style={{
+            height: 155,
+            width: 155,
+            borderRadius: 999,
+            marginTop: -90
+           }}
+           />
               {searchResult.map((user,index) => (
                 <View key={index}>
                   <Text>Name: {user.username}</Text>
                   <Text>Email: {user.email}</Text>
+                  <Text>Gender:</Text>
+                  <Text>Year:</Text>
+                  <Text>Hobbies:</Text>
+                  <Text>etc:</Text>
                 </View>  
               ))}
             </View>
           )}
-          <View style><Button title="Hide Modal" onPress={toggleModal} /></View>
+          <View style={modalStyles.closeButtonContainer}><Button title="Close" onPress={toggleModal} /></View>
         </View>
          
        </View>
