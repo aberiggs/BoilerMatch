@@ -43,7 +43,7 @@ export default function Register({navigation}){
     }
 
     const canRegister = () => {
-      emailExtension = "@gmail.com"  // Note: Change this to be @gmail.com to create account from gmail for testing purposes
+      emailExtension = "@purdue.edu"  // Note: Change this to be @gmail.com to create account from gmail for testing purposes
       if (email.length === 0 || email.includes(" ")) {
         // Email is blank or contains spaces
         setErrorMessage("Please enter a valid email")
