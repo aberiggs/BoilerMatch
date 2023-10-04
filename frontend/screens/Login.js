@@ -1,13 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import Checkbox from 'expo-checkbox';
 import axios from "axios"
 
 export default function Login({navigation}){
 
-    const canLogin = () => {
-        
-    }
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
+    const [errorMessage, setErrorMessage] = useState('')
+    const [stayLoggedIn, setStayLoggedIn] = useState(false)
 
     const loginThroughApi = async () => {
         const response = await axios.post('http://localhost:3000/api/user/login', {
@@ -32,23 +34,26 @@ export default function Login({navigation}){
 
         if (!res || res.success === false) {
           if (res) {
-            console.log(res.message)
+            setErrorMessage(res.message)
+          } else {
+            setErrorMessage("An unexpected error occurred")
           }
         } else {
           navigation.navigate("MainTabNavigator")
         }
     }
-    
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
 
     return(
         <View style={styles.container}>
+            <Text style={styles.title}>Log In</Text>
+
+            <Text style={styles.subtitle}>Username</Text>
+
             <TextInput
             autoCapitalize = "none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Username'
+            placeholder='Enter your username'
             placeholderTextColor={"#9D968D"}
 
             onChangeText={username => setUsername(username)}
@@ -56,11 +61,13 @@ export default function Login({navigation}){
             style={styles.inputField}
             />
 
+          <Text style={styles.subtitle}>Password</Text>
+
           <TextInput
             autoCapitalize = "none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Password'
+            placeholder='Enter your password'
             placeholderTextColor={"#9D968D"}
 
             onChangeText={password => setPassword(password)}
@@ -69,7 +76,7 @@ export default function Login({navigation}){
           />
           
           <TouchableOpacity
-          style={{ marginBottom: 10}}
+          style={{ marginRight: 75, marginBottom: 5}}
             onPress={() => {
               navigation.navigate("ForgotPassword")
             }}>
@@ -78,11 +85,25 @@ export default function Login({navigation}){
               Forgot Password?
             </Text>
           </TouchableOpacity>
-       
+
+        <Text style={styles.errorMes}>{errorMessage}</Text>
+
+        <View style={{flexDirection: 'row'}}>
+            <Checkbox
+              disabled={false}
+              value={stayLoggedIn}
+              onValueChange={(newValue) => setStayLoggedIn(newValue)}
+            />
+
+            <Text style={{paddingLeft: 5, paddingBottom: 10, color: '#9D968D', fontSize: 16, fontWeight: 'bold'}}>
+              Stay Logged In?
+            </Text>
+          </View>
+
         <Pressable style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}> Sign in</Text>
         </Pressable>
-      
+        
        </View>
     )
 
@@ -92,14 +113,14 @@ export default function Login({navigation}){
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#373A36',
+      backgroundColor: '#fff',
       alignItems: 'center',
       justifyContent: 'center',
     },
     button: {
         width: "40%",
         height: 50,
-        backgroundColor: "#CEB888",
+        backgroundColor: "gold",
         borderRadius: 6,
         justifyContent: 'center',
         
@@ -113,11 +134,32 @@ const styles = StyleSheet.create({
       color:"#CEB888",
       height: 40,
       width: "45%",
-      borderColor: '#CEB888',
+      borderColor: 'black',
       borderWidth: 1,
       padding: 10,
       marginBottom: 10,
       borderRadius: 5,
     },
+    title: {
+      fontSize: 25,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      lineHeight: 25,
+      marginBottom: 30,
+    },
+    subtitle: {
+      fontSize: 15,
+      fontWeight: 'bold',
+      textAlign: 'left',
+      marginBottom: 8,
+      marginRight: 120,
+    },
+    errorMes: {
+      fontSize: 15,
+      fontWeight: 'bold',
+      textAlign: 'left',
+      marginBottom: 8,
+      color: 'red',
+    }
   });
   
