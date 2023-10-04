@@ -98,44 +98,54 @@ export default function Register({navigation}){
             </View>
         </Modal>
 
-        <TextInput
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete="off"
-          placeholder='Purdue Email'
-          placeholderTextColor={"#9D968D"}
-          
-          onChangeText={text => setEmail(text)}
+        <View style={{flex: 'column', width: "45%"}}>
+          <Text style={styles.title}>Register</Text>
 
-          style={styles.textInput}
-        />
+          <Text style={styles.subtitle}>Email</Text>
+          <TextInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="off"
+            placeholder='Enter your Purdue Email'
+            placeholderTextColor={"grey"}
+            
+            onChangeText={text => setEmail(text)}
 
-        <TextInput 
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete="off"
-          placeholder='Password'
-          placeholderTextColor={"#9D968D"}
+            style={styles.inputField}
+          />
 
-          onChangeText={text => setPassword(text)}
+          <Text style={styles.subtitle}>Password</Text>
+          <TextInput 
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="off"
+            placeholder='Enter a password'
+            placeholderTextColor={"grey"}
 
-          style={styles.textInput}
-        />
+            onChangeText={text => setPassword(text)}
 
-        <TextInput 
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete="off"
-          placeholder='Confirm Password'
-          placeholderTextColor={"#9D968D"}
+            style={styles.inputField}
+          />
 
-          onChangeText={ text => setConfirmedPassword(text)}
+          <Text style={styles.subtitle}>Confirm Password</Text>
+          <TextInput 
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="off"
+            placeholder='Confirm your password'
+            placeholderTextColor={"grey"}
 
-          style={styles.textInput}
-        />
+            onChangeText={ text => setConfirmedPassword(text)}
+
+            style={styles.inputField}
+          />
+        </View>
+
+        <Text style={styles.errorMes}>{errorMessage}</Text>
 
         <View style={{
-          flexDirection: 'row'
+          flexDirection: 'row',
+          paddingBottom: 20
         }}> 
           <Checkbox
             disabled={false}
@@ -143,12 +153,9 @@ export default function Register({navigation}){
             onValueChange={(newValue) => setAcceptedTos(newValue)}
           />
 
-          <Text style={styles.otherText}>I agree to the <Text style={{color: 'gold'}} onPress={() => setShowTos(!showTos)}>BoilerMatch Terms</Text></Text>
+          <Text style={styles.otherText}>I agree to the <Text style={{color: 'gold', textDecorationLine: 'underline'}} onPress={() => setShowTos(!showTos)}>BoilerMatch Terms</Text></Text>
         
         </View>
-        
-
-        <Text style={styles.buttonText}>{errorMessage}</Text>
       
         <Pressable style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
@@ -308,7 +315,7 @@ const TOS = () => {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor: 'white',
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -324,20 +331,40 @@ const styles = StyleSheet.create({
         alignSelf: "center"
       },
       otherText: {
-        fontSize: 15,
+        fontSize: 16,
         paddingLeft: 5
       },
-      textInput: {
-        color:"#CEB888",
+      inputField: {
+        color:'black',
         height: 40,
-        width: "45%",
+        width: "100%",
         borderColor: 'black',
         borderWidth: 1,
         padding: 10,
-        marginBottom: 20,
+        marginBottom: 10,
         borderRadius: 5,
+      },
+      title: {
+        fontSize: 25,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        lineHeight: 25,
+        marginBottom: 30,
+      },
+      subtitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        textAlign: 'left',
+        marginBottom: 8,
+      },
+      errorMes: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        textAlign: 'left',
+        marginBottom: 8,
+        color: 'red',
+        marginHorizontal: 'auto'
       }
-      
   });
 
   const tosStyles = StyleSheet.create({
