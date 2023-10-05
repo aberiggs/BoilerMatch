@@ -1,8 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import Search from './Search';
-import { StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image } from 'react-native';
+import { StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, ScrollView } from 'react-native';
 import axios from "axios"
+import Autocomplete from 'react-native'
+const logo = {
+  uri: 'https://reactnative.dev/img/tiny_logo.png',
+  width: 64,
+  height: 64,
+};
 
 
 export default function MainFeed({navigation}){
@@ -14,6 +20,18 @@ export default function MainFeed({navigation}){
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
+
+  useEffect(() => {
+    // Fetch potential users from your database and set them as suggestions
+    axios
+      .get(`http://localhost:3000/api/users/potential/${searchTerm}`)
+      .then((response) => {
+        setPotentialUsers(response.data.users);
+      })
+      .catch((error) => {
+        console.log('Error occurred while fetching potential users:', error);
+      });
+  }, [searchTerm]);
 
   const handleSearchButtonPress = () => {
     console.log(searchTerm)
@@ -108,25 +126,58 @@ export default function MainFeed({navigation}){
    };
     return(
         <View style={styles.container}>
-          
-        <Text>No one wants to room with you Sprocket</Text>
-      <View style={styles.inputGroup}>
-        <TextInput
-          style={styles.input}
-          placeholder="Search for a user"
+        <View style={styles.topBar}>
+          <Autocomplete
+          data={potentialUsers}
+          defaultValue={searchTerm}
           onChangeText={(text) => setSearchTerm(text)}
-          value={searchTerm}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => {
+                setSearchTerm(item.username);
+                handleSearchButtonPress(); // Auto-search when selecting a suggestion
+              }}
+            >
+              <Text>{item.username}</Text>
+            </TouchableOpacity>
+          )}
+          renderTextInput={() => (
+            <TextInput
+              style={styles.input}
+              placeholder="Search for a user"
+            />
+          )}
         />
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={handleSearchButtonPress}
-          
-        >
-          {/* You can use your search icon here */}
-          <Text style={styles.searchButtonText}>Search</Text>
-        </TouchableOpacity>
-      </View>
+
+        </View>
+        
+        {/* testing */}
+        
+      
       {renderModel()}
+      <ScrollView >
+        <View>
+        <Text style={{ fontSize: 96 }}>Scroll me plz</Text>
+        <Text style={{fontSize: 96}}>Scroll me plz</Text>
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        <Text style={{fontSize: 96}}>If you like</Text>
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        <Text style={{fontSize: 96}}>Scrolling down</Text>
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        <Image source={logo} />
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -141,17 +192,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  inputGroup: {
-    width: 250,
-    height: 100,
-    flexDirection: 'row',
-    alignItems: 'center',
-    position: 'absolute',
-    top: 10,
-    center: 10,
-  },
   input: {
-    width: 10, // Adjust the width as needed to make it smaller
+    width: '100%', // Adjust the width as needed to make it smaller
     height: 40, // Adjust the height as needed
     flex: 1,
     borderWidth: 1,
@@ -168,6 +210,13 @@ const styles = StyleSheet.create({
   searchButtonText: {
     color: 'gray', // Change the text color as desired
     fontSize: 13,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    padding: 10,
   },
   });
   
