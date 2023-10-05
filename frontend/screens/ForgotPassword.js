@@ -1,16 +1,41 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { StyleSheet, Text, View,TouchableOpacity, TextInput } from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
 
 export default function ForgotPassword({navigation}){
 
-    const handleLogin = () => {
-        navigation.navigate("MainTabNavigator")
+    const forgotThroughApi = async () => {
+        const response = await axios.post('http://localhost:3000/api/user/forgotpassword', {
+          email: email,
+        }).catch((error) => {
+          if (error.response) {
+            return error.response.data
+          }
+
+          return
+        })
+
+        return response
+    }
+
+    const handleForgot = async () => {
+        setEmail(email.trim())
+        
+        const res = await forgotThroughApi()
+
+        if (!res || res.success === false) {
+          if (res) {
+            setErrorMessage(res.message)
+          } else {
+            setErrorMessage("An unexpected error occurred")
+          }
+        } else {
+          navigation.navigate("pinVerify")
+        }
     }
     
     const [email, setEmail] = useState('')
+    const [errorMessage, setErrorMessage] = useState('')
 
     return(
         <View style={styles.container}>
@@ -26,31 +51,28 @@ export default function ForgotPassword({navigation}){
             style={styles.inputField}
             />
        
-        <Pressable style={styles.button}
-        onPress={() => {
-            //send email
-        }}>
+        <Text style={styles.errorMes}>{errorMessage}</Text>
+        <Pressable style={styles.button} onPress={handleForgot}>
 
         <Text style={styles.buttonText}> Reset Password</Text>
         </Pressable>
       
        </View>
     )
-
 }
 
 
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#373A36',
+      backgroundColor: '#fff',
       alignItems: 'center',
       justifyContent: 'center',
     },
     button: {
         width: "40%",
         height: 50,
-        backgroundColor: "#CEB888",
+        backgroundColor: "gold",
         borderRadius: 6,
         justifyContent: 'center',
         
@@ -61,14 +83,22 @@ const styles = StyleSheet.create({
         alignSelf: "center"
     },
     inputField: {
-      color:"#CEB888",
+      color:"black",
       height: 40,
       width: "45%",
-      borderColor: '#CEB888',
+      borderColor: 'black',
       borderWidth: 1,
       padding: 10,
       marginBottom: 10,
       borderRadius: 5,
     },
+    errorMes: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        textAlign: 'left',
+        marginBottom: 8,
+        color: 'red',
+        marginHorizontal: 'auto'
+    }
   });
   

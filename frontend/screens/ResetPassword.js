@@ -6,15 +6,13 @@ import axios from "axios"
 
 export default function Login({navigation}){
 
-    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [confirmedPassword, setConfirmedPassword] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
-    const [stayLoggedIn, setStayLoggedIn] = useState(false)
 
-    const loginThroughApi = async () => {
-        const response = await axios.post('http://localhost:3000/api/user/login', {
-          username: username,
-          password: password,
+    const resetThroughApi = async () => {
+        const response = await axios.post('http://localhost:3000/api/user/resetpassword', {
+          password: password
         }).catch((error) => {
           if (error.response) {
             return error.response.data
@@ -26,84 +24,61 @@ export default function Login({navigation}){
         return response
     }
 
-    const handleLogin = async () => {
-        setUsername(username.trim())
-        setPassword(password.trim())
-        
-        const res = await loginThroughApi()
+    const passwordMatch = () => {
+        if (password !== confirmedPassword) {
+            setErrorMessage("The passwords do not match")
+            return false
+        }
+    }
 
-        if (!res || res.success === false) {
-          if (res) {
-            setErrorMessage(res.message)
-          } else {
-            setErrorMessage("An unexpected error occurred")
-          }
-        } else {
-          navigation.navigate("MainTabNavigator")
+    const handleReset = async () => {
+        if (passwordMatch) {
+            const res = await resetThroughApi()
+
+            if (!res || res.success === false) {
+                if (res) {
+                    setErrorMessage(res.message)
+                } else {
+                    setErrorMessage("An unexpected error occurred")
+                }
+            } else {
+            navigation.navigate("Login")
+            }
         }
     }
 
     return(
         <View style={styles.container}>
-          <View style={{flex: 'column', width: "45%"}}>
-            <Text style={styles.title}>Log In</Text>
-
-            <Text style={styles.subtitle}>Username</Text>
+            <Text style={styles.title}>Reset Your Password</Text>
 
             <TextInput
             autoCapitalize = "none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Enter your username'
-            placeholderTextColor={'grey'}
-
-            onChangeText={username => setUsername(username)}
-
-            style={styles.inputField}
-            />
-
-            <Text style={styles.subtitle}>Password</Text>
-
-            <TextInput
-            autoCapitalize = "none"
-            autoCorrect={false}
-            autoComplete="off"
-            placeholder='Enter your password'
+            placeholder='New Password'
             placeholderTextColor={'grey'}
 
             onChangeText={password => setPassword(password)}
 
             style={styles.inputField}
             />
-        </View>
-          
-          <TouchableOpacity
-          style={{ marginRight: 75, marginBottom: 5}}
-            onPress={() => {
-              navigation.navigate("ForgotPassword")
-            }}>
 
-            <Text style={{color: 'grey', textDecorationLine: 'underline'}}>
-              Forgot Password?
-            </Text>
-          </TouchableOpacity>
+            <TextInput
+            autoCapitalize = "none"
+            autoCorrect={false}
+            autoComplete="off"
+            placeholder='Confirm New Password'
+            placeholderTextColor={'grey'}
+
+            onChangeText={confirmedPassword => setConfirmedPassword(confirmedPassword)}
+
+            style={styles.inputField}
+            />
 
         <Text style={styles.errorMes}>{errorMessage}</Text>
 
-        <View style={{flexDirection: 'row'}}>
-            <Checkbox
-              disabled={false}
-              value={stayLoggedIn}
-              onValueChange={(newValue) => setStayLoggedIn(newValue)}
-            />
-
-            <Text style={{paddingLeft: 5, paddingBottom: 10, color: 'black', fontSize: 16}}>
-              Stay Logged In?
-            </Text>
-          </View>
-
         <Pressable style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}> Sign in</Text>
+        <Text style={styles.buttonText}> Reset </Text>
         </Pressable>
 
        </View>
@@ -133,7 +108,7 @@ const styles = StyleSheet.create({
     inputField: {
       color:'black',
       height: 40,
-      width: "100%",
+      width: "45%",
       borderColor: 'black',
       borderWidth: 1,
       padding: 10,
