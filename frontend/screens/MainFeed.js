@@ -1,26 +1,56 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import Search from './Search';
-import { StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, ScrollView, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import Autocomplete from 'react-native-autocomplete-input';
 import axios from "axios"
-import Autocomplete from 'react-native'
-const logo = {
-  uri: 'https://reactnative.dev/img/tiny_logo.png',
-  width: 64,
-  height: 64,
-};
+
 
 
 export default function MainFeed({navigation}){
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [searchResult, setSearchResult] = useState(null);
+  const [searchResult, setSearchResult] = useState([]);
+  const [potentialUsers, setPotentialUsers] = useState([]);
+  const [people, setPeople] = useState([
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "second@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "third@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "fourth@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+
+  ])
+
+  const FeedItem = ({ user }) => (
+    <View style={styles.feedItem}>
+      <Image
+        source={require('./testImage.png')} // Replace with the actual image source
+        resizeMode="cover"
+        style={styles.userImage}
+      />
+      <Text style={styles.itemName}>{user.username}</Text>
+      <Text>Email: {user.email}</Text>
+      <Text>Gender: {user.gender}</Text>
+      <Text>Year: {user.year}</Text>
+      <Text>Hobbies: {user.hobbies}</Text>
+      {/* Add other user information as needed */}
+    </View>
+  );
+
   
   // Function to handle the search button press not yet finished.. need to get info from database
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
-
+  /*
   useEffect(() => {
     // Fetch potential users from your database and set them as suggestions
     axios
@@ -32,6 +62,7 @@ export default function MainFeed({navigation}){
         console.log('Error occurred while fetching potential users:', error);
       });
   }, [searchTerm]);
+  */
 
   const handleSearchButtonPress = () => {
     console.log(searchTerm)
@@ -56,52 +87,46 @@ export default function MainFeed({navigation}){
    };
    */
 
-   const renderModel = () => {
-    const modalStyles = {
-      modalContainer: {
-        flex: 1,
-        justifyContent: 'center', // Center content vertically
-        alignItems: 'center',     // Center content horizontally
-        backgroundColor: 'white', // Semi-transparent background
-      },
-      modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        flex: 1,
-        justifyContent: 'center',
-        //borderRadius: 10, // Add rounded corners to the content
-      },
-      closeButtonContainer: {
-        marginTop: 20,
-      },
-    };
-
-    if (isModalVisible){
-      return (
-        <Modal
-       animationType="slide" // How the modal will appear (e.g., slide, fade)
-       transparent={false}     // Make the modal background transparent
-       visible={isModalVisible}
-     >
-       <View style={modalStyles.modalContainer}>
-        <View style={modalStyles.modalContent}>
-          
-
-          
-          {searchResult && (
+  const renderModel = () => {
+  const modalStyles = {
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'white',
+    },
+    modalContent: {
+      backgroundColor: 'white',
+      padding: 20,
+      flex: 1,
+      justifyContent: 'center',
+    },
+    closeButtonContainer: {
+      marginTop: 20,
+    },
+  };
+  
+  if (isModalVisible && searchResult && searchResult.length > 0) {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={isModalVisible}
+      >
+        <View style={modalStyles.modalContainer}>
+          <View style={modalStyles.modalContent}>
             <View>
-          <Image
-          //Once we get the data we can replace the hard coded image
-           source={require('./testImage.png')}
-           resizeMode="cover"
-           style={{
-            height: 155,
-            width: 155,
-            borderRadius: 999,
-            marginTop: -90
-           }}
-           />
-              {searchResult.map((user,index) => (
+              <Image
+                source={require('./testImage.png')}
+                resizeMode="cover"
+                style={{
+                  height: 155,
+                  width: 155,
+                  borderRadius: 999,
+                  marginTop: -90,
+                }}
+              />
+              {searchResult.map((user, index) => (
                 <View key={index}>
                   <Text>Name: {user.username}</Text>
                   <Text>Email: {user.email}</Text>
@@ -109,45 +134,36 @@ export default function MainFeed({navigation}){
                   <Text>Year:</Text>
                   <Text>Hobbies:</Text>
                   <Text>etc:</Text>
-                </View>  
+                </View>
               ))}
             </View>
-          )}
-          <View style={modalStyles.closeButtonContainer}><Button title="Close" onPress={toggleModal} /></View>
+            <View style={modalStyles.closeButtonContainer}>
+              <Button title="Close" onPress={toggleModal} />
+            </View>
+          </View>
         </View>
-         
-       </View>
-       </Modal>
-
-      );
-    } else {
-      return null;
-    }
-   };
+      </Modal>
+    );
+  } else {
+    return null;
+  }
+};  
     return(
         <View style={styles.container}>
         <View style={styles.topBar}>
-          <Autocomplete
-          data={potentialUsers}
-          defaultValue={searchTerm}
+        <TextInput
+          style={styles.input}
+          placeholder="Search for a user"
           onChangeText={(text) => setSearchTerm(text)}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                setSearchTerm(item.username);
-                handleSearchButtonPress(); // Auto-search when selecting a suggestion
-              }}
-            >
-              <Text>{item.username}</Text>
-            </TouchableOpacity>
-          )}
-          renderTextInput={() => (
-            <TextInput
-              style={styles.input}
-              placeholder="Search for a user"
-            />
-          )}
+          value={searchTerm}
         />
+
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={handleSearchButtonPress}
+        >
+          <Text style={styles.searchButtonText}>Search</Text>
+        </TouchableOpacity>
 
         </View>
         
@@ -155,29 +171,12 @@ export default function MainFeed({navigation}){
         
       
       {renderModel()}
-      <ScrollView >
-        <View>
-        <Text style={{ fontSize: 96 }}>Scroll me plz</Text>
-        <Text style={{fontSize: 96}}>Scroll me plz</Text>
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        <Text style={{fontSize: 96}}>If you like</Text>
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        <Text style={{fontSize: 96}}>Scrolling down</Text>
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        <Image source={logo} />
-        </View>
-      </ScrollView>
+      <FlatList
+  data={people} // Replace with your data array
+  renderItem={({ item }) => <FeedItem user={item} />}
+  keyExtractor={(item) => item.key} // Replace with a unique key extractor
+  contentContainerStyle={{ flexGrow: 1 }}
+/>
     </View>
   );
 }
@@ -191,6 +190,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  feedItem: {
+    flex: 1, // Take up the entire available space
+    backgroundColor: 'white',
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   input: {
     width: '100%', // Adjust the width as needed to make it smaller
@@ -218,5 +228,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 10,
   },
+
   });
   
