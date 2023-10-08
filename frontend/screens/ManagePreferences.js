@@ -3,12 +3,17 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView } from 'react-native';
 
 import RNPickerSelect from "react-native-picker-select"
+import axios from 'axios';
 
 
 
 export default function ManagePreferences() {
 
-  const [name, setName] = useState('');
+  const [gender, setGender] = useState('');
+  const [bedtime, setBedtime] = useState('');
+  const [guest, setGuest] = useState('');
+  const [clean, setClean] = useState('');
+  const [noise, setNoise] = useState('');
 
   const handleSubmit = () => {
     updatePreferencesThroughApi();
@@ -16,7 +21,11 @@ export default function ManagePreferences() {
 
   const updatePreferencesThroughApi = async() => {
     const response  = await axios.post('http://localhost:3000/api/user/preferences', {
-      name: name
+      gender: gender,
+      bedtime: bedtime,
+      guest: guest,
+      clean: clean,
+      noise: noise
     })
     return response;
   }
@@ -27,7 +36,7 @@ export default function ManagePreferences() {
       <Text style={styles.subtitle}>Select the preferred gender of your roommate</Text>
        <RNPickerSelect
           placeholder={ {label: "Select gender.", value: null}}
-          onValueChange={(value) => console.log(value)}
+          onValueChange={(value) => setGender(value)}
           items={[
               { label: "Male", value: "male" },
               { label: "Female", value: "female" },
@@ -38,7 +47,7 @@ export default function ManagePreferences() {
         <Text style={styles.subtitle}>Select your preferred bedtime:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select bedtime: ", value: null}}
-          onValueChange={(value) => console.log(value)}
+          onValueChange={(value) => setBedtime(value)}
           items={[
               { label: "Before 9PM", value: "9" },
               { label: "9PM-10PM", value: "10" },
@@ -52,7 +61,7 @@ export default function ManagePreferences() {
         <Text style={styles.subtitle}>How comfortable are you with guests:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select:", value: null}}
-          onValueChange={(value) => console.log(value)}
+          onValueChange={(value) => setGuest(value)}
           items={[
               { label: "Never", value: "never" },
               { label: "Weekends only", value: "weekend" },
@@ -64,7 +73,7 @@ export default function ManagePreferences() {
         <Text style={styles.subtitle}>On a scale of 1-5, how clean do you prefer your environment:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select cleanliness.", value: null}}
-          onValueChange={(value) => console.log(value)}
+          onValueChange={(value) => setClean(value)}
           items={[
               { label: "5: Spotless, very organized.", value: "5" },
               { label: "4: Clean, but doesn't have to be perfect", value: "4" },
@@ -77,7 +86,7 @@ export default function ManagePreferences() {
          <Text style={styles.subtitle}>What's your preferred noise level?</Text>
         <RNPickerSelect
           placeholder={ {label: "Select noise level:", value: null}}
-          onValueChange={(value) => console.log(value)}
+          onValueChange={(value) => setNoise(value)}
           items={[
               { label: "5: Be as loud as you want.", value: "5" },
               { label: "4: We can be loud on the weekends", value: "4" },
