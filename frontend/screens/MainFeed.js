@@ -3,6 +3,7 @@ import { StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image
 import React, { useState, useEffect } from 'react';
 import Autocomplete from 'react-native-autocomplete-input';
 import axios from "axios"
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 
@@ -11,37 +12,97 @@ export default function MainFeed({navigation}){
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
   const [potentialUsers, setPotentialUsers] = useState([]);
+  const [liked, setLiked] = useState(false);
+  //variables for onClick on the mainFeed
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isUserModalVisible, setIsUserModalVisible] = useState(false);
+  const modalStyles = {
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'white',
+    },
+    modalContent: {
+      backgroundColor: 'white',
+      padding: 20,
+      flex: 1,
+      justifyContent: 'center',
+    },
+    closeButtonContainer: {
+      marginTop: 20,
+    },
+  };
+  //dummy data
   const [people, setPeople] = useState([
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "second@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "third@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "fourth@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks" },
+    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks",liked: false, isActive: true },
+    { name: 'shaun', key: '2', email: "second@gmail.com", gender: "male", hobbies: "trees",liked: false,isActive: true },
+    { name: 'shaun', key: '3', email: "third@gmail.com", gender: "female", hobbies: "grass",liked: false,isActive: true },
+    { name: 'shaun', key: '4', email: "fourth@gmail.com", gender: "male", hobbies: "sky",liked: false,isActive: true },
+    { name: 'shaun', key: '5', email: "fifth@gmail.com", gender: "male", hobbies: "water",liked: false,isActive: true },
+    { name: 'shaun', key: '6', email: "six@gmail.com", gender: "female", hobbies: "sun",liked: false,isActive: true },
+    { name: 'shaun', key: '7', email: "seven@gmail.com", gender: "male", hobbies: "dirt",liked: false,isActive: true },
+    { name: 'shaun', key: '8', email: "8@gmail.com", gender: "male", hobbies: "slime",liked: false,isActive: true },
+    { name: 'shaun', key: '9', email: "9@gmail.com", gender: "female", hobbies: "metal",liked: false,isActive: true },
+    { name: 'shaun', key: '10', email: "10@gmail.com", gender: "male", hobbies: "cotton",liked: false,isActive: true },
+    { name: 'shaun', key: '11', email: "11@gmail.com", gender: "female", hobbies: "lava",liked: false,isActive: true },
+    { name: 'shaun', key: '12', email: "12@gmail.com", gender: "female", hobbies: "bird",liked: false,isActive: false },
+    { name: 'shaun', key: '13', email: "13@gmail.com", gender: "female", hobbies: "ant",liked: false,isActive: true },
+    { name: 'shaun', key: '14', email: "14@gmail.com", gender: "male", hobbies: "racoon",liked: false,isActive: true },
 
   ])
+  const handleLikePress = (itemKey) => {
+    // Find the feed item with the specified key
+    const updatedPeople = people.map((person) => {
+      if (person.key === itemKey) {
+        // Toggle the liked state
+        return { ...person, liked: !person.liked };
+      }
+      return person;
+    });
+  
+    // Update the state with the modified feed items
+    setPeople(updatedPeople);
+  };
 
-  const FeedItem = ({ user }) => (
+  const handleUserItemClick = (user) => {
+    setSelectedUser(user);
+    setIsUserModalVisible(true);
+  };
+  const handleCloseUserModal = () => {
+  setIsUserModalVisible(false);
+};
+// ... (previous code)
+
+  const FeedItem = ({ user, onLikePress }) => (
     <View style={styles.feedItem}>
       <Image
-        source={require('./testImage.png')} // Replace with the actual image source
+        source={require('./troy.jpeg')} // Replace with the actual image source
         resizeMode="cover"
-        style={styles.userImage}
+        style={{
+          
+          height: 320, // Adjust the height as needed
+          width: "100%",  // Adjust the width as needed
+          alignSelf: 'center',
+          justifyContent: 'center',
+        }}
       />
-      <Text style={styles.itemName}>{user.username}</Text>
+      <Text style={{justifyContent: 'center',}}>{user.username}</Text>
       <Text>Email: {user.email}</Text>
       <Text>Gender: {user.gender}</Text>
       <Text>Year: {user.year}</Text>
       <Text>Hobbies: {user.hobbies}</Text>
       {/* Add other user information as needed */}
+      <TouchableOpacity onPress={() => onLikePress(user.key)}>
+      <Icon
+        name={user.liked ? 'heart' : 'heart-o'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+        color={user.liked ? 'red' : 'gray'}
+        size={30}
+      />
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => handleUserItemClick(user)}>
+      <Text>More Info</Text>
+    </TouchableOpacity>
     </View>
   );
 
@@ -105,8 +166,13 @@ export default function MainFeed({navigation}){
       marginTop: 20,
     },
   };
+
   
-  if (isModalVisible && searchResult && searchResult.length > 0) {
+  
+
+    
+  
+  if (isModalVisible && searchResult && searchResult.length > 0 || selectedUser) {
     return (
       <Modal
         animationType="slide"
@@ -120,8 +186,8 @@ export default function MainFeed({navigation}){
                 source={require('./testImage.png')}
                 resizeMode="cover"
                 style={{
-                  height: 155,
-                  width: 155,
+                  height: 270,
+                  width: 270,
                   borderRadius: 999,
                   marginTop: -90,
                 }}
@@ -149,6 +215,7 @@ export default function MainFeed({navigation}){
   }
 };  
     return(
+      
         <View style={styles.container}>
         <View style={styles.topBar}>
         <TextInput
@@ -166,20 +233,57 @@ export default function MainFeed({navigation}){
         </TouchableOpacity>
 
         </View>
+
         
-        {/* testing */}
-        
+        {selectedUser && (
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={isUserModalVisible}
+      >
+        <View style={modalStyles.modalContainer}>
+          <View style={modalStyles.modalContent}>
+            <View>
+          <Image
+                source={require('./testImage.png')}
+                resizeMode="cover"
+                style={{
+                  height: 270,
+                  width: 270,
+                  borderRadius: 999,
+                  marginTop: -90,
+                }}
+              />
+            <Text>Name: {selectedUser.username}</Text>
+            <Text>Email: {selectedUser.email}</Text>
+            <Text>Gender: {selectedUser.gender}</Text>
+            <Text>Year: {selectedUser.year}</Text>
+            <Text>Hobbies: {selectedUser.hobbies}</Text>
+            {/* Add more user information as needed */}
+            <Text>This is where we would add more information</Text>
+            </View>
+            <View style={modalStyles.closeButtonContainer}>
+              <Button title="Close" onPress={handleCloseUserModal} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+    )}
       
       {renderModel()}
-      <FlatList
-  data={people} // Replace with your data array
-  renderItem={({ item }) => <FeedItem user={item} />}
-  keyExtractor={(item) => item.key} // Replace with a unique key extractor
-  contentContainerStyle={{ flexGrow: 1 }}
-/>
+      <View style={styles.flatListContainer}>
+    <FlatList
+      data={people.filter((user) => user.isActive)} // Replace with your data array
+      renderItem={({ item }) => <FeedItem user={item} onLikePress={handleLikePress}/>}
+      keyExtractor={(item) => item.key} // Replace with a unique key extractor
+      horizontal={false}
+      contentContainerStyle={styles.flatListContent}
+    />
+  </View>
     </View>
   );
 }
+
     
 
 
@@ -192,7 +296,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   feedItem: {
-    flex: 1, // Take up the entire available space
+   // Take up the entire available space
     backgroundColor: 'white',
     padding: 15,
     marginBottom: 10,
@@ -228,6 +332,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 10,
   },
+  flatListContainer: {
+    flex: 1, // Take up the remaining available space
+    width: '100%', // Take up the entire width
+    paddingHorizontal: 10, // Add padding to the sides
+  },
+  flatListContent: {
+    flexGrow: 1, // Ensure the content can grow within the container
+  },
+  
 
   });
   
