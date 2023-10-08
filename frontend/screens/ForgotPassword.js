@@ -33,7 +33,7 @@ export default function ForgotPassword({navigation}){
           navigation.navigate("pinVerify")
         }
     }
-    
+
     const [email, setEmail] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
 

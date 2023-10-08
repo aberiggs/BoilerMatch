@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     }
 
     // TODO: need to use props
-    const userResetting = await userCollection.findOneAndUpdate()
+    const userResetting = await userCollection.findOneAndUpdate({email: req.body.email, password: password})
 
     return res.status(201).json({
         success: true,

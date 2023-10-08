@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native';
+import ForgotPassword from './ForgotPassword';
 import axios from "axios"
 
 export default function pinVerify({navigation}){
@@ -9,6 +10,7 @@ export default function pinVerify({navigation}){
 
     const verifyThroughApi = async () => {
         const response = await axios.post('http://localhost:3000/api/user/pinverify', {
+          email: ForgotPassword.email,
           pin: pin
         }).catch((error) => {
           if (error.response) {

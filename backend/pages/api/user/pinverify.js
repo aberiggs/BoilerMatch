@@ -15,8 +15,8 @@ export default async function handler(req, res) {
     }
 
     // TODO: need to get the user using props
-    const userVerifying = await userCollection.findOne()
-    if (generatedPin !== req.body.pin) {
+    const userVerifying = await userCollection.findOne({email: req.body.email})
+    if (userVerifying.pin !== req.body.pin) {
         return res.status(400).json({
             success: false,
             message: "PIN does not match. Please try again"
