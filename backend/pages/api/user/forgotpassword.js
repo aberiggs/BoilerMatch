@@ -17,13 +17,15 @@ export default async function handler(req, res) {
 
     const generatedPin = Math.floor(100000 + Math.random() * 900000);
 
-    const userLost = await userCollection.findOneAndUpdate({email: req.body.email, pin: generatedPin})
+    const userLost = await userCollection.findOneAndUpdate({email: req.body.email}, {$set:{pin: generatedPin}})
     if (!userLost) {
         return res.status(400).json({
             success: false,
-            message: "Account does not exist. Please register your account."
+            message: "Email does not exist. Please register your account."
         })
     }
+
+
 
     transporter.sendMail({
         from: 'boilermatchproj@gmail.com',
@@ -38,7 +40,6 @@ export default async function handler(req, res) {
 
     return res.status(201).json({
         success: true,
-        token: newToken
     })
 }
 

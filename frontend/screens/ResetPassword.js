@@ -5,7 +5,7 @@ import Checkbox from 'expo-checkbox';
 import ForgotPassword from './ForgotPassword';
 import axios from "axios"
 
-export default function Login({navigation}){
+export default function ResetPassword({navigation}){
 
     const [password, setPassword] = useState('')
     const [confirmedPassword, setConfirmedPassword] = useState('')
@@ -79,7 +79,7 @@ export default function Login({navigation}){
 
         <Text style={styles.errorMes}>{errorMessage}</Text>
 
-        <Pressable style={styles.button} onPress={handleLogin}>
+        <Pressable style={styles.button} onPress={handleReset}>
         <Text style={styles.buttonText}> Reset </Text>
         </Pressable>
 

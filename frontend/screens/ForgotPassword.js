@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
+import axios from "axios"
 
 export default function ForgotPassword({navigation}){
 
@@ -11,16 +12,12 @@ export default function ForgotPassword({navigation}){
           if (error.response) {
             return error.response.data
           }
-
-          return
         })
 
         return response
     }
 
     const handleForgot = async () => {
-        setEmail(email.trim())
-        
         const res = await forgotThroughApi()
 
         if (!res || res.success === false) {
