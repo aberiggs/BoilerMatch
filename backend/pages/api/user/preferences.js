@@ -16,13 +16,16 @@ export default async function handler(req, res) {
 
     
     
-    const existingUser = {
+    /*const existingUser = {
         email: "test@purdue.edu",
         username: "test",
         password: "a",
         verified: true
-    }
+    }*/
 
+   // const preExistingUser = await userCollection.find({email: "test@purdue.edu"});
+
+    /* define preferences */
     const preferences = {
         gender: req.body.gender, 
         bedtime: req.body.bedtime, 
@@ -30,7 +33,19 @@ export default async function handler(req, res) {
         noise: req.body.noise
     }
 
-    existingUser
+    //preExistingUser.preferences = preferences;
+
+    /* updates prefs */
+    const updatePreferences = {
+        $set: {
+            preferences: preferences
+        }
+    }
+
+    const filter = {email: "test@purdue.edu"}
+    
+    /* sends to db */
+    await userCollection.updateOne(filter, updatePreferences);
 
     
 
