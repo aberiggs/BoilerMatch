@@ -12,6 +12,7 @@ export default function Register({navigation}){
     const [errorMessage, setErrorMessage] = useState('')
     const [acceptedTos, setAcceptedTos] = useState(false)
     const [showTos, setShowTos] = useState(false)
+    const [showPass, setShowPass] = useState(false)
 
 
     const handleRegister = async () => {    
@@ -128,17 +129,24 @@ export default function Register({navigation}){
           />
 
           <Text style={styles.subtitle}>Password</Text>
-          <TextInput 
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-            placeholder='Enter a password'
-            placeholderTextColor={"grey"}
 
-            onChangeText={text => setPassword(text)}
+            <TextInput 
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              placeholder='Enter a password'
+              placeholderTextColor={"grey"}
 
-            style={styles.inputField}
-          />
+              onChangeText={text => setPassword(text)}
+              secureTextEntry={!showPass}
+
+              style={styles.inputField}
+            />
+            
+            <Pressable style={{zIndex: 20, elevation: 20}} onPress={() => setShowPass(!showPass)}>
+              <Text style={{fontSize: 14, padding: 10}}>{showPass ? "HIDE" : "SHOW"}</Text>
+            </Pressable>
+
 
           <Text style={styles.subtitle}>Confirm Password</Text>
           <TextInput 
@@ -149,6 +157,7 @@ export default function Register({navigation}){
             placeholderTextColor={"grey"}
 
             onChangeText={ text => setConfirmedPassword(text)}
+            secureTextEntry={!showPass}
 
             style={styles.inputField}
           />
