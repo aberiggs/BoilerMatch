@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
-import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 
 import RNPickerSelect from "react-native-picker-select"
 
-export default function ManageInformation() {
+export default function ManageInformation(navigation) {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -18,6 +18,7 @@ export default function ManageInformation() {
   const [politicalViews, setPoliticalViews] = useState('')
   const [sleepingHabits, setSleepingHabits] = useState('');
   const [drinkingHabits, setDrinkingHabits] = useState('');
+  const [errMsgVisible, setErrMsgVisible] = useState(false);
 
   const handleFirstNameChange = (text) => {
     setFirstName(text);
@@ -30,10 +31,19 @@ export default function ManageInformation() {
   };
 
   const handleSubmit = () => {
-    console.log("Submit pressed");
+    if (firstName === '' || lastName === '') {
+      setErrMsgVisible(true);
+      console.log("FALSEEEEEE")
+    } else {
+      console.log("Submit pressed");
+      console.log(firstName, lastName, yearForRoommate, gender, graduation)
+    }
   }
-  
 
+  // const navigateToProfile = () => {
+  //   navigation.navigate('Login')
+  // }
+  
   return (
     <View style={styles.container}>
 
@@ -228,10 +238,34 @@ export default function ManageInformation() {
         <Text style={styles.buttonText}>Submit Information</Text>
         </TouchableOpacity>
 
+        {/* Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={errMsgVisible}
+          onRequestClose={() => {
+            setErrMsgVisible(!errMsgVisible);
+          }}
+        >
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Please make sure all the fields are filled out.
+            </Text>
+            <Pressable
+              style={styles.modalButton}
+              onPress={() => setErrMsgVisible(!errMsgVisible)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </Pressable>
+          </View>
+        </Modal>
+
+        {/* <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
+        <Text style={styles.buttonText}> Go Back to Profile Screen </Text>
+        </TouchableOpacity> */}
+
       </ScrollView>
     </View>
-
-    
   );;
 }
 
@@ -246,7 +280,8 @@ const styles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
-    alignSelf: 'center'
+    alignSelf: 'center',
+    margin: 10,
   },
   container: {
     flex: 1,
@@ -281,7 +316,42 @@ const styles = StyleSheet.create({
   scrollView: {
     marginVertical:50,
     marginHorizontal:15,
-  }
+  },
+  modalView: {
+    flex:1,
+    marginTop:50,
+    padding:20,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalText: {
+    marginBottom: 15,
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  modalButton: {
+    backgroundColor: 'gold',
+    borderRadius: 5,
+    padding: 10,
+    elevation: 2,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 16,
+  },
 });
 
 const pickerSelectStyles = StyleSheet.create({
