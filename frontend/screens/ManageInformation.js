@@ -8,9 +8,16 @@ export default function ManageInformation() {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [major, setMajor] = useState('');
+  const [yearForRoommate, setYearForRoommate] = useState('');
+  const [gender, setGender] = useState('');
   const [graduation, setGraduation] = useState('');
-  const [pet, setPet] = useState('');
+  const [major, setMajor] = useState('');
+  const [race, setRace] = useState('');
+  const [pets, setPets] = useState('');
+  const [religion, setReligion] = useState('');
+  const [politicalViews, setPoliticalViews] = useState('')
+  const [sleepingHabits, setSleepingHabits] = useState('');
+  const [drinkingHabits, setDrinkingHabits] = useState('');
 
   const handleFirstNameChange = (text) => {
     setFirstName(text);
@@ -18,15 +25,10 @@ export default function ManageInformation() {
   const handleLastNameChange = (text) => {
     setLastName(text);
   };
-  const handleGraduationChange = (value) => {
-    setGraduation(value);
-  };
   const handleMajorChange = (text) => {
     setMajor(text);
   };
-  const handlePetChange = (text) => {
-    setPet(text);
-  };
+
   const handleSubmit = () => {
     console.log("Submit pressed");
   }
@@ -61,7 +63,7 @@ export default function ManageInformation() {
 
         <RNPickerSelect
           placeholder={ {label: "Select a semester", value: null}}
-          onValueChange={(value) => console.log(value)}
+          onValueChange={(value) => setYearForRoommate(value)}
           items={[
               { label: "Fall 2024", value: "fall24" },
               { label: "Spring 2025", value: "spring25" },
@@ -80,7 +82,7 @@ export default function ManageInformation() {
 
         <RNPickerSelect
           placeholder={ {label: "Select your gender", value: null}}
-          onValueChange={(value) => console.log(value)}
+          onValueChange={(value) => setGender(value)}
           items={[
               { label: "Male", value: "male" },
               { label: "Female", value: "female" },
@@ -92,10 +94,8 @@ export default function ManageInformation() {
         <Text style={styles.subtitle}>Select Date of Graduation</Text>
 
         <RNPickerSelect
-          placeholder={ {label: "Select date of graduation", value: null}}
-          onValueChange={(value) => console.log(value)}
-          //work on connecting it to user class
-          //onValueChange={handleGraduationChange}
+          placeholder={ {label: "Select your date of graduation", value: null}}
+          onValueChange={(value) => setGraduation(value)}
           items={[
               { label: "Fall 2024", value: "fall24" },
               { label: "Spring 2025", value: "spring25" },
@@ -122,8 +122,8 @@ export default function ManageInformation() {
         <Text style={styles.subtitle}>Select Race</Text>
 
         <RNPickerSelect
-          placeholder={ {label: "Select Race", value: null}}
-          onValueChange={(value) => console.log(value)}
+          placeholder={ {label: "Select your race", value: null}}
+          onValueChange={(value) => setRace(value)}
           items={[
               { label: "American Indian or Alaskan Native", value: "indian" },
               { label: "Asian", value: "asian" },
@@ -141,8 +141,8 @@ export default function ManageInformation() {
         <Text style={styles.subtitle}>Select Pets</Text>
 
         <RNPickerSelect
-          placeholder={ {label: "Select Pets", value: null}}
-          onValueChange={(value) => console.log(value)}
+          placeholder={ {label: "Select your pets", value: null}}
+          onValueChange={(value) => setPets(value)}
           items={[
               { label: "Dog", value: "dog" },
               { label: "Cat", value: "cat" },
@@ -162,8 +162,8 @@ export default function ManageInformation() {
         <Text style={styles.subtitle}>Select Religion</Text>
 
         <RNPickerSelect
-          placeholder={ {label: "Select Religion", value: null}}
-          onValueChange={(value) => console.log(value)}
+          placeholder={ {label: "Select your religion", value: null}}
+          onValueChange={(value) => setReligion(value)}
           items={[
               { label: "Agnostic", value: "agnostic" },
               { label: "Atheist", value: "atheist" },
@@ -183,8 +183,8 @@ export default function ManageInformation() {
         <Text style={styles.subtitle}>Select Political Views</Text>
 
         <RNPickerSelect
-          placeholder={ {label: "Select Political Views", value: null}}
-          onValueChange={(value) => console.log(value)}
+          placeholder={ {label: "Select your political views", value: null}}
+          onValueChange={(value) => setPoliticalViews(value)}
           items={[
               { label: "Conservative", value: "conservative" },
               { label: "Liberal", value: "liberal" },
@@ -199,8 +199,8 @@ export default function ManageInformation() {
         <Text style={styles.subtitle}>Select Sleeping Habits</Text>
 
         <RNPickerSelect
-          placeholder={ {label: "Select Sleeping Habits", value: null}}
-          onValueChange={(value) => console.log(value)}
+          placeholder={ {label: "Selects your sleeping habits", value: null}}
+          onValueChange={(value) => setSleepingHabits(value)}
           items={[
               { label: "Early bird", value: "earlyBird" },
               { label: "Night owl", value: "nightOwl" },
@@ -212,8 +212,8 @@ export default function ManageInformation() {
         <Text style={styles.subtitle}>Select Drinking Habits</Text>
 
         <RNPickerSelect
-          placeholder={ {label: "Select Drinking Habits", value: null}}
-          onValueChange={(value) => console.log(value)}
+          placeholder={ {label: "Select your drinking habits", value: null}}
+          onValueChange={(value) => setDrinkingHabits(value)}
           items={[
               { label: "Not for me", value: "notForMe" },
               { label: "Sober", value: "sober" },
@@ -223,20 +223,6 @@ export default function ManageInformation() {
           ]}
           style={pickerSelectStyles}
         /> 
-
-        {/* <Text style={styles.subtitle}>Select Study Habits - Environment</Text>
-
-        <RNPickerSelect
-          placeholder={ {label: "Select study habits", value: null}}
-          onValueChange={(value) => console.log(value)}
-          items={[
-              { label: "Prefer silence", value: "silence" },
-              { label: "Music/background noise is okay", value: "noiseOk" },
-              { label: "Flexible, can adapt to different environments", value: "adaptable" },
-          ]}
-          style={pickerSelectStyles}
-        />  */}
-
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Submit Information</Text>
