@@ -19,6 +19,7 @@ export default function ManageInformation(navigation) {
   const [sleepingHabits, setSleepingHabits] = useState('');
   const [drinkingHabits, setDrinkingHabits] = useState('');
   const [errMsgVisible, setErrMsgVisible] = useState(false);
+  const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
 
   const handleFirstNameChange = (text) => {
     setFirstName(text);
@@ -31,18 +32,19 @@ export default function ManageInformation(navigation) {
   };
 
   const handleSubmit = () => {
-    if (firstName === '' || lastName === '') {
+    // If not all the fields filled out then send error message
+    if ( !firstName || !lastName || !yearForRoommate || !gender || !graduation || !major || !race ||
+      !pets || !religion || !politicalViews || !sleepingHabits || !drinkingHabits) {
       setErrMsgVisible(true);
-      console.log("FALSEEEEEE")
     } else {
-      console.log("Submit pressed");
-      console.log(firstName, lastName, yearForRoommate, gender, graduation)
+      setSubmitMsgVisible(true);
+      console.log(firstName, lastName, yearForRoommate, gender, graduation, major, race, pets, religion, politicalViews, sleepingHabits, drinkingHabits)
     }
   }
 
-  // const navigateToProfile = () => {
-  //   navigation.navigate('Login')
-  // }
+  const navigateToProfile = () => {
+    navigation.navigate('Profile')
+  }
   
   return (
     <View style={styles.container}>
@@ -238,7 +240,11 @@ export default function ManageInformation(navigation) {
         <Text style={styles.buttonText}>Submit Information</Text>
         </TouchableOpacity>
 
-        {/* Modal */}
+        <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
+        <Text style={styles.buttonText}>Go back to profile screen.</Text>
+        </TouchableOpacity>
+
+        {/* Modal for error message */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -260,9 +266,27 @@ export default function ManageInformation(navigation) {
           </View>
         </Modal>
 
-        {/* <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
-        <Text style={styles.buttonText}> Go Back to Profile Screen </Text>
-        </TouchableOpacity> */}
+        {/* Modal for submit message */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={submitMsgVisible}
+          onRequestClose={() => {
+            setErrMsgVisible(!submitMsgVisible);
+          }}
+        >
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Your information has been saved.
+            </Text>
+            <Pressable
+              style={styles.modalButton}
+              onPress={() => setSubmitMsgVisible(!submitMsgVisible)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </Pressable>
+          </View>
+        </Modal>
 
       </ScrollView>
     </View>

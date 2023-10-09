@@ -6,6 +6,7 @@ import Landing from './screens/Landing'
 import Register from './screens/Register'
 import Login from './screens/Login'
 import ManageInformation from './screens/ManageInformation';
+import Profile from './screens/Profile';
 import MainTabNavigator from './routes/MainTabNavigator';
 
 const Stack = createStackNavigator();
@@ -25,6 +26,7 @@ export default function App() {
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
       <Stack.Screen name="ManageInformation" component={ManageInformation} />
+      <Stack.Screen name="Profile" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>
   );
