@@ -50,25 +50,38 @@ export default function Register({navigation}){
         // Email is blank or contains spaces
         setErrorMessage("Please enter a valid email")
         return false
-      } else if (password.length === 0 || password.includes(" ")) {
-        // Password is blank or contains spaces
-        setErrorMessage("Please create a password")
-        return false
-      } else if (confirmedPassword.length === 0 || confirmedPassword.includes(" ")) {
-        // Confirmed password is blank or contains spaces
-        setErrorMessage("Please confirm your password")
-        return false
       } else if (email.substring(email.length-emailExtension.length, email.length) !== emailExtension || email.length-emailExtension.length === 0) {
         // Email is not *.@purdue.edu
         setErrorMessage("Please enter a valid Purdue email")
         return false
-      } else if (password !== confirmedPassword) {
+      } else if (!validatePassword()) {
+        // Error messages are handled by validatePassword()
+        return false
+      }  else if (password !== confirmedPassword) {
         // Passwords do not match
         setErrorMessage("The passwords do not match")
         return false
       } else if (acceptedTos !== true){
         // User didn't accept TOS
         setErrorMessage("Please accept the Terms of Service")
+        return false
+      }
+
+      return true
+    }
+
+    const validatePassword = () => {
+      passwordRegEx = /$^[A-Za-z]*[!?@#$]{1,}[A-Za-z]*$/
+      if (password.length === 0) {
+        // Password is blank or contains spaces
+        setErrorMessage("Please create a password")
+        return false
+      } else if (password.includes(" ")) {
+          setErrorMessage("Your password must not contain spaces")
+          return false
+      } else if (!password.match(passwordRegEx) || password.length() < 6 || password.length() > 20) {
+        // Ensure a secure password
+        setErrorMessage("Your password must be 6-20 characters, and contain a special character (!,?,@,#,$)")
         return false
       }
 
@@ -380,7 +393,8 @@ const styles = StyleSheet.create({
       errorMes: {
         fontSize: 15,
         fontWeight: 'bold',
-        textAlign: 'left',
+        textAlign: 'center',
+        paddingHorizontal: 10,
         marginBottom: 8,
         color: 'red',
         marginHorizontal: 'auto'
