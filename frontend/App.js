@@ -8,6 +8,8 @@ import Login from './screens/Login'
 
 import MainTabNavigator from './routes/MainTabNavigator';
 import ForgotPassword from './screens/ForgotPassword';
+import pinVerify from './screens/pinVerify';
+import ResetPassword from './screens/ResetPassword';
 
 const Stack = createStackNavigator();
 
@@ -24,6 +26,8 @@ export default function App() {
           headerShown:true,  headerShadowVisible: false, headerBackTitle: "Back",  title: ""
         }}/>
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <Stack.Screen name="pinVerify" component={pinVerify} />
+        <Stack.Screen name="ResetPassword" component={ResetPassword} />
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
       </Stack.Navigator>
