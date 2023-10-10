@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import axios from "axios"
 
@@ -10,6 +11,7 @@ export default function Login({navigation}){
     const [password, setPassword] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
     const [stayLoggedIn, setStayLoggedIn] = useState(false)
+    const [showPass, setShowPass] = useState(false)
 
     const loginThroughApi = async () => {
         const response = await axios.post('http://localhost:3000/api/user/login', {
@@ -54,27 +56,37 @@ export default function Login({navigation}){
             autoCapitalize = "none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Enter your username'
             placeholderTextColor={'grey'}
 
             onChangeText={username => setUsername(username)}
 
-            style={styles.inputField}
+            style={styles.inputFieldBox}
             />
 
             <Text style={styles.subtitle}>Password</Text>
 
+
+          <View style={styles.inputFieldBox}>
             <TextInput
-            autoCapitalize = "none"
-            autoCorrect={false}
-            autoComplete="off"
-            placeholder='Enter your password'
-            placeholderTextColor={'grey'}
+              autoCapitalize = "none"
+              autoCorrect={false}
+              autoComplete="off"
+              placeholderTextColor={'grey'}
 
-            onChangeText={password => setPassword(password)}
+              onChangeText={password => setPassword(password)}
+              secureTextEntry={!showPass}
 
-            style={styles.inputField}
+              style={styles.inputField}
             />
+
+            <Pressable style={{position: 'absolute', paddingRight: 10}} onPress={() => setShowPass(!showPass)}>
+              { showPass ?
+                <Ionicons name="eye-off-outline" size={26} color="black" /> :
+                <Ionicons name="eye-outline" size={26} color="black" />
+              }
+            </Pressable>
+          </View>
+
         </View>
           
           <TouchableOpacity
@@ -87,6 +99,7 @@ export default function Login({navigation}){
               Forgot Password?
             </Text>
           </TouchableOpacity>
+          
 
         <Text style={styles.errorMes}>{errorMessage}</Text>
 
@@ -130,15 +143,20 @@ const styles = StyleSheet.create({
         fontSize: 20,
         alignSelf: "center"
     },
-    inputField: {
-      color:'black',
+    inputFieldBox: {   
+      flexDirection: 'row',
       height: 40,
-      width: "100%",
-      borderColor: 'black',
-      borderWidth: 1,
+      width: '100%',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
       padding: 10,
       marginBottom: 10,
-      borderRadius: 5,
+      borderColor: 'black',
+      borderWidth: 1,
+      borderRadius: 5,        
+    },
+    inputField: {
+      width: "100%",
     },
     title: {
       fontSize: 25,

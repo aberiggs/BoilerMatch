@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput, Modal, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import axios from "axios"
 
@@ -12,6 +13,7 @@ export default function Register({navigation}){
     const [errorMessage, setErrorMessage] = useState('')
     const [acceptedTos, setAcceptedTos] = useState(false)
     const [showTos, setShowTos] = useState(false)
+    const [showPass, setShowPass] = useState(false)
 
 
     const handleRegister = async () => {    
@@ -48,25 +50,38 @@ export default function Register({navigation}){
         // Email is blank or contains spaces
         setErrorMessage("Please enter a valid email")
         return false
-      } else if (password.length === 0 || password.includes(" ")) {
-        // Password is blank or contains spaces
-        setErrorMessage("Please create a password")
-        return false
-      } else if (confirmedPassword.length === 0 || confirmedPassword.includes(" ")) {
-        // Confirmed password is blank or contains spaces
-        setErrorMessage("Please confirm your password")
-        return false
       } else if (email.substring(email.length-emailExtension.length, email.length) !== emailExtension || email.length-emailExtension.length === 0) {
         // Email is not *.@purdue.edu
         setErrorMessage("Please enter a valid Purdue email")
         return false
-      } else if (password !== confirmedPassword) {
+      } else if (!validatePassword()) {
+        // Error messages are handled by validatePassword()
+        return false
+      }  else if (password !== confirmedPassword) {
         // Passwords do not match
         setErrorMessage("The passwords do not match")
         return false
       } else if (acceptedTos !== true){
         // User didn't accept TOS
         setErrorMessage("Please accept the Terms of Service")
+        return false
+      }
+
+      return true
+    }
+
+    const validatePassword = () => {
+      passwordRegEx = /$^[A-Za-z]*[!?@#$]{1,}[A-Za-z]*$/
+      if (password.length === 0) {
+        // Password is blank or contains spaces
+        setErrorMessage("Please create a password")
+        return false
+      } else if (password.includes(" ")) {
+          setErrorMessage("Your password must not contain spaces")
+          return false
+      } else if (!password.match(passwordRegEx) || password.length() < 6 || password.length() > 20) {
+        // Ensure a secure password
+        setErrorMessage("Your password must be 6-20 characters, and contain a special character (!,?,@,#,$)")
         return false
       }
 
@@ -106,38 +121,48 @@ export default function Register({navigation}){
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Enter your Purdue Email'
             placeholderTextColor={"grey"}
             
             onChangeText={text => setEmail(text)}
 
-            style={styles.inputField}
+            style={styles.inputFieldBox}
           />
 
           <Text style={styles.subtitle}>Password</Text>
-          <TextInput 
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-            placeholder='Enter a password'
-            placeholderTextColor={"grey"}
 
-            onChangeText={text => setPassword(text)}
+          <View style={styles.inputFieldBox}>
 
-            style={styles.inputField}
-          />
+            <TextInput 
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              placeholderTextColor={"grey"}
+
+              onChangeText={text => setPassword(text)}
+              secureTextEntry={!showPass}
+
+              style={styles.inputField}
+            />
+
+            <Pressable style={{position: 'absolute', paddingRight: 10}} onPress={() => setShowPass(!showPass)}>
+              { showPass ?
+                <Ionicons name="eye-off-outline" size={26} color="black" /> :
+                <Ionicons name="eye-outline" size={26} color="black" />
+              }
+            </Pressable>
+          </View>
 
           <Text style={styles.subtitle}>Confirm Password</Text>
           <TextInput 
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Confirm your password'
             placeholderTextColor={"grey"}
 
             onChangeText={ text => setConfirmedPassword(text)}
+            secureTextEntry={!showPass}
 
-            style={styles.inputField}
+            style={styles.inputFieldBox}
           />
         </View>
 
@@ -334,15 +359,20 @@ const styles = StyleSheet.create({
         fontSize: 16,
         paddingLeft: 5
       },
-      inputField: {
-        color:'black',
+      inputFieldBox: {   
+        flexDirection: 'row',
         height: 40,
-        width: "100%",
-        borderColor: 'black',
-        borderWidth: 1,
+        width: '100%',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
         padding: 10,
         marginBottom: 10,
-        borderRadius: 5,
+        borderColor: 'black',
+        borderWidth: 1,
+        borderRadius: 5,        
+      },
+      inputField: {
+        width: "100%",
       },
       title: {
         fontSize: 25,
@@ -360,7 +390,8 @@ const styles = StyleSheet.create({
       errorMes: {
         fontSize: 15,
         fontWeight: 'bold',
-        textAlign: 'left',
+        textAlign: 'center',
+        paddingHorizontal: 10,
         marginBottom: 8,
         color: 'red',
         marginHorizontal: 'auto'
