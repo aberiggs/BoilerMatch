@@ -121,7 +121,6 @@ export default function Register({navigation}){
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Enter your Purdue Email'
             placeholderTextColor={"grey"}
             
             onChangeText={text => setEmail(text)}
@@ -137,7 +136,6 @@ export default function Register({navigation}){
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
-              placeholder='Enter a password'
               placeholderTextColor={"grey"}
 
               onChangeText={text => setPassword(text)}
@@ -159,7 +157,6 @@ export default function Register({navigation}){
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Confirm your password'
             placeholderTextColor={"grey"}
 
             onChangeText={ text => setConfirmedPassword(text)}
