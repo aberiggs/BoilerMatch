@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput, Modal, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import axios from "axios"
 
@@ -125,10 +126,12 @@ export default function Register({navigation}){
             
             onChangeText={text => setEmail(text)}
 
-            style={styles.inputField}
+            style={styles.inputFieldBox}
           />
 
           <Text style={styles.subtitle}>Password</Text>
+
+          <View style={styles.inputFieldBox}>
 
             <TextInput 
               autoCapitalize="none"
@@ -142,11 +145,14 @@ export default function Register({navigation}){
 
               style={styles.inputField}
             />
-            
-            <Pressable style={{zIndex: 20, elevation: 20}} onPress={() => setShowPass(!showPass)}>
-              <Text style={{fontSize: 14, padding: 10}}>{showPass ? "HIDE" : "SHOW"}</Text>
-            </Pressable>
 
+            <Pressable style={{position: 'absolute', paddingRight: 10}} onPress={() => setShowPass(!showPass)}>
+              { showPass ?
+                <Ionicons name="eye-off-outline" size={26} color="black" /> :
+                <Ionicons name="eye-outline" size={26} color="black" />
+              }
+            </Pressable>
+          </View>
 
           <Text style={styles.subtitle}>Confirm Password</Text>
           <TextInput 
@@ -159,7 +165,7 @@ export default function Register({navigation}){
             onChangeText={ text => setConfirmedPassword(text)}
             secureTextEntry={!showPass}
 
-            style={styles.inputField}
+            style={styles.inputFieldBox}
           />
         </View>
 
@@ -356,15 +362,20 @@ const styles = StyleSheet.create({
         fontSize: 16,
         paddingLeft: 5
       },
-      inputField: {
-        color:'black',
+      inputFieldBox: {   
+        flexDirection: 'row',
         height: 40,
-        width: "100%",
-        borderColor: 'black',
-        borderWidth: 1,
+        width: '100%',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
         padding: 10,
         marginBottom: 10,
-        borderRadius: 5,
+        borderColor: 'black',
+        borderWidth: 1,
+        borderRadius: 5,        
+      },
+      inputField: {
+        width: "100%",
       },
       title: {
         fontSize: 25,
