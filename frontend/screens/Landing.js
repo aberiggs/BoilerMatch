@@ -21,6 +21,12 @@ export default function Landing({navigation}){
         <TouchableOpacity style={styles.button}onPress={handleRegister}>
         <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => {navigation.navigate("MainTabNavigator")}}>
+          <Text style={styles.buttonText}>
+            Dev Test
+          </Text>
+        </TouchableOpacity>
        </View>
     )
 }

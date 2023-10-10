@@ -9,8 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.16.0",
+    "formidable": "^3.5.1",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.1.0",
+    "multer": "^1.4.5-lts.1",
     "next": "latest",
     "nodemailer": "^6.9.5",
     "react": "latest",
