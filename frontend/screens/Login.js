@@ -56,7 +56,6 @@ export default function Login({navigation}){
             autoCapitalize = "none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Enter your username'
             placeholderTextColor={'grey'}
 
             onChangeText={username => setUsername(username)}
@@ -71,7 +70,6 @@ export default function Login({navigation}){
               autoCapitalize = "none"
               autoCorrect={false}
               autoComplete="off"
-              placeholder='Enter your password'
               placeholderTextColor={'grey'}
 
               onChangeText={password => setPassword(password)}
