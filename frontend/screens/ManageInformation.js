@@ -1,10 +1,11 @@
+import { NavigationContainer } from '@react-navigation/native';
 import React, { useState } from 'react';
-
+import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 
 import RNPickerSelect from "react-native-picker-select"
 
-export default function ManageInformation(navigation) {
+export default function ManageInformation({navigation}) {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -43,10 +44,11 @@ export default function ManageInformation(navigation) {
   }
 
   const navigateToProfile = () => {
-    navigation.navigate('Profile')
+    navigation.goBack()
   }
   
   return (
+    
     <View style={styles.container}>
 
       <ScrollView style={styles.scrollView}>
@@ -241,7 +243,7 @@ export default function ManageInformation(navigation) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
-        <Text style={styles.buttonText}>Go back to profile screen.</Text>
+        <Text style={styles.buttonText}>Go Back to Profile</Text>
         </TouchableOpacity>
 
         {/* Modal for error message */}
@@ -272,7 +274,7 @@ export default function ManageInformation(navigation) {
           transparent={true}
           visible={submitMsgVisible}
           onRequestClose={() => {
-            setErrMsgVisible(!submitMsgVisible);
+            setSubmitMsgVisible(!submitMsgVisible);
           }}
         >
           <View style={styles.modalView}>
@@ -281,7 +283,10 @@ export default function ManageInformation(navigation) {
             </Text>
             <Pressable
               style={styles.modalButton}
-              onPress={() => setSubmitMsgVisible(!submitMsgVisible)}
+              onPress={() => {
+                setSubmitMsgVisible(!submitMsgVisible);
+                navigateToProfile();
+              }}
             >
               <Text style={styles.modalButtonText}>OK</Text>
             </Pressable>
