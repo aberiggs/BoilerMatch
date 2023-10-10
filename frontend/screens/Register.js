@@ -71,15 +71,15 @@ export default function Register({navigation}){
     }
 
     const validatePassword = () => {
-      passwordRegEx = /$^[A-Za-z]*[!?@#$]{1,}[A-Za-z]*$/
+      passwordRegEx = /[A-Za-z]*[!?@#$]{1,}[A-Za-z]*/
       if (password.length === 0) {
-        // Password is blank or contains spaces
+        // Password is blank or contains spacess
         setErrorMessage("Please create a password")
         return false
       } else if (password.includes(" ")) {
           setErrorMessage("Your password must not contain spaces")
           return false
-      } else if (!password.match(passwordRegEx) || password.length() < 6 || password.length() > 20) {
+      } else if (!password.match(passwordRegEx) || password.length < 6 || password.length > 20) {
         // Ensure a secure password
         setErrorMessage("Your password must be 6-20 characters, and contain a special character (!,?,@,#,$)")
         return false
