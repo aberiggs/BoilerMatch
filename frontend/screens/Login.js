@@ -64,7 +64,8 @@ export default function Login({navigation}){
             style={styles.inputFieldBox}
             />
 
-          <Text style={styles.subtitle}>Password</Text>
+            <Text style={styles.subtitle}>Password</Text>
+
 
           <View style={styles.inputFieldBox}>
             <TextInput
@@ -87,7 +88,6 @@ export default function Login({navigation}){
               }
             </Pressable>
           </View>
-          
 
         </View>
           
@@ -140,8 +140,6 @@ const styles = StyleSheet.create({
         backgroundColor: "gold",
         borderRadius: 6,
         justifyContent: 'center',
-        
-        
     },
     buttonText: {
         fontSize: 20,
