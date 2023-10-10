@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
+import axios from 'axios';
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -32,14 +33,36 @@ export default function ManageInformation({navigation}) {
     setMajor(text);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // If not all the fields filled out then send error message
     if ( !firstName || !lastName || !yearForRoommate || !gender || !graduation || !major || !race ||
       !pets || !religion || !politicalViews || !sleepingHabits || !drinkingHabits) {
       setErrMsgVisible(true);
     } else {
       setSubmitMsgVisible(true);
-      console.log(firstName, lastName, yearForRoommate, gender, graduation, major, race, pets, religion, politicalViews, sleepingHabits, drinkingHabits)
+      const info = {
+        firstName: firstName,
+        lastName: lastName,
+        yearForRoommate: yearForRoommate,
+        gender: gender,
+        graduation: graduation,
+        major: major,
+        race: race,
+        pets: pets,
+        religion: religion,
+        politicalViews: politicalViews,
+        sleepingHabits: sleepingHabits,
+        drinkingHabits: drinkingHabits
+      }
+      const response = await axios.post('http://localhost:3000/api/user/information/update', {
+        info: info
+      }).catch((error) => {
+        if (error.response) {
+          return error.response.data
+        }
+        return
+      })
+      return response
     }
   }
 
