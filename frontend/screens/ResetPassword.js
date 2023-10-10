@@ -2,19 +2,19 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import Checkbox from 'expo-checkbox';
-import ForgotPassword from './ForgotPassword';
 import axios from "axios"
 
-export default function ResetPassword({navigation}){
+export default function ResetPassword({route, navigation}){
 
     const [password, setPassword] = useState('')
     const [confirmedPassword, setConfirmedPassword] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    const email = route.params.email
 
     const resetThroughApi = async () => {
         const response = await axios.post('http://localhost:3000/api/user/resetpassword', {
-          email: ForgotPassword.email,
-          password: password
+          email: email,
+          password: password,
         }).catch((error) => {
           if (error.response) {
             return error.response.data
@@ -51,7 +51,7 @@ export default function ResetPassword({navigation}){
 
     return(
         <View style={styles.container}>
-            <Text style={styles.title}>Reset Your Password</Text>
+            <Text style={styles.title}> Reset Your Password</Text>
 
             <TextInput
             autoCapitalize = "none"

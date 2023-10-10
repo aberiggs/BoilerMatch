@@ -1,10 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
+
 import axios from "axios"
 
 export default function ForgotPassword({navigation}){
-
     const forgotThroughApi = async () => {
         const response = await axios.post('http://localhost:3000/api/user/forgotpassword', {
           email: email,
@@ -27,7 +27,9 @@ export default function ForgotPassword({navigation}){
             setErrorMessage("An unexpected error occurred")
           }
         } else {
-          navigation.navigate("pinVerify")
+          navigation.navigate('pinVerify', {
+            email: email,
+          });
         }
     }
 
@@ -57,7 +59,6 @@ export default function ForgotPassword({navigation}){
        </View>
     )
 }
-
 
 const styles = StyleSheet.create({
     container: {

@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native';
-import ForgotPassword from './ForgotPassword';
 import axios from "axios"
 
-export default function pinVerify({navigation}){
-
+export default function PinVerify({route, navigation}){
     const [pin, setPin] = useState('');
     const [errorMessage, setErrorMessage] = useState('')
+    const email = route.params.email;
 
     const verifyThroughApi = async () => {
         const response = await axios.post('http://localhost:3000/api/user/pinverify', {
-          email: ForgotPassword.email,
-          pin: pin
+          email: email,
+          pin: pin,
         }).catch((error) => {
           if (error.response) {
             return error.response.data
@@ -33,12 +32,15 @@ export default function pinVerify({navigation}){
             setErrorMessage("An unexpected error occurred")
           }
         } else {
-          navigation.navigate("ResetPassword")
+          navigation.navigate('ResetPassword', {
+            email: email,
+          });
         }
     }
 
     return(
         <View style={styles.container}>
+            <Text style={styles.subtitle}>{email}</Text>
             <Text style={styles.subtitle}>Verify</Text>
 
             <TextInput
