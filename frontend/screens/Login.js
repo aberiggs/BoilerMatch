@@ -92,7 +92,7 @@ export default function Login({navigation}){
           <TouchableOpacity
           style={{ marginRight: 75, marginBottom: 5}}
             onPress={() => {
-              navigation.navigate("ForgotPassword")
+              navigation.push("ForgotPassword")
             }}>
 
             <Text style={{color: 'grey', textDecorationLine: 'underline'}}>

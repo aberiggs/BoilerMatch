@@ -32,7 +32,7 @@ export default function PinVerify({route, navigation}){
             setErrorMessage("An unexpected error occurred")
           }
         } else {
-          navigation.navigate('ResetPassword', {
+          navigation.push('ResetPassword', {
             email: email,
           });
         }
@@ -40,21 +40,18 @@ export default function PinVerify({route, navigation}){
 
     return(
         <View style={styles.container}>
-            <Text style={styles.subtitle}>{email}</Text>
-            <Text style={styles.subtitle}>Verify</Text>
-
+          <View style={{flex: 'column', width: "45%"}}>
+            <Text style={styles.subtitle}>Verify PIN</Text>
             <TextInput
-            autoCapitalize = "none"
-            autoCorrect={false}
-            autoComplete="off"
-            placeholder='Enter your 6 digit pin'
-            placeholderTextColor={'grey'}
+              autoCapitalize = "none"
+              autoCorrect={false}
+              autoComplete="off"
 
-            onChangeText={pin => setPin(pin)}
+              onChangeText={pin => setPin(pin)}
 
-            style={styles.inputField}
+              style={styles.inputFieldBox}
             />
-
+          </View>
             <Text style={styles.errorMes}>{errorMessage}</Text>
 
             <Pressable style={styles.button} onPress={handleVerify}>
@@ -95,6 +92,18 @@ const styles = StyleSheet.create({
       padding: 10,
       marginBottom: 10,
       borderRadius: 5,
+    },
+    inputFieldBox: {   
+      flexDirection: 'row',
+      height: 40,
+      width: '100%',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      padding: 10,
+      marginBottom: 10,
+      borderColor: 'black',
+      borderWidth: 1,
+      borderRadius: 5,        
     },
     title: {
       fontSize: 25,
