@@ -1,13 +1,20 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 
 import axios from 'axios'
 
 export default function Profile({navigation}){
-  const [image, setImage] = useState(null);
+  const [imageToUpload, setImageToUpload] = useState(null);
+  const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/sprocket710.jpg')
+  const [profilePicExists, setProfilePicExists] = useState(false)
+
+  useEffect(() => {
+    if (!profilePicExists) {
+      checkPfpExist()
+    }
+  },[]);
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -16,20 +23,17 @@ export default function Profile({navigation}){
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0,
-    });
-
-    console.log(result);
+    }, [profilePic]);
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      setImageToUpload(result.assets[0].uri);
     }
   };
 
   const sendImage = async () => {
-    
     const formData = new FormData();
     formData.append('image', {
-      uri: image,
+      uri: imageToUpload,
       type: 'image/jpeg',
       name: 'testImage.jpg',
     });
@@ -39,21 +43,45 @@ export default function Profile({navigation}){
         'Content-Type': 'multipart/form-data',
       },
     });
+    setProfilePic(imageToUpload)
+    setImageToUpload(null)
+    setProfilePicExists(true)
+  }
 
-    console.log(response)
+  const checkPfpExist = async () => {
+    console.log("Check pfp existence")
+    const response = await axios.get(profilePic).catch((error) => {
+      return error.response
+    })
+    setProfilePicExists(response.status === 200)
+  }
+
+  const ProfilePic = () => {
+    if (profilePicExists) {
+      return (
+        <Image source={{uri: profilePic}} style={{margin: 20, width: 100, height: 100 }}/>
+      )
+    } else {
+      console.log("No pfp")
+      return (
+        <Text style={styles.title}>No PFP</Text>
+      )
+    }
   }
 
   return(
       <View style={styles.container}>
         <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
+          <ProfilePic />
+          <Text>Username</Text>
           <Text> This is your profile page</Text>
           <Pressable style={styles.button} onPress={pickImage}>
             <Text style={styles.buttonText}>Choose PFP</Text>
           </Pressable>
 
-          {image && 
+          {imageToUpload && 
               <>
-              <Image source={{ uri: image}} style={{margin: 20, width: 200, height: 200 }} />
+              <Image source={{ uri: imageToUpload}} style={{margin: 20, width: 100, height: 100 }} />
               <Pressable style={styles.button} onPress={sendImage}>
                 <Text style={styles.buttonText}>Save PFP</Text>
               </Pressable>

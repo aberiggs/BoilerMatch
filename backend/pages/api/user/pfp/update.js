@@ -1,8 +1,9 @@
 import { connectToDatabase } from "@/lib/mongodb" 
-const { BlobServiceClient } = require("@azure/storage-blob"); 
+const { BlobServiceClient, BlockBlobClient } = require("@azure/storage-blob"); 
 
 import formidable from 'formidable';
 import fs from 'fs';
+import intoStream from 'into-stream';
 
 
 export const config = {
@@ -16,7 +17,6 @@ export default async function handler(req, res) {
     const { database } = await connectToDatabase();
     const userCollection = database.collection("users");
     // Azure Blob Storage  
-    const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_CONNECTION_STRING);
     const containerName = `pfp`
 
     console.log("Updating pfp")
@@ -35,18 +35,38 @@ export default async function handler(req, res) {
         if (!image) {
           return res.status(400).json({ error: 'No image file provided' });
         }
-    
-        //const targetPath = `./public/images/${image[0].originalFilename}`;
+
     
         // Move the uploaded file to the "images" folder
         const oldPath = image.filepath
         const newPath = `./public/uploads/${image.originalFilename}`
         const rawData = fs.readFileSync(oldPath)
 
+        const stream = intoStream(rawData)
+        const streamLength = rawData.length 
+
+        const blobService = new BlockBlobClient(process.env.AZURE_CONNECTION_STRING, "pfp", "sprocket710.jpg");
+
+        
+        blobService.uploadStream(stream, streamLength)
+            .then(() => {
+                console.log("Upload successful")
+                return res.send("Successfully uploaded")
+            })
+            .catch((err) => {
+                if(err) {
+                    console.log("Error uploading:", err)
+                    return;
+                }
+            })
+    
+
+        /*
         fs.writeFile(newPath, rawData, function (err) {
             if (err) console.log(err)
             return res.send("Successfully uploaded")
         })
+        */
       });
 
     /*
