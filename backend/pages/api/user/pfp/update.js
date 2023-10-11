@@ -30,29 +30,23 @@ export default async function handler(req, res) {
           return res.status(500).json({ error: 'Error parsing form data' });
         }
     
-        const { image } = files;
+        const image  = files.image[0];
+       
         if (!image) {
           return res.status(400).json({ error: 'No image file provided' });
         }
     
-        const targetPath = `./public/images/${image[0].originalFilename}`;
+        //const targetPath = `./public/images/${image[0].originalFilename}`;
     
         // Move the uploaded file to the "images" folder
-        console.log("Image stuff:", image[0].path)
+        const oldPath = image.filepath
+        const newPath = `./public/uploads/${image.originalFilename}`
+        const rawData = fs.readFileSync(oldPath)
 
-        
-        
-        fs.rename(image[0].filepath, targetPath, (err) => {
-            if (err) {
-                console.log("fs error", err)
-                return res.status(500).json({ error: 'Error saving the image' });
-            }
-      
-            // Handle the saved image (e.g., store its path in a database)
-            console.log('Image saved to:', targetPath);
-      
-            res.status(200).json({ message: 'Image uploaded and saved successfully' });
-        });
+        fs.writeFile(newPath, rawData, function (err) {
+            if (err) console.log(err)
+            return res.send("Successfully uploaded")
+        })
       });
 
     /*
