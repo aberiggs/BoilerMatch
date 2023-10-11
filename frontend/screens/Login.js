@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 import Checkbox from 'expo-checkbox';
 import axios from "axios"
 
@@ -13,10 +14,15 @@ export default function Login({navigation}){
     const [stayLoggedIn, setStayLoggedIn] = useState(false)
     const [showPass, setShowPass] = useState(false)
 
+    async function save(key, value) {
+      await SecureStore.setItemAsync(key, value);
+    }
+
     const loginThroughApi = async () => {
         const response = await axios.post('http://localhost:3000/api/user/login', {
           username: username,
           password: password,
+          stayLoggedIn: stayLoggedIn,
         }).catch((error) => {
           if (error.response) {
             return error.response.data
@@ -25,22 +31,22 @@ export default function Login({navigation}){
           return
         })
 
-        return response
+        return response.data
     }
 
     const handleLogin = async () => {
-        setUsername(username.trim())
-        setPassword(password.trim())
-        
-        const res = await loginThroughApi()
+        const resData = await loginThroughApi()
 
-        if (!res || res.success === false) {
-          if (res) {
-            setErrorMessage(res.message)
+        if (!resData || resData.success === false) {
+          if (resData) {
+            setErrorMessage(resData.message)
           } else {
             setErrorMessage("An unexpected error occurred")
           }
         } else {
+          const token = resData.token
+          save('token', token)
+          save('username', username)
           navigation.navigate("MainTabNavigator")
         }
     }
