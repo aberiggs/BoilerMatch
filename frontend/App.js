@@ -6,6 +6,7 @@ import Landing from './screens/Landing'
 import Register from './screens/Register'
 import Login from './screens/Login'
 import ManageInformation from './screens/ManageInformation';
+import ManageHousingInformation from './screens/ManageHousingInformation';
 import Profile from './screens/Profile';
 import MainTabNavigator from './routes/MainTabNavigator';
 
@@ -26,6 +27,7 @@ export default function App() {
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
       <Stack.Screen name="ManageInformation" component={ManageInformation} />
+      <Stack.Screen name="ManageHousingInformation" component={ManageHousingInformation} />
       <Stack.Screen name="Profile" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>

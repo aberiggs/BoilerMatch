@@ -6,8 +6,10 @@ export default function Profile({navigation}){
     const navigateToManageInformation = () => {
       navigation.navigate('ManageInformation')
     }
-
-
+    
+    const navigateToManageHousingInformation = () => {
+      navigation.navigate('ManageHousingInformation')
+    }
 
     return(
         <View style={styles.container}>
@@ -15,6 +17,10 @@ export default function Profile({navigation}){
         
         <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
         <Text style={styles.buttonText}> Manage Information</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={navigateToManageHousingInformation}>
+        <Text style={styles.buttonText}> Manage Housing Info</Text>
         </TouchableOpacity>
 
        </View>
@@ -38,6 +44,7 @@ const styles = StyleSheet.create({
       backgroundColor: "gold",
       borderRadius: 6,
       justifyContent: 'center',
+      margin:10,
     },
     buttonText: {
       fontSize: 15,
