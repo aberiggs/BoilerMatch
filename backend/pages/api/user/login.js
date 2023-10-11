@@ -34,10 +34,11 @@ export default async function handler(req, res) {
     }
 
     const jwtData = {
-        username: userLoggingIn.username
-    }
-
-    const newToken = jwt.sign(jwtData, 'ourSecretKey', {});
+        username: userLoggingIn.username,
+        stayLoggedIn: req.body.stayLoggedIn,
+    };
+    
+    const newToken = jwt.sign(jwtData, 'MY_SECRET', {});
 
     return res.status(201).json({
         success: true,
