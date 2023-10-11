@@ -5,25 +5,20 @@ export default async function handler(req, res) {
 
     /* Setup */
     const { database } = await connectToDatabase();
+
     const userCollection = database.collection("users");
 
-    if (!req.body || !req.body.name) {
+
+    if (!req.body) {
         return res.status(400).json({
             success: false,
             message: "Insufficient information for updating preference."
         })
+        
     }
 
+    console.log("complete ?")
     
-    
-    /*const existingUser = {
-        email: "test@purdue.edu",
-        username: "test",
-        password: "a",
-        verified: true
-    }*/
-
-   // const preExistingUser = await userCollection.find({email: "test@purdue.edu"});
 
     /* define preferences */
     const preferences = {
@@ -43,11 +38,12 @@ export default async function handler(req, res) {
     }
 
     const filter = {email: "test@purdue.edu"}
+
+
     
     /* sends to db */
     await userCollection.updateOne(filter, updatePreferences);
 
-    
 
 
 }

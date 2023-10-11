@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-
+import axios from "axios";
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView } from 'react-native';
 
 import RNPickerSelect from "react-native-picker-select"
-import axios from 'axios';
+
 
 
 
@@ -20,19 +20,33 @@ export default function ManagePreferences() {
   }
 
   const updatePreferencesThroughApi = async() => {
-    const response  = await axios.post('http://localhost:3000/api/user/preferences', {
+    //console.log("HELLO?!!")
+    console.log("Is this printing here")
+    const response  = await axios.post('http://192.168.101.160:3000/api/user/preferences', {
       gender: gender,
       bedtime: bedtime,
       guest: guest,
       clean: clean,
       noise: noise
     })
-    return response;
+    console.log("Is this printing")
+    console.log("Status: " + response.status)
+
+    if (response.status === 200) {
+      // API call was successful
+      console.log('API Response:', response.data);
+      return response.data; // You can return the data to the caller if needed
+    } else {
+      // Handle other response status codes here
+      console.error('API Error:', response.status);
+    }
+
+    return response
   }
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}></ScrollView>
+      <ScrollView style={styles.scrollView}>
       <Text style={styles.subtitle}>Select the preferred gender of your roommate</Text>
        <RNPickerSelect
           placeholder={ {label: "Select gender.", value: null}}
@@ -100,6 +114,7 @@ export default function ManagePreferences() {
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Submit Preferences</Text>
         </TouchableOpacity>
+        </ScrollView>
     </View>
 
     
