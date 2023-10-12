@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from "axios";
-import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -14,9 +14,14 @@ export default function ManagePreferences() {
   const [guest, setGuest] = useState('');
   const [clean, setClean] = useState('');
   const [noise, setNoise] = useState('');
+  const [errMsgVisible, setErrMsgVisible] = useState(false);
 
   const handleSubmit = () => {
-    updatePreferencesThroughApi();
+    if (!gender || !bedtime || !guest || !clean || !noise ){
+      setErrMsgVisible(true);
+    } else {
+      updatePreferencesThroughApi();
+    }
   }
 
   const updatePreferencesThroughApi = async() => {
@@ -114,6 +119,28 @@ export default function ManagePreferences() {
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Submit Preferences</Text>
         </TouchableOpacity>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={errMsgVisible}
+          onRequestClose={() => {
+            setErrMsgVisible(!errMsgVisible);
+          }}
+        >
+           <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Please make sure all the fields are filled out.
+            </Text>
+            <Pressable
+              style={styles.modalButton}
+              onPress={() => setErrMsgVisible(!errMsgVisible)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </Pressable>
+          </View>
+        </Modal>
+
         </ScrollView>
     </View>
 
@@ -137,6 +164,41 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     
     
+  },
+  modalView: {
+    flex:1,
+    marginTop:50,
+    padding:20,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalText: {
+    marginBottom: 15,
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  modalButton: {
+    backgroundColor: 'gold',
+    borderRadius: 5,
+    padding: 10,
+    elevation: 2,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 16,
   },
   container: {
     flex: 1,
