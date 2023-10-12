@@ -39,31 +39,40 @@ export default function ManageInformation({navigation}) {
       !pets || !religion || !politicalViews || !sleepingHabits || !drinkingHabits) {
       setErrMsgVisible(true);
     } else {
+      updateInformationThroughApi();
       setSubmitMsgVisible(true);
-      const info = {
-        firstName: firstName,
-        lastName: lastName,
-        yearForRoommate: yearForRoommate,
-        gender: gender,
-        graduation: graduation,
-        major: major,
-        race: race,
-        pets: pets,
-        religion: religion,
-        politicalViews: politicalViews,
-        sleepingHabits: sleepingHabits,
-        drinkingHabits: drinkingHabits
-      }
-      const response = await axios.post('http://localhost:3000/api/user/information/update', {
-        info: info
-      }).catch((error) => {
-        if (error.response) {
-          return error.response.data
-        }
-        return
-      })
-      return response
     }
+  }
+
+  const updateInformationThroughApi = async() => {
+    console.log("test")
+    const information = {
+      firstName: firstName,
+      lastName: lastName,
+      yearForRoommate: yearForRoommate,
+      gender: gender,
+      graduation: graduation,
+      major: major,
+      race: race,
+      pets: pets,
+      religion: religion,
+      politicalViews: politicalViews,
+      sleepingHabits: sleepingHabits,
+      drinkingHabits: drinkingHabits
+    }
+    // port is 3000, numbers before that is my IP address
+    const response = await axios.post('http://10.186.134.110:3000/api/user/information', {
+      information: information
+    }).catch((error) => {
+      console.log("err", error)
+      if (error.response) {
+        console.log(error.response)
+        return error.response.data
+      }
+      return
+    })
+    console.log("response", response)
+    return response
   }
 
   const navigateToProfile = () => {

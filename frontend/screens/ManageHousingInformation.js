@@ -12,11 +12,7 @@ export default function ManageHousingInformation({navigation}) {
   const [confirmedHousingSituation, setConfirmedHousingSituation] = useState('');
   const [numRoommates, setNumRoommates] = useState('');
   const [unknownHousingSituation, setUnknownHousingSituation] = useState('');
-//   const [major, setMajor] = useState('');
 
-//   const handleMajorChange = (text) => {
-//     setMajor(text);
-//   };
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [invalidEntriesMsgVisibile, setInvalidEntriesMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
