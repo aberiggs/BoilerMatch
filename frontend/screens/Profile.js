@@ -61,6 +61,15 @@ export default function Profile({navigation}){
   }
 
 
+
+    const navigateToManageInformation = () => {
+      navigation.navigate('ManageInformation')
+    }
+    
+    const navigateToManageHousingInformation = () => {
+      navigation.navigate('ManageHousingInformation')
+    }
+
   const checkPfpExist = async () => {
     const response = await axios.get(profilePic).catch((error) => {
       return error.response
@@ -109,10 +118,17 @@ export default function Profile({navigation}){
             <Text style={styles.buttonText}> Logout </Text>
           </Pressable>
 
+        <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
+        <Text style={styles.buttonText}> Manage Information</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={navigateToManageHousingInformation}>
+        <Text style={styles.buttonText}> Manage Housing Info</Text>
+        </TouchableOpacity>
+
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferences}>
           <Text style={styles.buttonText}> Manage Preferences</Text>
           </TouchableOpacity>
-          <Text> </Text>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferenceRankings}>
           <Text style={styles.buttonText}> Manage Preference Rank</Text>
@@ -176,6 +192,18 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       textAlign: 'left',
       marginBottom: 8,
+    },
+    button: {
+      width: "40%",
+      height: 40,
+      backgroundColor: "gold",
+      borderRadius: 6,
+      justifyContent: 'center',
+      margin:20,
+    },
+    buttonText: {
+      fontSize: 15,
+      alignSelf: "center"
     },
     errorMes: {
       fontSize: 15,

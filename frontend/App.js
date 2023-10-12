@@ -6,12 +6,15 @@ import Landing from './screens/Landing'
 import Register from './screens/Register'
 import Login from './screens/Login'
 
-import ManagePreferences from './screens/ManagePreferences';
 import MainTabNavigator from './routes/MainTabNavigator';
+
+import ManageInformation from './screens/ManageInformation';
+import ManageHousingInformation from './screens/ManageHousingInformation';
+import Profile from './screens/Profile';
+
+import ManagePreferences from './screens/ManagePreferences';
 import ManagePreferenceRankings from './screens/RankPreferences';
 
-
-import MainTabNavigator from './routes/MainTabNavigator';
 import ForgotPassword from './screens/ForgotPassword';
 import pinVerify from './screens/pinVerify';
 import ResetPassword from './screens/ResetPassword';
@@ -36,6 +39,10 @@ export default function App() {
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
+
+      <Stack.Screen name="ManageInformation" component={ManageInformation} />
+      <Stack.Screen name="ManageHousingInformation" component={ManageHousingInformation} />
+      <Stack.Screen name="Profile" component={Profile} />
       <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
       <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
       </Stack.Navigator>
