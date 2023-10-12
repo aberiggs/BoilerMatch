@@ -7,9 +7,18 @@ import Register from './screens/Register'
 import Login from './screens/Login'
 
 import MainTabNavigator from './routes/MainTabNavigator';
+
+import ManageInformation from './screens/ManageInformation';
+import ManageHousingInformation from './screens/ManageHousingInformation';
+import Profile from './screens/Profile';
+
+import ManagePreferences from './screens/ManagePreferences';
+import ManagePreferenceRankings from './screens/RankPreferences';
+
 import ForgotPassword from './screens/ForgotPassword';
 import pinVerify from './screens/pinVerify';
 import ResetPassword from './screens/ResetPassword';
+
 
 const Stack = createStackNavigator();
 
@@ -28,8 +37,12 @@ export default function App() {
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="pinVerify" component={pinVerify} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
-
-      <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
+      <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} options={{gestureEnabled: false}}/>
+      <Stack.Screen name="ManageInformation" component={ManageInformation} />
+      <Stack.Screen name="ManageHousingInformation" component={ManageHousingInformation} />
+      <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
+      <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
       </Stack.Navigator>
     </NavigationContainer>
   );
