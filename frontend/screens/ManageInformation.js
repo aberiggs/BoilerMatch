@@ -58,20 +58,17 @@ export default function ManageInformation({navigation}) {
       religion: religion,
       politicalViews: politicalViews,
       sleepingHabits: sleepingHabits,
-      drinkingHabits: drinkingHabits
+      drinkingHabits: drinkingHabits,
     }
     // port is 3000, numbers before that is my IP address
     const response = await axios.post('http://10.186.134.110:3000/api/user/information', {
       information: information
     }).catch((error) => {
-      console.log("err", error)
       if (error.response) {
-        console.log(error.response)
         return error.response.data
       }
       return
     })
-    console.log("response", response)
     return response
   }
 

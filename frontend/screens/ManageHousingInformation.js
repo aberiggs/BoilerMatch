@@ -26,23 +26,28 @@ export default function ManageHousingInformation({navigation}) {
     } else if ( housing == "no" && (confirmedHousingSituation != "na" || numRoommates != "na" || unknownHousingSituation == "na")){
       setInvalidEntriesMsgVisible(true)
     } else {
+      updateInformationThroughApi();
       setSubmitMsgVisible(true);
-      const info = {
-        housing: housing,
-        confirmedHousingSituation: confirmedHousingSituation,
-        numRoommates: numRoommates, 
-        unknownHousingSituation: unknownHousingSituation,
-      }
-      const response = await axios.post('http://localhost:3000/api/user/housing/update', {
-        info: info
-      }).catch((error) => {
-        if (error.response) {
-          return error.response.data
-        }
-        return
-      })
-      return response
     }
+  }
+
+  const updateInformationThroughApi = async() => {
+    const housingInformation = {
+      housing: housing,
+      confirmedHousingSituation: confirmedHousingSituation,
+      numRoommates: numRoommates,
+      unknownHousingSituation: unknownHousingSituation,
+    }
+    // port is 3000, numbers before that is my IP address
+    const response = await axios.post('http://10.186.134.110:3000/api/user/housingInformation', {
+      housingInformation: housingInformation
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
+    })
+    return response
   }
 
   const navigateToProfile = () => {
