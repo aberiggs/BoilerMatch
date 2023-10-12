@@ -40,13 +40,43 @@ export default function Profile({navigation}){
     }
   };
 
+  const confirmDeactivation = async () => {
+    try {
+      // Send a request to your server to deactivate the account
+      const response = await axios.post('http://localhost:3000/api/user/getDiscoverability');
+      if (response.status === 200) {
+
+        // Account deactivated successfully
+        // Perform any necessary cleanup and navigation
+        // For example, log the user out and navigate to the landing page
+        await SecureStore.deleteItemAsync('token');
+        await SecureStore.deleteItemAsync('username');
+        navigation.navigate('Landing');
+      } else {
+        // Handle deactivation error
+        Alert.alert('Deactivation Failed', 'Something went wrong while deactivating your account.');
+      }
+    } catch (error) {
+      // Handle network or other errors
+      Alert.alert('Deactivation Error', 'An error occurred while deactivating your account.');
+    }
+  };
+
+  const navigateToManagePreferences = () => {
+    navigation.navigate('ManagePreferences');
+  };
+
+  const navigateToManagePreferenceRankings = () => {
+    navigation.navigate('ManagePreferenceRankings');
+  };
+
+  
   const sendImage = async (imageToUpload) => {
 
     if (!imageToUpload) {
       // Image is null for some reason
       return
     }
-
     const formData = new FormData();
     formData.append('image', {
       uri: imageToUpload,
@@ -68,6 +98,16 @@ export default function Profile({navigation}){
     setProfilePic(imageToUpload)
     setProfilePicExists(true)
   }
+
+
+
+    const navigateToManageInformation = () => {
+      navigation.navigate('ManageInformation')
+    }
+    
+    const navigateToManageHousingInformation = () => {
+      navigation.navigate('ManageHousingInformation')
+    }
 
   const checkPfpExist = async () => {
     const response = await axios.get(profilePic).catch((error) => {
@@ -116,10 +156,32 @@ export default function Profile({navigation}){
           <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}> Logout </Text>
           </Pressable>
+
+        <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
+        <Text style={styles.buttonText}> Manage Information</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={navigateToManageHousingInformation}>
+        <Text style={styles.buttonText}> Manage Housing Info</Text>
+        </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToManagePreferences}>
+          <Text style={styles.buttonText}> Manage Preferences</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToManagePreferenceRankings}>
+          <Text style={styles.buttonText}> Manage Preference Rank</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={confirmDeactivation}>
+          <Text style={styles.buttonText}> Deactivate Account</Text>
+          </TouchableOpacity>
         </View>
       </View>
   )
 }
+
+
 
 
 const styles = StyleSheet.create({
@@ -135,8 +197,9 @@ const styles = StyleSheet.create({
       backgroundColor: "gold",
       borderRadius: 6,
       justifyContent: 'center',
+      
+      
     },
-
     buttonText: {
       fontSize: 20,
       alignSelf: "center"
@@ -173,6 +236,18 @@ const styles = StyleSheet.create({
       textAlign: 'left',
       marginBottom: 8,
     },
+    button: {
+      width: "40%",
+      height: 40,
+      backgroundColor: "gold",
+      borderRadius: 6,
+      justifyContent: 'center',
+      margin:20,
+    },
+    buttonText: {
+      fontSize: 15,
+      alignSelf: "center"
+    },
     errorMes: {
       fontSize: 15,
       fontWeight: 'bold',
@@ -183,3 +258,4 @@ const styles = StyleSheet.create({
       marginHorizontal: 'auto'
     }
   });
+
