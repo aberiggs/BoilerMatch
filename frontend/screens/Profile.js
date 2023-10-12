@@ -2,13 +2,13 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Avatar } from 'react-native-elements';
 import axios from 'axios'
 
 import * as SecureStore from 'expo-secure-store';
 
 
 export default function Profile({navigation}){
-  const [imageToUpload, setImageToUpload] = useState(null);
   const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/sprocket710.jpg')
   const [profilePicExists, setProfilePicExists] = useState(false)
 
@@ -28,7 +28,8 @@ export default function Profile({navigation}){
     }, [profilePic]);
 
     if (!result.canceled) {
-      setImageToUpload(result.assets[0].uri);
+      const imageToUpload = result.assets[0].uri;
+      sendImage(imageToUpload)
     }
   };
 
@@ -62,8 +63,13 @@ export default function Profile({navigation}){
     navigation.navigate('ManagePreferenceRankings');
   };
 
+  
+  const sendImage = async (imageToUpload) => {
 
-  const sendImage = async () => {
+    if (!imageToUpload) {
+      // Image is null for some reason
+      return
+    }
     const formData = new FormData();
     formData.append('image', {
       uri: imageToUpload,
@@ -76,9 +82,13 @@ export default function Profile({navigation}){
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+    }).catch(err => {
+        if (err.response) {
+          return err.response.data;
+        }
     });
+
     setProfilePic(imageToUpload)
-    setImageToUpload(null)
     setProfilePicExists(true)
   }
 
@@ -108,11 +118,23 @@ export default function Profile({navigation}){
   const ProfilePic = () => {
     if (profilePicExists) {
       return (
-        <Image source={{uri: profilePic}} style={{margin: 20, width: 100, height: 100 }}/>
+        <Avatar
+          size="xlarge"
+          rounded
+          source={{uri: profilePic}}
+          onPress={() => pickImage()}
+          activeOpacity={0.8}>
+        </Avatar>
       )
     } else {
       return (
-        <Text style={styles.title}>No PFP</Text>
+        <Avatar
+          size="xlarge"
+          title="Hi"
+          rounded
+          onPress={() => pickImage()}
+          activeOpacity={0.8}>
+        </Avatar>
       )
     }
   }
@@ -120,21 +142,9 @@ export default function Profile({navigation}){
   return(
       <View style={styles.container}>
         <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
-          <ProfilePic />
+              <ProfilePic />
           <Text>Username</Text>
           <Text> This is your profile page</Text>
-          <Pressable style={styles.button} onPress={pickImage}>
-            <Text style={styles.buttonText}>Choose PFP</Text>
-          </Pressable>
-
-          {imageToUpload && 
-              <>
-              <Image source={{ uri: imageToUpload}} style={{margin: 20, width: 100, height: 100 }} />
-              <Pressable style={styles.button} onPress={sendImage}>
-                <Text style={styles.buttonText}>Save PFP</Text>
-              </Pressable>
-              </>
-          }
           
           <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}> Logout </Text>
@@ -241,3 +251,4 @@ const styles = StyleSheet.create({
       marginHorizontal: 'auto'
     }
   });
+
