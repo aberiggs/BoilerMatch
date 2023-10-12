@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Avatar } from 'react-native-elements';
 import axios from 'axios'
 
 import * as SecureStore from 'expo-secure-store';
@@ -29,7 +30,6 @@ export default function Profile({navigation}){
 
     if (!result.canceled) {
       setImageToUpload(result.assets[0].uri);
-      console.log("does it run")
       await sendImage();
     }
   };
@@ -74,7 +74,10 @@ export default function Profile({navigation}){
   const ProfilePic = () => {
     if (profilePicExists) {
       return (
-        <Image source={{uri: profilePic}} style={{width: 100, height: 100, borderRadius: 50}}/>
+        <Avatar
+          source={{uri: profilePic}}>
+        </Avatar>
+        //<Image source={{uri: profilePic}} style={{width: 100, height: 100, borderRadius: 50}}/>
       )
     } else {
       return (
