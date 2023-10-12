@@ -39,7 +39,7 @@ export default function ManageHousingInformation({navigation}) {
       unknownHousingSituation: unknownHousingSituation,
     }
     // port is 3000, numbers before that is my IP address
-    const response = await axios.post('http://10.186.134.110:3000/api/user/housingInformation', {
+    const response = await axios.post('http://localhost:3000/api/user/housingInformation', {
       housingInformation: housingInformation
     }).catch((error) => {
       if (error.response) {
