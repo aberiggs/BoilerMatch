@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Autocomplete from 'react-native-autocomplete-input';
 import axios from "axios"
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { RefreshControl } from 'react-native';
+
 
 
 
@@ -17,6 +19,7 @@ export default function MainFeed({navigation}){
   const [selectedUser, setSelectedUser] = useState(null);
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const modalStyles = {
     modalContainer: {
       flex: 1,
@@ -73,7 +76,18 @@ export default function MainFeed({navigation}){
   const handleCloseUserModal = () => {
   setIsUserModalVisible(false);
 };
-// ... (previous code)
+
+const onRefresh = () => {
+  // Perform the data fetching or refreshing logic here
+  // For example, you can make an API request to fetch new data
+  // Don't forget to set the refreshing state to false when the data is fetched
+  setRefreshing(true);
+  console.log("here")
+  // ... Fetch data ...
+
+  setRefreshing(false);
+};
+
 
   const FeedItem = ({ user, onLikePress }) => (
     <View style={styles.feedItem}>
@@ -306,6 +320,12 @@ export default function MainFeed({navigation}){
       keyExtractor={(item) => item.key} // Replace with a unique key extractor
       horizontal={false}
       contentContainerStyle={styles.flatListContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      }
     />
   </View>
     </View>
