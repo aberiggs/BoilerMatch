@@ -8,7 +8,6 @@ import * as SecureStore from 'expo-secure-store';
 
 
 export default function Profile({navigation}){
-  const [imageToUpload, setImageToUpload] = useState(null);
   const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/sprocket710.jpg')
   const [profilePicExists, setProfilePicExists] = useState(false)
 
@@ -28,13 +27,18 @@ export default function Profile({navigation}){
     }, [profilePic]);
 
     if (!result.canceled) {
-      setImageToUpload(result.assets[0].uri);
-      console.log("does it run")
-      await sendImage();
+      const imageToUpload = result.assets[0].uri;
+      sendImage(imageToUpload)
     }
   };
 
-  const sendImage = async () => {
+  const sendImage = async (imageToUpload) => {
+
+    if (!imageToUpload) {
+      // Image is null for some reason
+      return
+    }
+
     const formData = new FormData();
     formData.append('image', {
       uri: imageToUpload,
@@ -54,7 +58,6 @@ export default function Profile({navigation}){
     });
 
     setProfilePic(imageToUpload)
-    setImageToUpload(null)
     setProfilePicExists(true)
   }
 
@@ -91,8 +94,6 @@ export default function Profile({navigation}){
           </Pressable>
           <Text>Username</Text>
           <Text> This is your profile page</Text>
-
-          
           
           <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}> Logout </Text>
