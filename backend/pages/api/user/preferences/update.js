@@ -23,6 +23,7 @@ export default async function handler(req, res) {
         gender: req.body.gender, 
         bedtime: req.body.bedtime, 
         guest: req.body.guest, 
+        clean: req.body.clean,
         noise: req.body.noise
     }
 

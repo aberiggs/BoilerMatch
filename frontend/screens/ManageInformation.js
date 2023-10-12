@@ -1,5 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import * as SecureStore from 'expo-secure-store'
@@ -23,6 +23,45 @@ export default function ManageInformation({navigation}) {
   const [drinkingHabits, setDrinkingHabits] = useState('');
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
+
+  useEffect(() => {
+    setupInitialInfo()
+  }, [])
+
+  const setupInitialInfo = async() => {
+    const resData = await getInitialInfo()
+    // No data or success is false
+    if (!resData || !resData.success) {
+      return
+    }
+
+    setFirstName(resData.information.firstName)
+    setLastName(resData.information.lastName)
+    setYearForRoommate(resData.information.yearForRoommate)
+    setGender(resData.information.gender)
+    setGraduation(resData.information.graduation)
+    setMajor(resData.information.major)
+    setRace(resData.information.race)
+    setPets(resData.information.pets)
+    setReligion(resData.information.religion)
+    setPoliticalViews(resData.information.politicalViews)
+    setSleepingHabits(resData.information.sleepingHabits)
+    setDrinkingHabits(resData.information.drinkingHabits)
+  }
+
+  const getInitialInfo = async() => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post('http://localhost:3000/api/user/information', {
+      token: tokenVal,
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
+    })
+
+    return response.data
+  }
 
   const handleFirstNameChange = (text) => {
     setFirstName(text);
@@ -110,6 +149,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select a semester", value: null}}
           onValueChange={(value) => setYearForRoommate(value)}
+          value={yearForRoommate}
           items={[
               { label: "Fall 2024", value: "fall24" },
               { label: "Spring 2025", value: "spring25" },
@@ -129,6 +169,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select your gender", value: null}}
           onValueChange={(value) => setGender(value)}
+          value={gender}
           items={[
               { label: "Male", value: "male" },
               { label: "Female", value: "female" },
@@ -142,6 +183,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select your date of graduation", value: null}}
           onValueChange={(value) => setGraduation(value)}
+          value={graduation}
           items={[
               { label: "Fall 2024", value: "fall24" },
               { label: "Spring 2025", value: "spring25" },
@@ -170,6 +212,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select your race", value: null}}
           onValueChange={(value) => setRace(value)}
+          value={race}
           items={[
               { label: "American Indian or Alaskan Native", value: "indian" },
               { label: "Asian", value: "asian" },
@@ -189,6 +232,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select your pets", value: null}}
           onValueChange={(value) => setPets(value)}
+          value={pets}
           items={[
               { label: "Dog", value: "dog" },
               { label: "Cat", value: "cat" },
@@ -210,6 +254,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select your religion", value: null}}
           onValueChange={(value) => setReligion(value)}
+          value={religion}
           items={[
               { label: "Agnostic", value: "agnostic" },
               { label: "Atheist", value: "atheist" },
@@ -231,6 +276,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select your political views", value: null}}
           onValueChange={(value) => setPoliticalViews(value)}
+          value={politicalViews}
           items={[
               { label: "Conservative", value: "conservative" },
               { label: "Liberal", value: "liberal" },
@@ -247,6 +293,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Selects your sleeping habits", value: null}}
           onValueChange={(value) => setSleepingHabits(value)}
+          value={sleepingHabits}
           items={[
               { label: "Early bird", value: "earlyBird" },
               { label: "Night owl", value: "nightOwl" },
@@ -260,6 +307,7 @@ export default function ManageInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select your drinking habits", value: null}}
           onValueChange={(value) => setDrinkingHabits(value)}
+          value={drinkingHabits}
           items={[
               { label: "Not for me", value: "notForMe" },
               { label: "Sober", value: "sober" },

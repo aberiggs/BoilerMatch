@@ -1,5 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import axios from 'axios';
@@ -17,6 +17,36 @@ export default function ManageHousingInformation({navigation}) {
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [invalidEntriesMsgVisibile, setInvalidEntriesMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
+
+  useEffect(() => {
+    setupInitialHousingInfo()
+  }, [])
+
+  const setupInitialHousingInfo = async() => {
+    const resData = await getInitialHousingInfo()
+    // No data or success is false
+    if (!resData || !resData.success) {
+      return
+    }
+
+    setHousing(resData.housingInformation.housing)
+    setConfirmedHousingSituation(resData.housingInformation.confirmedHousingSituation)
+    setNumRoommates(resData.housingInformation.numRoommates)
+    setUnknownHousingSituation(resData.housingInformation.unknownHousingSituation)
+  }
+
+  const getInitialHousingInfo = async() => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post('http://localhost:3000/api/user/housingInformation', {
+      token: tokenVal,
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
+    })
+    return response.data
+  }
 
   const handleSubmit = async () => {
     // If not all the fields filled out then send error message
@@ -71,6 +101,7 @@ export default function ManageHousingInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select yes/no", value: null}}
           onValueChange={(value) => setHousing(value)}
+          value={housing}
           items={[
               { label: "Yes", value: "yes" },
               { label: "No", value: "no" },
@@ -83,6 +114,7 @@ export default function ManageHousingInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select housing situation", value: null}}
           onValueChange={(value) => setConfirmedHousingSituation(value)}
+          value={confirmedHousingSituation}
           items={[
               { label: "Dorms", value: "dorms" },
               { label: "Apartments - On Campus", value: "apartmentCampus" },
@@ -102,6 +134,7 @@ export default function ManageHousingInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select number of roommates", value: null}}
           onValueChange={(value) => setNumRoommates(value)}
+          value={numRoommates}
           items={[
               { label: "1", value: "1" },
               { label: "2", value: "2" },
@@ -118,6 +151,7 @@ export default function ManageHousingInformation({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select preference for housing situation", value: null}}
           onValueChange={(value) => setUnknownHousingSituation(value)}
+          value={unknownHousingSituation}
           items={[
               { label: "Dorms", value: "dorms" },
               { label: "Apartments - On Campus", value: "apartmentCampus" },
