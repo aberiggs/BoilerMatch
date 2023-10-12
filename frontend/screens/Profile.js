@@ -29,6 +29,8 @@ export default function Profile({navigation}){
 
     if (!result.canceled) {
       setImageToUpload(result.assets[0].uri);
+      console.log("does it run")
+      await sendImage();
     }
   };
 
@@ -45,7 +47,12 @@ export default function Profile({navigation}){
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+    }).catch(err => {
+        if (err.response) {
+          return err.response.data;
+        }
     });
+
     setProfilePic(imageToUpload)
     setImageToUpload(null)
     setProfilePicExists(true)
@@ -67,7 +74,7 @@ export default function Profile({navigation}){
   const ProfilePic = () => {
     if (profilePicExists) {
       return (
-        <Image source={{uri: profilePic}} style={{margin: 20, width: 100, height: 100 }}/>
+        <Image source={{uri: profilePic}} style={{width: 100, height: 100, borderRadius: 50}}/>
       )
     } else {
       return (
@@ -79,21 +86,13 @@ export default function Profile({navigation}){
   return(
       <View style={styles.container}>
         <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
-          <ProfilePic />
+          <Pressable style={{width: 100, height: 100, borderRadius: 50}} onPress={pickImage}>
+              <ProfilePic />
+          </Pressable>
           <Text>Username</Text>
           <Text> This is your profile page</Text>
-          <Pressable style={styles.button} onPress={pickImage}>
-            <Text style={styles.buttonText}>Choose PFP</Text>
-          </Pressable>
 
-          {imageToUpload && 
-              <>
-              <Image source={{ uri: imageToUpload}} style={{margin: 20, width: 100, height: 100 }} />
-              <Pressable style={styles.button} onPress={sendImage}>
-                <Text style={styles.buttonText}>Save PFP</Text>
-              </Pressable>
-              </>
-          }
+          
           
           <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}> Logout </Text>

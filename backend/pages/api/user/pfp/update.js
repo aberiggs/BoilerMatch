@@ -15,8 +15,6 @@ export const config = {
 export default async function handler(req, res) {
     const form = formidable({});
 
-
-
     return new Promise(() => {
       form.parse(req, (err, fields, files) => {
           if (err) {
@@ -65,15 +63,14 @@ export default async function handler(req, res) {
                         });
                     }
                 })
-            }).catch(err => {
+            }).catch((err) => {
             return res.status(200).json({
               success: true,
               message: 'Profile picture updated',
             })
           })
-          
       })
-    }).catch(err => {
+    }).catch((err) => {
       return res.status(500).json({ 
         success: false,
         message: 'Error uploading profile picture' 
