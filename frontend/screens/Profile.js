@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Avatar } from 'react-native-elements';
+import { Icon } from 'react-native-vector-icons/Feather';
 import axios from 'axios'
 
 import * as SecureStore from 'expo-secure-store';
@@ -11,6 +12,12 @@ import * as SecureStore from 'expo-secure-store';
 export default function Profile({navigation}){
   const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/sprocket710.jpg')
   const [profilePicExists, setProfilePicExists] = useState(false)
+
+  const iconProps = () => {
+      return (
+        <Icon name="edit-1" color='red'></Icon>
+      );
+  };
 
   useEffect(() => {
     if (!profilePicExists) {
@@ -82,8 +89,8 @@ export default function Profile({navigation}){
           size="xlarge"
           rounded
           source={{uri: profilePic}}
-          onPress={() => pickImage()}
           activeOpacity={0.8}>
+          <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
         </Avatar>
       )
     } else {
@@ -92,8 +99,8 @@ export default function Profile({navigation}){
           size="xlarge"
           title="Hi"
           rounded
-          onPress={() => pickImage()}
           activeOpacity={0.8}>
+        <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
         </Avatar>
       )
     }
