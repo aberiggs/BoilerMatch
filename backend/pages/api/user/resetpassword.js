@@ -14,6 +14,7 @@ export default async function handler(req, res) {
         })
     }
 
+    
     await userCollection.findOneAndUpdate({email: req.body.email}, {$set:{password: req.body.password}})
 
     return res.status(201).json({

@@ -24,6 +24,7 @@
     "react-native-vector-icons": "^10.0.0",
     "expo-image-picker": "~14.3.2",
     "expo-file-system": "~15.4.4"
+    "expo-secure-store": "~12.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

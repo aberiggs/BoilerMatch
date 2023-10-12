@@ -2,8 +2,10 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-
 import axios from 'axios'
+
+import * as SecureStore from 'expo-secure-store';
+
 
 export default function Profile({navigation}){
   const [imageToUpload, setImageToUpload] = useState(null);
@@ -55,6 +57,12 @@ export default function Profile({navigation}){
     })
     setProfilePicExists(response.status === 200)
   }
+  
+   const handleLogout = async () => {
+        await SecureStore.deleteItemAsync('token')
+        await SecureStore.deleteItemAsync('username')
+        navigation.navigate("Landing")
+    }
 
   const ProfilePic = () => {
     if (profilePicExists) {
@@ -86,12 +94,13 @@ export default function Profile({navigation}){
               </Pressable>
               </>
           }
+          
+          <Pressable style={styles.button} onPress={handleLogout}>
+            <Text style={styles.buttonText}> Logout </Text>
+          </Pressable>
         </View>
       </View>
   )
-
-
-
 }
 
 
@@ -109,6 +118,7 @@ const styles = StyleSheet.create({
       borderRadius: 6,
       justifyContent: 'center',
     },
+
     buttonText: {
       fontSize: 20,
       alignSelf: "center"
@@ -155,3 +165,4 @@ const styles = StyleSheet.create({
       marginHorizontal: 'auto'
     }
   });
+

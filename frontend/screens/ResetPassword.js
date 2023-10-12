@@ -31,10 +31,30 @@ export default function ResetPassword({route, navigation}){
             setErrorMessage("The passwords do not match")
             return false
         }
+
+        return true
+    }
+
+    const validatePassword = () => {
+      passwordRegEx = /[A-Za-z]*[!?@#$]{1,}[A-Za-z]*/
+      if (password.length === 0) {
+        // Password is blank or contains spacess
+        setErrorMessage("Please create a password")
+        return false
+      } else if (password.includes(" ")) {
+          setErrorMessage("Your password must not contain spaces")
+          return false
+      } else if (!password.match(passwordRegEx) || password.length < 6 || password.length > 20) {
+        // Ensure a secure password
+        setErrorMessage("Your password must be 6-20 characters, and contain a special character (!,?,@,#,$)")
+        return false
+      }
+
+      return true
     }
 
     const handleReset = async () => {
-        if (passwordMatch) {
+        if (validatePassword() && passwordMatch()) {
             const res = await resetThroughApi()
 
             if (!res || res.success === false) {
@@ -44,40 +64,39 @@ export default function ResetPassword({route, navigation}){
                     setErrorMessage("An unexpected error occurred")
                 }
             } else {
-            navigation.navigate("Login")
+              navigation.navigate("Login")
             }
         }
     }
 
     return(
         <View style={styles.container}>
-            <Text style={styles.title}> Reset Your Password</Text>
+          <View style={{flex: 'column', width: "45%"}}>
+            <Text style={styles.subtitle}> New Password</Text>
 
             <TextInput
             autoCapitalize = "none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='New Password'
-            placeholderTextColor={'grey'}
 
             onChangeText={password => setPassword(password)}
 
-            style={styles.inputField}
+            style={styles.inputFieldBox}
             />
 
+            <Text style={styles.subtitle}> Confirm New Password</Text>
             <TextInput
             autoCapitalize = "none"
             autoCorrect={false}
             autoComplete="off"
-            placeholder='Confirm New Password'
-            placeholderTextColor={'grey'}
 
             onChangeText={confirmedPassword => setConfirmedPassword(confirmedPassword)}
 
-            style={styles.inputField}
+            style={styles.inputFieldBox}
             />
 
-        <Text style={styles.errorMes}>{errorMessage}</Text>
+            <Text style={styles.errorMes}>{errorMessage}</Text>
+          </View>
 
         <Pressable style={styles.button} onPress={handleReset}>
         <Text style={styles.buttonText}> Reset </Text>
@@ -107,6 +126,18 @@ const styles = StyleSheet.create({
         fontSize: 20,
         alignSelf: "center"
     },
+    inputFieldBox: {   
+      flexDirection: 'row',
+      height: 40,
+      width: '100%',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      padding: 10,
+      marginBottom: 10,
+      borderColor: 'black',
+      borderWidth: 1,
+      borderRadius: 5,        
+    },
     inputField: {
       color:'black',
       height: 40,
@@ -133,7 +164,8 @@ const styles = StyleSheet.create({
     errorMes: {
       fontSize: 15,
       fontWeight: 'bold',
-      textAlign: 'left',
+      textAlign: 'center',
+      paddingHorizontal: 10,
       marginBottom: 8,
       color: 'red',
       marginHorizontal: 'auto'
