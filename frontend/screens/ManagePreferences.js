@@ -114,6 +114,10 @@ export default function ManagePreferences({navigation}) {
         <Text style={styles.buttonText}>Submit Preferences</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
+        <Text style={styles.buttonText}>Go Back to Profile</Text>
+        </TouchableOpacity>
+
         <Modal
           animationType="slide"
           transparent={true}
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
-    
+    margin: 10,   
     
   },
   modalView: {
