@@ -38,7 +38,24 @@ export default async function handler(req, res) {
         }
     }
 
-    const filter = {email: "test@purdue.edu"}
+    // Decode token
+    const tokenData = jwt.verify(req.body.token, 'MY_SECRET', (err, payload) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+            })
+        } else {
+            return payload
+        }
+    });
+
+    if (!tokenData) {
+        return res.status(400).json({
+            success: false,
+        })
+    }
+
+    const filter = {username: tokenData.username}
 
 
     

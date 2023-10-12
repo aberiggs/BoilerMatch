@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     const filter = {username: tokenData.username}
     
     // Get user from DB
-    const user = await userCollection.updateOne(filter);
+    const user = await userCollection.findOne(filter);
 
     if (!user || !user.information) {
         return res.status(400).json({
