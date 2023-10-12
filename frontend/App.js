@@ -29,7 +29,7 @@ export default function App() {
         <Stack.Screen name="pinVerify" component={pinVerify} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
 
-      <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
+      <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} options={{gestureEnabled: false}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
