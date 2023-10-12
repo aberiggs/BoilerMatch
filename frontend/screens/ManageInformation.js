@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
+import * as SecureStore from 'expo-secure-store'
 import axios from 'axios';
 
 import RNPickerSelect from "react-native-picker-select"
@@ -39,13 +40,13 @@ export default function ManageInformation({navigation}) {
       !pets || !religion || !politicalViews || !sleepingHabits || !drinkingHabits) {
       setErrMsgVisible(true);
     } else {
-      updateInformationThroughApi();
+      const res = updateInformationThroughApi();
+      // TODO: Error checking
       setSubmitMsgVisible(true);
     }
   }
 
   const updateInformationThroughApi = async() => {
-    console.log("test")
     const information = {
       firstName: firstName,
       lastName: lastName,
@@ -61,7 +62,9 @@ export default function ManageInformation({navigation}) {
       drinkingHabits: drinkingHabits,
     }
     // port is 3000, numbers before that is my IP address
-    const response = await axios.post('http://localhost:3000/api/user/information', {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response = await axios.post('http://localhost:3000/api/user/information/update', {
+      token: tokenVal,
       information: information
     }).catch((error) => {
       if (error.response) {

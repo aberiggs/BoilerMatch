@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import axios from 'axios';
+import * as SecureStore from 'expo-secure-store'
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -26,7 +27,8 @@ export default function ManageHousingInformation({navigation}) {
     } else if ( housing == "no" && (confirmedHousingSituation != "na" || numRoommates != "na" || unknownHousingSituation == "na")){
       setInvalidEntriesMsgVisible(true)
     } else {
-      updateInformationThroughApi();
+      //TODO: Error checking
+      const res = updateInformationThroughApi();
       setSubmitMsgVisible(true);
     }
   }
@@ -39,7 +41,9 @@ export default function ManageHousingInformation({navigation}) {
       unknownHousingSituation: unknownHousingSituation,
     }
     // port is 3000, numbers before that is my IP address
-    const response = await axios.post('http://localhost:3000/api/user/housingInformation', {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response = await axios.post('http://localhost:3000/api/user/housingInformation/update', {
+      token: tokenVal,
       housingInformation: housingInformation
     }).catch((error) => {
       if (error.response) {

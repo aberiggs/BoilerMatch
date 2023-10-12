@@ -3,6 +3,7 @@ import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import * as SecureStore from 'expo-secure-store'
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -21,7 +22,7 @@ export default function ManagePreferenceRankings({navigation}) {
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!rank1 || !rank2 || !rank3 || !rank4 || !rank5 ){
       setErrMsgVisible(true);
     }
@@ -31,7 +32,8 @@ export default function ManagePreferenceRankings({navigation}) {
         setErrMsgVisible(true);
         console.log("Cannot specify same preference for same rank")
     } else {
-        updateRankingsThroughApi();
+      // TODO: Error checking
+      const res = await updateRankingsThroughApi();
       setSubmitMsgVisible(true);
     }
   }
@@ -41,23 +43,20 @@ export default function ManagePreferenceRankings({navigation}) {
   }
 
   const updateRankingsThroughApi = async() => {
-    const response  = await axios.post('http://192.168.101.160:3000/api/user/preferencerank', {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post('http://localhost:3000/api/user/preferenceRank/update', {
+      token: tokenVal,
       rank1: rank1,
       rank2: rank2,
       rank3: rank3,
       rank4: rank4,
       rank5: rank5
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
     })
-
-
-    if (response.status === 200) {
-      // API call was successful
-      console.log('API Response:', response.data);
-      return response.data; // You can return the data to the caller if needed
-    } else {
-      // Handle other response status codes here
-      console.error('API Error:', response.status);
-    }
 
     return response
   }

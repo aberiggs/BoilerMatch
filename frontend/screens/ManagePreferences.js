@@ -3,6 +3,7 @@ import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import * as SecureStore from 'expo-secure-store'
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -19,11 +20,12 @@ export default function ManagePreferences({navigation}) {
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!gender || !bedtime || !guest || !clean || !noise ){
       setErrMsgVisible(true);
     } else {
-      updatePreferencesThroughApi();
+      //TODO: Error checking
+      const res = await updatePreferencesThroughApi();
       setSubmitMsgVisible(true);
     }
   }
@@ -33,12 +35,19 @@ export default function ManagePreferences({navigation}) {
   }
 
   const updatePreferencesThroughApi = async() => {
-    const response  = await axios.post('http://192.168.101.160:3000/api/user/preferences', {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post('http://localhost:3000/api/user/preferences/update', {
+      token: tokenVal,
       gender: gender,
       bedtime: bedtime,
       guest: guest,
       clean: clean,
       noise: noise
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
     })
     return response
   }

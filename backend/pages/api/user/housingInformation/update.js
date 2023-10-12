@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
+const jwt = require( 'jsonwebtoken');
 
 export default async function handler(req, res) {
     console.log("Attempting to add housing information for user");

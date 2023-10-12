@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
+const jwt = require( 'jsonwebtoken');
 
 export default async function handler(req, res) {
     console.log("Attempting to add preferences for user");
@@ -39,6 +40,7 @@ export default async function handler(req, res) {
         if (err) {
             return res.status(400).json({
                 success: false,
+                message: "Error validating auth token"
             })
         } else {
             return payload
@@ -48,6 +50,7 @@ export default async function handler(req, res) {
     if (!tokenData) {
         return res.status(400).json({
             success: false,
+            message: "No token data found"
         })
     }
 
@@ -58,6 +61,8 @@ export default async function handler(req, res) {
     /* sends to db */
     await userCollection.updateOne(filter, updatePreferences);
 
-
-
+    return res.status(200).json({
+        success: true,
+        message: 'Preferences updated'
+    })
 }

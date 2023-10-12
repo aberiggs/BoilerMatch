@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
+const jwt = require( 'jsonwebtoken');
 
 export default async function handler(req, res) {
     console.log("Attempting to rank preferences for user");
@@ -63,5 +64,8 @@ export default async function handler(req, res) {
     await userCollection.updateOne(filter, updateRankings);
 
 
-
+    return res.status(200).json({
+        success: true,
+        message: 'Preference ranks updated'
+    })
 }
