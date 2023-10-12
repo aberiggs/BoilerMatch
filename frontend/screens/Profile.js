@@ -38,7 +38,8 @@ export default function Profile({navigation}){
       name: 'testImage.jpg',
     });
 
-    const response = await axios.post('http://localhost:3000/api/user/pfp/update', formData, {
+    // TODO: Errors need to be caught here (server down/no connection, etc.)
+    await axios.post('http://localhost:3000/api/user/pfp/update', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -49,7 +50,6 @@ export default function Profile({navigation}){
   }
 
   const checkPfpExist = async () => {
-    console.log("Check pfp existence")
     const response = await axios.get(profilePic).catch((error) => {
       return error.response
     })
@@ -62,7 +62,6 @@ export default function Profile({navigation}){
         <Image source={{uri: profilePic}} style={{margin: 20, width: 100, height: 100 }}/>
       )
     } else {
-      console.log("No pfp")
       return (
         <Text style={styles.title}>No PFP</Text>
       )
