@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios'
 
@@ -97,12 +97,14 @@ export default function Profile({navigation}){
 
   return(
       <View style={styles.container}>
+        <ScrollView style={styles.scrollView}>
         <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
           <ProfilePic />
           <Text>Username</Text>
           <Text> This is your profile page</Text>
+
           <Pressable style={styles.button} onPress={pickImage}>
-            <Text style={styles.buttonText}>Choose PFP</Text>
+          <Text style={styles.buttonText}>Choose PFP</Text>
           </Pressable>
 
           {imageToUpload && 
@@ -113,33 +115,33 @@ export default function Profile({navigation}){
               </Pressable>
               </>
           }
-          
-          <Pressable style={styles.button} onPress={handleLogout}>
-            <Text style={styles.buttonText}> Logout </Text>
-          </Pressable>
 
-        <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
-        <Text style={styles.buttonText}> Manage Information</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
+          <Text style={styles.buttonText}>Manage Information</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={navigateToManageHousingInformation}>
-        <Text style={styles.buttonText}> Manage Housing Info</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={navigateToManageHousingInformation}>
+          <Text style={styles.buttonText}>Manage Housing Info</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferences}>
-          <Text style={styles.buttonText}> Manage Preferences</Text>
+          <Text style={styles.buttonText}>Manage Preferences</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferenceRankings}>
-          <Text style={styles.buttonText}> Manage Preference Rank</Text>
+          <Text style={styles.buttonText}>Manage Preference Rank</Text>
           </TouchableOpacity>
+
+          <Pressable style={styles.button} onPress={handleLogout}>
+          <Text style={styles.buttonText}>Logout</Text>
+          </Pressable>
+
         </View>
+
+        </ScrollView>
       </View>
   )
 }
-
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -194,16 +196,18 @@ const styles = StyleSheet.create({
       marginBottom: 8,
     },
     button: {
-      width: "40%",
-      height: 40,
+      width: "99%",
+      height: 50,
       backgroundColor: "gold",
       borderRadius: 6,
       justifyContent: 'center',
-      margin:20,
+      margin:10,
+      
     },
     buttonText: {
       fontSize: 15,
-      alignSelf: "center"
+      alignSelf: "center",
+      textAlign:"center",
     },
     errorMes: {
       fontSize: 15,
