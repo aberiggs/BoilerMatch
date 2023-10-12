@@ -11,17 +11,25 @@ import RNPickerSelect from "react-native-picker-select"
 
 export default function ManagePreferences({navigation}) {
 
-  const [gender, setGender] = useState('');
-  const [bedtime, setBedtime] = useState('');
-  const [guest, setGuest] = useState('');
-  const [clean, setClean] = useState('');
-  const [noise, setNoise] = useState('');
+  const [rank1, setRank1] = useState('');
+  const [rank2, setRank2] = useState('');
+  const [rank3, setRank3] = useState('');
+  const [rank4, setRank4] = useState('');
+  const [rank5, setRank5] = useState('');
+
+
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
 
   const handleSubmit = () => {
-    if (!gender || !bedtime || !guest || !clean || !noise ){
+    if (!rank1 || !rank2 || !rank3 || !rank4 || !rank5 ){
       setErrMsgVisible(true);
+    }
+    else if(rank1 == rank2 || rank1 == rank3 || rank1 == rank4 || rank1 == rank5
+            || rank2 == rank3 || rank2 == rank3 || rank2 == rank4 || rank2 == rank5
+            || rank3 == rank4 || rank3 == rank5|| rank4 == rank5) {
+        setErrMsgVisible(true);
+        console.log("Cannot specify same preference for same rank")
     } else {
       updatePreferencesThroughApi();
       setSubmitMsgVisible(true);
@@ -34,14 +42,13 @@ export default function ManagePreferences({navigation}) {
 
   const updatePreferencesThroughApi = async() => {
     const response  = await axios.post('http://192.168.101.160:3000/api/user/preferences', {
-      gender: gender,
-      bedtime: bedtime,
-      guest: guest,
-      clean: clean,
-      noise: noise
+      rank1: rank1,
+      rank2: rank2,
+      rank3: rank3,
+      rank4: rank4,
+      rank5: rank5
     })
-    console.log("Is this printing")
-    console.log("Status: " + response.status)
+
 
     if (response.status === 200) {
       // API call was successful
@@ -58,69 +65,68 @@ export default function ManagePreferences({navigation}) {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
-      <Text style={styles.subtitle}>Select the preferred gender of your roommate</Text>
+      <Text style={styles.subtitle}>Rank your preferences in order of importance to you! Do not select the same preference for different ranks.</Text>
        <RNPickerSelect
-          placeholder={ {label: "Select gender.", value: null}}
-          onValueChange={(value) => setGender(value)}
+          placeholder={ {label: "#1 Most important:", value: null}}
+          onValueChange={(value) => setRank1(value)}
           items={[
-              { label: "Male", value: "male" },
-              { label: "Female", value: "female" },
-              { label: "Other/No preference", value: "other" }
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
-        <Text style={styles.subtitle}>Select your preferred bedtime:</Text>
         <RNPickerSelect
-          placeholder={ {label: "Select bedtime: ", value: null}}
-          onValueChange={(value) => setBedtime(value)}
+          placeholder={ {label: "#2:", value: null}}
+          onValueChange={(value) => setRank2(value)}
           items={[
-              { label: "Before 9PM", value: "9" },
-              { label: "9PM-10PM", value: "10" },
-              { label: "10PM-11PM", value: "11" },
-              { label: "11PM-12PM", value: "12" },
-              { label: "12PM-1AM", value: "1" },
-              { label: "1AM+", value: "2" }
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
-        <Text style={styles.subtitle}>How comfortable are you with guests:</Text>
         <RNPickerSelect
-          placeholder={ {label: "Select:", value: null}}
-          onValueChange={(value) => setGuest(value)}
+          placeholder={ {label: "#3:", value: null}}
+          onValueChange={(value) => setRank3(value)}
           items={[
-              { label: "Never", value: "never" },
-              { label: "Weekends only", value: "weekend" },
-              { label: "Most of the time (weekends, some weekdays)", value: "sometimes" },
-              { label : "Anytime!", value: "anytime"}
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
-        <Text style={styles.subtitle}>On a scale of 1-5, how clean do you prefer your environment:</Text>
         <RNPickerSelect
-          placeholder={ {label: "Select cleanliness.", value: null}}
-          onValueChange={(value) => setClean(value)}
+          placeholder={ {label: "#4:", value: null}}
+          onValueChange={(value) => setRank4(value)}
           items={[
-              { label: "5: Spotless, very organized.", value: "5" },
-              { label: "4: Clean, but doesn't have to be perfect", value: "4" },
-              { label: "3: Not clean, but not filthy", value: "3" },
-              { label: "2: Not so clean", value: "2"},
-              { label: "1: Dumpster", value: "1"}
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
-         <Text style={styles.subtitle}>What's your preferred noise level?</Text>
         <RNPickerSelect
-          placeholder={ {label: "Select noise level:", value: null}}
-          onValueChange={(value) => setNoise(value)}
+          placeholder={ {label: "#5:", value: null}}
+          onValueChange={(value) => setRank5(value)}
           items={[
-              { label: "5: Be as loud as you want.", value: "5" },
-              { label: "4: We can be loud on the weekends", value: "4" },
-              { label: "3: A good balance of loud and quiet", value: "3" },
-              { label: "2: I prefer it to be quiet more often", value: "2"},
-              { label: "1: Library, 24/7.", value: "1"}
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
+        
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Submit Preferences</Text>
