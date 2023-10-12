@@ -137,8 +137,8 @@ export default function Profile({navigation}){
       return (
         <Avatar
           size="xlarge"
-          title="Hi"
           rounded
+          title="Hi"
           activeOpacity={0.8}>
         <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
         </Avatar>
