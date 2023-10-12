@@ -5,9 +5,17 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Landing from './screens/Landing'
 import Register from './screens/Register'
 import Login from './screens/Login'
+
 import ManagePreferences from './screens/ManagePreferences';
 import MainTabNavigator from './routes/MainTabNavigator';
 import ManagePreferenceRankings from './screens/RankPreferences';
+
+
+import MainTabNavigator from './routes/MainTabNavigator';
+import ForgotPassword from './screens/ForgotPassword';
+import pinVerify from './screens/pinVerify';
+import ResetPassword from './screens/ResetPassword';
+
 
 const Stack = createStackNavigator();
 
@@ -23,6 +31,9 @@ export default function App() {
         <Stack.Screen name = "Login" component={Login} options={{
           headerShown:true,  headerShadowVisible: false, headerBackTitle: "Back",  title: ""
         }}/>
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <Stack.Screen name="pinVerify" component={pinVerify} />
+        <Stack.Screen name="ResetPassword" component={ResetPassword} />
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
       <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
