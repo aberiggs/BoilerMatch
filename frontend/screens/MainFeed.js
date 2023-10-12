@@ -80,9 +80,6 @@ export default function MainFeed({navigation}){
 };
 
 const onRefresh = () => {
-  // Perform the data fetching or refreshing logic here
-  // For example, you can make an API request to fetch new data
-  // Don't forget to set the refreshing state to false when the data is fetched
   setRefreshing(true);
   console.log("here")
   // ... Fetch data ...
@@ -161,16 +158,8 @@ const onRefresh = () => {
       });
 
     };
-      axios.get(`http://localhost:3000/api/user/search/${searchTerm}`).then((response) => {
-        console.log(response.data.users)
-        console.log("updated")
-        setSearchResult(response.data.users);
-        toggleModal();
-       return response.data.users;
-      }).catch(error => {
-        console.log("Error occured while searching:", error)
-      })
-    }
+     
+    
         // const likeUser = async () => {
     //   const tokenVal = await SecureStore.getItemAsync('token')
 
@@ -361,6 +350,7 @@ const onRefresh = () => {
         </View>
       </Modal>
     )}
+    
       
       {renderModel()}
       <View style={styles.flatListContainer}>

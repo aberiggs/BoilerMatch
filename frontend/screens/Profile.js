@@ -32,6 +32,28 @@ export default function Profile({navigation}){
     }
   };
 
+  const confirmDeactivation = async () => {
+    try {
+      // Send a request to your server to deactivate the account
+      const response = await axios.post('http://localhost:3000/api/user/getDiscoverability');
+      if (response.status === 200) {
+
+        // Account deactivated successfully
+        // Perform any necessary cleanup and navigation
+        // For example, log the user out and navigate to the landing page
+        await SecureStore.deleteItemAsync('token');
+        await SecureStore.deleteItemAsync('username');
+        navigation.navigate('Landing');
+      } else {
+        // Handle deactivation error
+        Alert.alert('Deactivation Failed', 'Something went wrong while deactivating your account.');
+      }
+    } catch (error) {
+      // Handle network or other errors
+      Alert.alert('Deactivation Error', 'An error occurred while deactivating your account.');
+    }
+  };
+
   const navigateToManagePreferences = () => {
     navigation.navigate('ManagePreferences');
   };
@@ -132,6 +154,10 @@ export default function Profile({navigation}){
 
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferenceRankings}>
           <Text style={styles.buttonText}> Manage Preference Rank</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={confirmDeactivation}>
+          <Text style={styles.buttonText}> Deactivate Account</Text>
           </TouchableOpacity>
         </View>
       </View>
