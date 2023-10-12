@@ -17,8 +17,6 @@ export default async function handler(req, res) {
         
     }
 
-    
-
     /* define preferences */
     const preferences = {
         gender: req.body.gender, 
