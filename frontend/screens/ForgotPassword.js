@@ -1,7 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
-
 import axios from "axios"
 
 export default function ForgotPassword({navigation}){
