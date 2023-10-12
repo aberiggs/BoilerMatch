@@ -37,9 +37,7 @@ export default function App() {
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="pinVerify" component={pinVerify} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
-
-      <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
-
+      <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} options={{gestureEnabled: false}}/>
       <Stack.Screen name="ManageInformation" component={ManageInformation} />
       <Stack.Screen name="ManageHousingInformation" component={ManageHousingInformation} />
       <Stack.Screen name="Profile" component={Profile} />
