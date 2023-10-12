@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Autocomplete from 'react-native-autocomplete-input';
 import axios from "axios"
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { RefreshControl } from 'react-native';
 
+import { RefreshControl } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 
 
 
@@ -20,6 +21,7 @@ export default function MainFeed({navigation}){
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  
   const modalStyles = {
     modalContainer: {
       flex: 1,
@@ -159,6 +161,54 @@ const onRefresh = () => {
       });
 
     };
+      axios.get(`http://localhost:3000/api/user/search/${searchTerm}`).then((response) => {
+        console.log(response.data.users)
+        console.log("updated")
+        setSearchResult(response.data.users);
+        toggleModal();
+       return response.data.users;
+      }).catch(error => {
+        console.log("Error occured while searching:", error)
+      })
+    }
+        // const likeUser = async () => {
+    //   const tokenVal = await SecureStore.getItemAsync('token')
+
+    //   if (!tokenVal) {
+    //       return
+    //   }
+
+    //   const response = await axios.post('http://localhost:3000/api/user/verifylanding', {
+    //     token: tokenVal,
+    //   }).catch((error) => {
+    //     if (error.response) {
+    //       return error.response.data
+    //     }
+
+    //     return
+    //   })
+
+    // }
+
+    // const handleRefreshFeed = async() => {
+    //   console.log()
+    //   const tokenVal = await SecureStore.getItemAsync('token')
+    //   axios.get(`http://localhost:3000/api/user/refreshfeed/`,  {
+    //     headers: {
+    //       Authorization: `Bearer ${tokenVal}`,
+    //     },
+    //   }
+    //   ).then((response) => {
+    //     console.log(response.data.users)
+    //     console.log("updated")
+    //     setSearchResult(response.data.users);
+    //     toggleModal();
+    //    return response.data.users;
+    //   }).catch(error => {
+    //     console.log("Error occured while searching:", error)
+    //   })
+
+    // }
 
     /*
     plan to use once we get the data from the database.. then we use the userProfile class
