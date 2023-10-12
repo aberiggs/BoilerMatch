@@ -4,7 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Autocomplete from 'react-native-autocomplete-input';
 import axios from "axios"
 import Icon from 'react-native-vector-icons/FontAwesome';
+
+import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+
 
 
 export default function MainFeed({navigation}){
@@ -16,6 +19,8 @@ export default function MainFeed({navigation}){
   //variables for onClick on the mainFeed
   const [selectedUser, setSelectedUser] = useState(null);
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
+  const [userNotFound, setUserNotFound] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   
   const modalStyles = {
     modalContainer: {
@@ -73,7 +78,18 @@ export default function MainFeed({navigation}){
   const handleCloseUserModal = () => {
   setIsUserModalVisible(false);
 };
-// ... (previous code)
+
+const onRefresh = () => {
+  // Perform the data fetching or refreshing logic here
+  // For example, you can make an API request to fetch new data
+  // Don't forget to set the refreshing state to false when the data is fetched
+  setRefreshing(true);
+  console.log("here")
+  // ... Fetch data ...
+
+  setRefreshing(false);
+};
+
 
   const FeedItem = ({ user, onLikePress }) => (
     <View style={styles.feedItem}>
@@ -102,7 +118,7 @@ export default function MainFeed({navigation}){
       />
     </TouchableOpacity>
     <TouchableOpacity onPress={() => handleUserItemClick(user)}>
-      <Text>More Info</Text>
+      <Text style={styles.hyperlink}>More Info</Text>
     </TouchableOpacity>
     </View>
   );
@@ -111,6 +127,9 @@ export default function MainFeed({navigation}){
   // Function to handle the search button press not yet finished.. need to get info from database
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
+  };
+  const toggleUser = () => {
+    setUserNotFound(!userNotFound);
   };
   /*
   useEffect(() => {
@@ -127,6 +146,21 @@ export default function MainFeed({navigation}){
   */
 
   const handleSearchButtonPress = () => {
+    console.log(searchTerm)
+      axios.get(`http://localhost:3000/api/users/search/${searchTerm}`).then((response) => {
+        if (response.data.users.length > 0) {
+          setSearchResult(response.data.users);
+          toggleModal();
+          setUserNotFound(false);
+        }
+       //return response.data.users;
+      }).catch(error => {
+        console.log("Error occured while searching:", error)
+        setSearchResult([])
+        setUserNotFound(true);
+      });
+
+    };
       axios.get(`http://localhost:3000/api/user/search/${searchTerm}`).then((response) => {
         console.log(response.data.users)
         console.log("updated")
@@ -209,7 +243,8 @@ export default function MainFeed({navigation}){
 
     
   
-  if (isModalVisible && searchResult && searchResult.length > 0 || selectedUser) {
+  if (isModalVisible && searchResult && searchResult.length > 0) {
+   
     return (
       <Modal
         animationType="slide"
@@ -247,7 +282,27 @@ export default function MainFeed({navigation}){
         </View>
       </Modal>
     );
-  } else {
+  }  else if (userNotFound) {
+    console.log("here")
+    console.log(isModalVisible)
+    return (
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={userNotFound}
+      >
+        <View style={modalStyles.modalContainer}>
+          <View style={modalStyles.modalContent}>
+            <Text>User not found</Text>
+            <View style={modalStyles.closeButtonContainer}>
+              <Button title="Close" onPress={toggleUser} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+   else {
     return null;
   }
 };  
@@ -315,6 +370,12 @@ export default function MainFeed({navigation}){
       keyExtractor={(item) => item.key} // Replace with a unique key extractor
       horizontal={false}
       contentContainerStyle={styles.flatListContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      }
     />
   </View>
     </View>
@@ -352,6 +413,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
+  },
+  hyperlink: {
+    textDecorationLine: 'underline',
+    color: 'blue',
   },
   searchButton: {
     backgroundColor: 'gold', // Change the background color as desired
