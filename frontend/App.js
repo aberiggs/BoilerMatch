@@ -6,10 +6,16 @@ import Landing from './screens/Landing'
 import Register from './screens/Register'
 import Login from './screens/Login'
 
+import ManagePreferences from './screens/ManagePreferences';
+import MainTabNavigator from './routes/MainTabNavigator';
+import ManagePreferenceRankings from './screens/RankPreferences';
+
+
 import MainTabNavigator from './routes/MainTabNavigator';
 import ForgotPassword from './screens/ForgotPassword';
 import pinVerify from './screens/pinVerify';
 import ResetPassword from './screens/ResetPassword';
+
 
 const Stack = createStackNavigator();
 
@@ -30,6 +36,8 @@ export default function App() {
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
+      <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
+      <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
       </Stack.Navigator>
     </NavigationContainer>
   );

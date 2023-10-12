@@ -32,6 +32,15 @@ export default function Profile({navigation}){
     }
   };
 
+  const navigateToManagePreferences = () => {
+    navigation.navigate('ManagePreferences');
+  };
+
+  const navigateToManagePreferenceRankings = () => {
+    navigation.navigate('ManagePreferenceRankings');
+  };
+
+
   const sendImage = async () => {
     const formData = new FormData();
     formData.append('image', {
@@ -50,6 +59,7 @@ export default function Profile({navigation}){
     setImageToUpload(null)
     setProfilePicExists(true)
   }
+
 
   const checkPfpExist = async () => {
     const response = await axios.get(profilePic).catch((error) => {
@@ -98,10 +108,21 @@ export default function Profile({navigation}){
           <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}> Logout </Text>
           </Pressable>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToManagePreferences}>
+          <Text style={styles.buttonText}> Manage Preferences</Text>
+          </TouchableOpacity>
+          <Text> </Text>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToManagePreferenceRankings}>
+          <Text style={styles.buttonText}> Manage Preference Rank</Text>
+          </TouchableOpacity>
         </View>
       </View>
   )
 }
+
+
 
 
 const styles = StyleSheet.create({
@@ -117,8 +138,9 @@ const styles = StyleSheet.create({
       backgroundColor: "gold",
       borderRadius: 6,
       justifyContent: 'center',
+      
+      
     },
-
     buttonText: {
       fontSize: 20,
       alignSelf: "center"
@@ -165,4 +187,3 @@ const styles = StyleSheet.create({
       marginHorizontal: 'auto'
     }
   });
-
