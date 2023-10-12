@@ -40,18 +40,6 @@ export default function ManagePreferences({navigation}) {
       clean: clean,
       noise: noise
     })
-    console.log("Is this printing")
-    console.log("Status: " + response.status)
-
-    if (response.status === 200) {
-      // API call was successful
-      console.log('API Response:', response.data);
-      return response.data; // You can return the data to the caller if needed
-    } else {
-      // Handle other response status codes here
-      console.error('API Error:', response.status);
-    }
-
     return response
   }
 

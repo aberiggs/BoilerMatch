@@ -7,6 +7,7 @@ import Register from './screens/Register'
 import Login from './screens/Login'
 import ManagePreferences from './screens/ManagePreferences';
 import MainTabNavigator from './routes/MainTabNavigator';
+import ManagePreferenceRankings from './screens/RankPreferences';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,7 @@ export default function App() {
 
       <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} />
       <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
+      <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
       </Stack.Navigator>
     </NavigationContainer>
   );

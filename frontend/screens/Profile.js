@@ -8,10 +8,19 @@ export default function Profile({navigation}){
     navigation.navigate('ManagePreferences');
   };
 
+  const navigateToManagePreferenceRankings = () => {
+    navigation.navigate('ManagePreferenceRankings');
+  };
+
   return (
       <View style={styles.container}>
         <TouchableOpacity style={styles.button} onPress={navigateToManagePreferences}>
         <Text style={styles.buttonText}> Manage Preferences</Text>
+        </TouchableOpacity>
+        <Text> </Text>
+
+        <TouchableOpacity style={styles.button} onPress={navigateToManagePreferenceRankings}>
+        <Text style={styles.buttonText}> Manage Preference Rank</Text>
         </TouchableOpacity>
 
 

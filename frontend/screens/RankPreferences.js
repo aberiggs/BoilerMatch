@@ -9,7 +9,7 @@ import RNPickerSelect from "react-native-picker-select"
 
 
 
-export default function ManagePreferences({navigation}) {
+export default function ManagePreferenceRankings({navigation}) {
 
   const [rank1, setRank1] = useState('');
   const [rank2, setRank2] = useState('');
@@ -26,12 +26,12 @@ export default function ManagePreferences({navigation}) {
       setErrMsgVisible(true);
     }
     else if(rank1 == rank2 || rank1 == rank3 || rank1 == rank4 || rank1 == rank5
-            || rank2 == rank3 || rank2 == rank3 || rank2 == rank4 || rank2 == rank5
+            || rank2 == rank3 || rank2 == rank4 || rank2 == rank5
             || rank3 == rank4 || rank3 == rank5|| rank4 == rank5) {
         setErrMsgVisible(true);
         console.log("Cannot specify same preference for same rank")
     } else {
-      updatePreferencesThroughApi();
+        updateRankingsThroughApi();
       setSubmitMsgVisible(true);
     }
   }
@@ -40,8 +40,8 @@ export default function ManagePreferences({navigation}) {
     navigation.goBack()
   }
 
-  const updatePreferencesThroughApi = async() => {
-    const response  = await axios.post('http://192.168.101.160:3000/api/user/preferences', {
+  const updateRankingsThroughApi = async() => {
+    const response  = await axios.post('http://192.168.101.160:3000/api/user/preferencerank', {
       rank1: rank1,
       rank2: rank2,
       rank3: rank3,
@@ -129,7 +129,7 @@ export default function ManagePreferences({navigation}) {
         
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Submit Preferences</Text>
+        <Text style={styles.buttonText}>Submit Rankings</Text>
         </TouchableOpacity>
 
         <Modal
@@ -142,7 +142,7 @@ export default function ManagePreferences({navigation}) {
         >
            <View style={styles.modalView}>
             <Text style={styles.modalText}>
-              Please make sure all the fields are filled out.
+              Please make sure all the fields are filled out and no two fields are the same.
             </Text>
             <Pressable
               style={styles.modalButton}
