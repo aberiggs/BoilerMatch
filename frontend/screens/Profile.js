@@ -79,13 +79,22 @@ export default function Profile({navigation}){
     if (profilePicExists) {
       return (
         <Avatar
-          source={{uri: profilePic}}>
+          size="xlarge"
+          rounded
+          source={{uri: profilePic}}
+          onPress={() => pickImage()}
+          activeOpacity={0.8}>
         </Avatar>
-        //<Image source={{uri: profilePic}} style={{width: 100, height: 100, borderRadius: 50}}/>
       )
     } else {
       return (
-        <Text style={styles.title}>No PFP</Text>
+        <Avatar
+          size="xlarge"
+          title="Hi"
+          rounded
+          onPress={() => pickImage()}
+          activeOpacity={0.8}>
+        </Avatar>
       )
     }
   }
@@ -93,9 +102,7 @@ export default function Profile({navigation}){
   return(
       <View style={styles.container}>
         <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
-          <Pressable style={{width: 100, height: 100, borderRadius: 50}} onPress={pickImage}>
               <ProfilePic />
-          </Pressable>
           <Text>Username</Text>
           <Text> This is your profile page</Text>
           
@@ -169,4 +176,3 @@ const styles = StyleSheet.create({
       marginHorizontal: 'auto'
     }
   });
-
