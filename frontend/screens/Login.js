@@ -41,7 +41,7 @@ export default function Login({navigation}){
           if (resData) {
             setErrorMessage(resData.message)
           } else {
-            setErrorMessage("An unexpected error occurred")
+            setErrorMessage("There was an error logging in")
           }
         } else {
           const token = resData.token

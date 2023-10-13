@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb" 
 const { BlobServiceClient, BlockBlobClient } = require("@azure/storage-blob"); 
+const jwt = require('jsonwebtoken');
 
 import formidable from 'formidable';
 import fs from 'fs';
@@ -14,6 +15,23 @@ export const config = {
 
 export default async function handler(req, res) {
     const form = formidable({});
+
+    const tokenData = jwt.verify(req.query.token, 'MY_SECRET', (err, payload) => {
+      if (err) {
+          return res.status(400).json({
+              success: false,
+          })
+      } else {
+          return payload
+      }
+  });
+
+  if (!tokenData) {
+      return res.status(400).json({
+          success: false,
+      })
+  }
+    const username = tokenData.username
 
     return new Promise(() => {
       form.parse(req, (err, fields, files) => {
@@ -32,7 +50,6 @@ export default async function handler(req, res) {
             });
           }
 
-          const username = "sprocket710"
       
           // Move the uploaded file to the "images" folder
           const oldPath = image.filepath
