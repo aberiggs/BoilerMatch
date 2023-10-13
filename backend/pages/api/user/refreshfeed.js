@@ -21,17 +21,17 @@ export default async function handler(req, res) {
 const token = req.body.token
 
 
-const currentUserID = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+const currentUser= jwt.verify(token, 'MY_SECRET', (err, payload) => {
     if (err) {
         return res.status(400).json({
             success: false,
         })
     } else {
-        return payload
+        return payload.username
     }
 });
 
-
+console.log(currentUser)
 
   try {
     // Query the database for potential user suggestions based on the search term
@@ -39,28 +39,33 @@ const currentUserID = jwt.verify(token, 'MY_SECRET', (err, payload) => {
         { 
             $lookup: {
                 from: "interactions",
-                localField: "_id",
+                localField: "username",
                 foreignField: "userLiked",
                 as: "InteractionsWhereUserIsLiked"
             },
         },
         {
             $match: {
-            "InteractionsWhereUserIsLiked.userLiking": { $not: { $eq: currentUserID} },
-            "_id" : { $not: { $eq: currentUserID} },
-            "discoverable": true
+            $and:[ { $or: [{"InteractionsWhereUserIsLiked.userLiking": { $not: { $eq: currentUser} }},{"InteractionsWhereUserIsLiked.liked": false}]},
+            {"username" : { $not: { $eq: currentUser} }},
+            {"discoverable": true}]
+      
         }
     }, 
     {$sample: {
       size: 5
     }},
-    {
-        $project: {
-          username: 1
-            // InteractionsWhereUserIsLiked: 0
-        }
-    }
+    // {
+    //   $project: { "InteractionsWhereUserIsLiked": 0}
+    // }
+   
     ]).toArray()
+    for (const obj of potentialUsers) {
+      console.log(obj)
+      // for (const key in obj) {
+      //   console.log(key + ': ' + obj[key]);
+      // }
+    }
     return res.status(200).json({
       success: true,
       users: potentialUsers,
