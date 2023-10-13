@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { Db,ObjectId} from "mongodb";
-
+const jwt = require( 'jsonwebtoken');
 
 //TODO Have not tested
 export default async function handler(req, res) {
@@ -11,22 +11,27 @@ export default async function handler(req, res) {
   const interactions = database.collection("interactions")
   // Get the search term from the query parameter
   //const user = req.query.user;
-  const currentUserID = new ObjectId('65179cef3a0d783d76159f8b');
 //   if (!user) {
 //     return res.status(400).json({
 //       success: false,
 //       message: "Missing user",
 //     });
 //   }
-// const tokenDecoded = jwt.verify(req.body.token, 'MY_SECRET', (err, payload) => {
-//     if (err) {
-//         return res.status(400).json({
-//             success: false,
-//         })
-//     } else {
-//         return payload
-//     }
-// });
+console.log("hello")
+console.log(req);
+
+const token = req.body.token
+
+
+const currentUserID = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+    if (err) {
+        return res.status(400).json({
+            success: false,
+        })
+    } else {
+        return payload._id
+    }
+});
 
 
 
@@ -48,9 +53,13 @@ export default async function handler(req, res) {
             "discoverable": true
         }
     }, 
+    {$sample: {
+      size: 5
+    }},
     {
         $project: {
-            InteractionsWhereUserIsLiked: 0
+          username: 1
+            // InteractionsWhereUserIsLiked: 0
         }
     }
     ]).toArray()
