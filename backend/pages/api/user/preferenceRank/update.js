@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
+const jwt = require( 'jsonwebtoken');
 
 export default async function handler(req, res) {
     console.log("Attempting to rank preferences for user");
@@ -38,7 +39,24 @@ export default async function handler(req, res) {
         }
     }
 
-    const filter = {email: "test@purdue.edu"}
+    // Decode token
+    const tokenData = jwt.verify(req.body.token, 'MY_SECRET', (err, payload) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+            })
+        } else {
+            return payload
+        }
+    });
+
+    if (!tokenData) {
+        return res.status(400).json({
+            success: false,
+        })
+    }
+
+    const filter = {username: tokenData.username}
 
 
     
@@ -46,5 +64,8 @@ export default async function handler(req, res) {
     await userCollection.updateOne(filter, updateRankings);
 
 
-
+    return res.status(200).json({
+        success: true,
+        message: 'Preference ranks updated'
+    })
 }
