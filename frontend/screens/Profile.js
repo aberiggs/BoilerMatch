@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Icon } from 'react-native-vector-icons/Feather';
 import { Avatar } from '@rneui/themed';
 import axios from 'axios'
 
@@ -12,6 +13,12 @@ export default function Profile({navigation}){
   const [username, setUsername] = useState("")
   const [profilePic, setProfilePic] = useState('')
   const [profilePicExists, setProfilePicExists] = useState(false)
+
+  const iconProps = () => {
+      return (
+        <Icon name="edit-1" color='red'></Icon>
+      );
+  };
 
   useEffect(() => {
     if (!profilePicExists) {
@@ -137,6 +144,7 @@ export default function Profile({navigation}){
         containerStyle={{backgroundColor: 'grey'}}
         onPress={() => pickImage()}
         activeOpacity={0.8}
+        <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
       />
     )
   }
