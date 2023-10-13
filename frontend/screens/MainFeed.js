@@ -332,33 +332,49 @@ const onRefresh = async() => {
       >
         <View style={modalStyles.modalContainer}>
           <View style={modalStyles.modalContent}>
-            <View>
-              <Image
-                source={require('./testImage.png')}
-                resizeMode="cover"
-                style={{
-                  height: 270,
-                  width: 270,
-                  borderRadius: 999,
-                  marginTop: -90,
-                }}
-              />
-              {searchResult.map((user, index) => (
-                <View key={index}>
-                  <Text>Name: {user.username}</Text>
-                  <Text>Email: {user.email}</Text>
-                  <Text>Gender:</Text>
-                  <Text>Year:</Text>
-                  <Text>Hobbies:</Text>
-                  <Text>etc:</Text>
-                </View>
-              ))}
+            {searchResult.map((user, index) => (
+            <View key={index}>
+              <Avatar
+              size='xlarge'
+              rounded
+              source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
+              containerStyle={{backgroundColor: 'grey'}}
+              onPress={() => pickImage()}
+              activeOpacity={0.8}
+            />
+            <Text>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
+          <Text>Gender: {selectedUser.information.gender}</Text>
+          <Text>Grad Year: {selectedUser.information.graduation}</Text>
+         <Text>Major: {selectedUser.information.major}</Text>
+            {/* Add more user information as needed */}
+            <Text>{'\n'}Information:</Text>
+            <Text>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
+            <Text>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
+            <Text>Political Views: {selectedUser.information.politicalViews}</Text>
+            <Text>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
+            <Text>Pets: {selectedUser.information.pets}</Text>
+           
+
+            <Text>{'\n'}Housing Information:</Text>
+            <Text>Housing: {selectedUser.housingInformation.housing}</Text>
+            <Text>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
+            <Text>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
+            <Text>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
+
+            <Text>{'\n'}Preferences:</Text>
+            <Text>Gender: {selectedUser.preferences.gender}</Text>
+            <Text>Bedtime: {selectedUser.preferences.bedtime}</Text>
+            <Text>Guests: {selectedUser.preferences.guests}</Text>
+            <Text>Clean: {selectedUser.preferences.clean}</Text>
+            <Text>Noise: {selectedUser.preferences.noise}</Text>
+
             </View>
+            ))}
+            </View>
+              </View>
             <View style={modalStyles.closeButtonContainer}>
               <Button title="Close" onPress={toggleModal} />
             </View>
-          </View>
-        </View>
       </Modal>
     );
   }  else if (userNotFound) {
@@ -438,12 +454,6 @@ const onRefresh = async() => {
   
   
 
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={handleSearchButtonPress}
-        >
-          <Text style={styles.searchButtonText}>Search</Text>
-        </TouchableOpacity>
         </View>
 
         
@@ -500,7 +510,7 @@ const onRefresh = async() => {
     )}
     
       
-    {renderModel()}
+      {renderModel()}
       <View style={styles.flatListContainer}>
     {displayedUsers.length > 0 ? (
     <FlatList
@@ -573,7 +583,7 @@ const styles = StyleSheet.create({
     borderWidth: .5,      // Border width
     borderRadius: .5,     // Border radius
      // Padding around the text
-    marginRight: 10,   // Margin between items
+    marginRight: 30,   // Margin between items
   },
   dropdownContainer: {
     backgroundColor: 'white',
@@ -600,7 +610,7 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-    marginRight: 10,
+    marginRight: 30,
   },
   hyperlink: {
     textDecorationLine: 'underline',
