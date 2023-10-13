@@ -14,7 +14,7 @@ export default function MainFeed({navigation}){
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
-  const [potentialUsers, setPotentialUsers] = useState([]);
+  const [displayedUsers, setDisplayedUsers] = useState([]);
   const [liked, setLiked] = useState(false);
   //variables for onClick on the mainFeed
   const [selectedUser, setSelectedUser] = useState(null);
@@ -79,9 +79,14 @@ export default function MainFeed({navigation}){
   setIsUserModalVisible(false);
 };
 
-const onRefresh = () => {
+
+const onRefresh = async() => {
+  // Perform the data fetching or refreshing logic here
+  // For example, you can make an API request to fetch new data
+  // Don't forget to set the refreshing state to false when the data is fetched
   setRefreshing(true);
   console.log("here")
+  handleRefreshFeed();
   // ... Fetch data ...
 
   setRefreshing(false);
@@ -94,7 +99,6 @@ const onRefresh = () => {
         source={require('./troy.jpeg')} // Replace with the actual image source
         resizeMode="cover"
         style={{
-          
           height: 320, // Adjust the height as needed
           width: "100%",  // Adjust the width as needed
           alignSelf: 'center',
@@ -158,7 +162,6 @@ const onRefresh = () => {
       });
 
     };
-     
     
         // const likeUser = async () => {
     //   const tokenVal = await SecureStore.getItemAsync('token')
@@ -179,25 +182,20 @@ const onRefresh = () => {
 
     // }
 
-    // const handleRefreshFeed = async() => {
-    //   console.log()
-    //   const tokenVal = await SecureStore.getItemAsync('token')
-    //   axios.get(`http://localhost:3000/api/user/refreshfeed/`,  {
-    //     headers: {
-    //       Authorization: `Bearer ${tokenVal}`,
-    //     },
-    //   }
-    //   ).then((response) => {
-    //     console.log(response.data.users)
-    //     console.log("updated")
-    //     setSearchResult(response.data.users);
-    //     toggleModal();
-    //    return response.data.users;
-    //   }).catch(error => {
-    //     console.log("Error occured while searching:", error)
-    //   })
-
-    // }
+    const handleRefreshFeed = async() => {
+      const tokenVal = await SecureStore.getItemAsync('token')
+      console.log(tokenVal)
+      const response = await axios.post(`http://localhost:3000/api/user/refreshfeed`, {
+        token: tokenVal
+      }
+      ).catch(error => {
+        console.log("Error occured while searching:", error)
+      })
+      console.log(response.data.users)
+        console.log("updated")
+        setDisplayedUsers(response.data.users)
+      return response.data.users;
+    }
 
     /*
     plan to use once we get the data from the database.. then we use the userProfile class
@@ -296,9 +294,15 @@ const onRefresh = () => {
   }
 };  
     return(
-      
         <View style={styles.container}>
         <View style={styles.topBar}>
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={handleSearchButtonPress}
+        >
+          <Text style={styles.searchButtonText}>Filter</Text>
+        </TouchableOpacity>
+
         <TextInput
           style={styles.input}
           placeholder="Search for a user"
@@ -312,7 +316,6 @@ const onRefresh = () => {
         >
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
-
         </View>
 
         
@@ -355,7 +358,7 @@ const onRefresh = () => {
       {renderModel()}
       <View style={styles.flatListContainer}>
     <FlatList
-      data={people.filter((user) => user.isActive)} // Replace with your data array
+      data={displayedUsers} // Replace with your data array
       renderItem={({ item }) => <FeedItem user={item} onLikePress={handleLikePress}/>}
       keyExtractor={(item) => item.key} // Replace with a unique key extractor
       horizontal={false}
@@ -370,7 +373,7 @@ const onRefresh = () => {
   </View>
     </View>
   );
-}
+    }
 
     
 
@@ -413,6 +416,12 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
+  filterButton: {
+    margin: 5,
+    backgroundColor: 'blue', // Change the background color as desired
+    padding: 10,
+    borderRadius: 5,
+  },
   searchButtonText: {
     color: 'gray', // Change the text color as desired
     fontSize: 13,
@@ -422,7 +431,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: 'white',
-    padding: 10,
+    padding: 20,
   },
   flatListContainer: {
     flex: 1, // Take up the remaining available space
