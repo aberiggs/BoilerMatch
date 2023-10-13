@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import axios from "axios"
 
@@ -8,6 +9,7 @@ export default function ResetPassword({route, navigation}){
 
     const [password, setPassword] = useState('')
     const [confirmedPassword, setConfirmedPassword] = useState('')
+    const [showPass, setShowPass] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
     const email = route.params.email
 
@@ -31,7 +33,6 @@ export default function ResetPassword({route, navigation}){
             setErrorMessage("The passwords do not match")
             return false
         }
-
         return true
     }
 
@@ -72,30 +73,42 @@ export default function ResetPassword({route, navigation}){
     return(
         <View style={styles.container}>
           <View style={{flex: 'column', width: "45%"}}>
-            <Text style={styles.subtitle}> New Password</Text>
+          <Text style={styles.subtitle}>New Password</Text>
 
-            <TextInput
-            autoCapitalize = "none"
-            autoCorrect={false}
-            autoComplete="off"
+          <View style={styles.inputFieldBox}>
 
-            onChangeText={password => setPassword(password)}
+            <TextInput 
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              placeholderTextColor={"grey"}
 
-            style={styles.inputFieldBox}
+              onChangeText={text => setPassword(text)}
+              secureTextEntry={!showPass}
+
+              style={styles.inputField}
             />
 
-            <Text style={styles.subtitle}> Confirm New Password</Text>
-            <TextInput
-            autoCapitalize = "none"
+            <Pressable style={{position: 'absolute', paddingRight: 10}} onPress={() => setShowPass(!showPass)}>
+              { showPass ?
+                <Ionicons name="eye-off-outline" size={26} color="black" /> :
+                <Ionicons name="eye-outline" size={26} color="black" />
+              }
+            </Pressable>
+          </View>
+
+          <Text style={styles.subtitle}>Confirm New Password</Text>
+          <TextInput 
+            autoCapitalize="none"
             autoCorrect={false}
             autoComplete="off"
+            placeholderTextColor={"grey"}
 
-            onChangeText={confirmedPassword => setConfirmedPassword(confirmedPassword)}
+            onChangeText={ text => setConfirmedPassword(text)}
+            secureTextEntry={!showPass}
 
             style={styles.inputFieldBox}
-            />
-
-            <Text style={styles.errorMes}>{errorMessage}</Text>
+          />
           </View>
 
         <Pressable style={styles.button} onPress={handleReset}>
@@ -109,22 +122,26 @@ export default function ResetPassword({route, navigation}){
 
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  button: {
+      width: "40%",
+      height: 50,
+      backgroundColor: "gold",
+      borderRadius: 6,
       justifyContent: 'center',
     },
-    button: {
-        width: "40%",
-        height: 50,
-        backgroundColor: "gold",
-        borderRadius: 6,
-        justifyContent: 'center',
-    },
     buttonText: {
-        fontSize: 20,
-        alignSelf: "center"
+      fontSize: 20,
+      alignSelf: "center"
+    },
+    otherText: {
+      fontSize: 16,
+      paddingLeft: 5
     },
     inputFieldBox: {   
       flexDirection: 'row',
@@ -139,14 +156,7 @@ const styles = StyleSheet.create({
       borderRadius: 5,        
     },
     inputField: {
-      color:'black',
-      height: 40,
-      width: "45%",
-      borderColor: 'black',
-      borderWidth: 1,
-      padding: 10,
-      marginBottom: 10,
-      borderRadius: 5,
+      width: "100%",
     },
     title: {
       fontSize: 25,
@@ -170,5 +180,4 @@ const styles = StyleSheet.create({
       color: 'red',
       marginHorizontal: 'auto'
     }
-  });
-  
+});
