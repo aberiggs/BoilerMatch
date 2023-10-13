@@ -100,6 +100,13 @@ const onRefresh = async() => {
   setRefreshing(false);
 };
   
+const checkPfpExist = async(username) => {
+  const pfpUrl = 'https://boilermatch.blob.core.windows.net/pfp/' + username + '.jpg'
+  const response = await axios.get(pfpUrl).catch((error) => {
+    return false
+  })
+  return true
+}
 
   const FeedItem = ({ user, onLikePress }) => (
     <View style={styles.feedItem}>
@@ -111,6 +118,9 @@ const onRefresh = async() => {
           width: "100%",  // Adjust the width as needed
           alignSelf: 'center',
           justifyContent: 'center',
+          backgroundColor: "grey",
+          borderRadius: 10,
+          marginBottom: 10
         }}
         
       />
@@ -339,7 +349,6 @@ const onRefresh = async() => {
               rounded
               source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
               containerStyle={{backgroundColor: 'grey'}}
-              onPress={() => pickImage()}
               activeOpacity={0.8}
             />
             <Text>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
@@ -471,7 +480,6 @@ const onRefresh = async() => {
               rounded
               source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
               containerStyle={{backgroundColor: 'grey'}}
-              onPress={() => pickImage()}
               activeOpacity={0.8}
             />
             <Text>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
