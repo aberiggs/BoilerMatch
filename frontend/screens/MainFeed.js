@@ -79,6 +79,7 @@ export default function MainFeed({navigation}){
   setIsUserModalVisible(false);
 };
 
+
 const onRefresh = async() => {
   // Perform the data fetching or refreshing logic here
   // For example, you can make an API request to fetch new data
@@ -161,7 +162,6 @@ const onRefresh = async() => {
       });
 
     };
-    
     
         // const likeUser = async () => {
     //   const tokenVal = await SecureStore.getItemAsync('token')
@@ -294,9 +294,15 @@ const onRefresh = async() => {
   }
 };  
     return(
-      
         <View style={styles.container}>
         <View style={styles.topBar}>
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={handleSearchButtonPress}
+        >
+          <Text style={styles.searchButtonText}>Filter</Text>
+        </TouchableOpacity>
+
         <TextInput
           style={styles.input}
           placeholder="Search for a user"
@@ -310,7 +316,6 @@ const onRefresh = async() => {
         >
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
-
         </View>
 
         
@@ -348,6 +353,7 @@ const onRefresh = async() => {
         </View>
       </Modal>
     )}
+    
       
       {renderModel()}
       <View style={styles.flatListContainer}>
@@ -410,6 +416,12 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
+  filterButton: {
+    margin: 5,
+    backgroundColor: 'blue', // Change the background color as desired
+    padding: 10,
+    borderRadius: 5,
+  },
   searchButtonText: {
     color: 'gray', // Change the text color as desired
     fontSize: 13,
@@ -419,7 +431,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: 'white',
-    padding: 10,
+    padding: 20,
   },
   flatListContainer: {
     flex: 1, // Take up the remaining available space
