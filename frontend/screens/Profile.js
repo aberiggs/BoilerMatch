@@ -63,7 +63,7 @@ export default function Profile({navigation}){
         console.log("Error occured while searching:", error)
       })
       
-      setDiscoverability(response.data.userUpdated.discoverable)
+      setDiscoverability(!response.data.userUpdated.discoverable)
     }
   const getDiscoverability = async () => {
     const tokenVal = await SecureStore.getItemAsync('token')
@@ -185,9 +185,8 @@ export default function Profile({navigation}){
 
           <TouchableOpacity style={styles.button} onPress={toggleDiscoverability}>
           <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
-          <TouchableOpacity style={styles.button} onPress={confirmDeactivation}>
-            <Text style={styles.buttonText}> Deactivate Account</Text>
           </TouchableOpacity>
+
 
           <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>

@@ -500,7 +500,7 @@ const onRefresh = async() => {
     )}
     
       
-      
+    {renderModel()}
       <View style={styles.flatListContainer}>
     {displayedUsers.length > 0 ? (
     <FlatList
@@ -516,7 +516,7 @@ const onRefresh = async() => {
         />
       }
     />
-    {renderModel()}
+    
     ) : (
       <ScrollView
 
