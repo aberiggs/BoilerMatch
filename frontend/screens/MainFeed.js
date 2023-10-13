@@ -1,26 +1,35 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, ScrollView, FlatList } from 'react-native';
+import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, ScrollView, FlatList } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Autocomplete from 'react-native-autocomplete-input';
 import axios from "axios"
 import Icon from 'react-native-vector-icons/FontAwesome';
-
+import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
 
 
 export default function MainFeed({navigation}){
+  const [usersLiked, setUsersLiked] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
   const [displayedUsers, setDisplayedUsers] = useState([]);
   const [liked, setLiked] = useState(false);
+  const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
   //variables for onClick on the mainFeed
   const [selectedUser, setSelectedUser] = useState(null);
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  
+  useEffect(() => {
+    handleRefreshFeed()
+   
+  },[showOnlyUsersLikedBy]);
+  
+
   
   const modalStyles = {
     modalContainer: {
@@ -39,38 +48,32 @@ export default function MainFeed({navigation}){
       marginTop: 20,
     },
   };
-  //dummy data
-  const [people, setPeople] = useState([
-    { name: 'shaun', key: '1', email: "test@gmail.com", gender: "male", hobbies: "rocks",liked: false, isActive: true },
-    { name: 'shaun', key: '2', email: "second@gmail.com", gender: "male", hobbies: "trees",liked: false,isActive: true },
-    { name: 'shaun', key: '3', email: "third@gmail.com", gender: "female", hobbies: "grass",liked: false,isActive: true },
-    { name: 'shaun', key: '4', email: "fourth@gmail.com", gender: "male", hobbies: "sky",liked: false,isActive: true },
-    { name: 'shaun', key: '5', email: "fifth@gmail.com", gender: "male", hobbies: "water",liked: false,isActive: true },
-    { name: 'shaun', key: '6', email: "six@gmail.com", gender: "female", hobbies: "sun",liked: false,isActive: true },
-    { name: 'shaun', key: '7', email: "seven@gmail.com", gender: "male", hobbies: "dirt",liked: false,isActive: true },
-    { name: 'shaun', key: '8', email: "8@gmail.com", gender: "male", hobbies: "slime",liked: false,isActive: true },
-    { name: 'shaun', key: '9', email: "9@gmail.com", gender: "female", hobbies: "metal",liked: false,isActive: true },
-    { name: 'shaun', key: '10', email: "10@gmail.com", gender: "male", hobbies: "cotton",liked: false,isActive: true },
-    { name: 'shaun', key: '11', email: "11@gmail.com", gender: "female", hobbies: "lava",liked: false,isActive: true },
-    { name: 'shaun', key: '12', email: "12@gmail.com", gender: "female", hobbies: "bird",liked: false,isActive: false },
-    { name: 'shaun', key: '13', email: "13@gmail.com", gender: "female", hobbies: "ant",liked: false,isActive: true },
-    { name: 'shaun', key: '14', email: "14@gmail.com", gender: "male", hobbies: "racoon",liked: false,isActive: true },
-
-  ])
-  const handleLikePress = (itemKey) => {
-    // Find the feed item with the specified key
-    const updatedPeople = people.map((person) => {
-      if (person.key === itemKey) {
-        // Toggle the liked state
-        return { ...person, liked: !person.liked };
-      }
-      return person;
-    });
   
-    // Update the state with the modified feed items
-    setPeople(updatedPeople);
+  const handleLikePress = async(user) => {
+    // Find the feed item with the specified key
+    console.log(user)
+    const tokenVal = await SecureStore.getItemAsync('token')
+      const response = await axios.post(`http://localhost:3000/api/user/likeuser`, {
+        token: tokenVal,
+        userShown: user,
+      }
+      ).catch(error => {
+        console.log("Error occured while searching:", error)
+      })
+      let liked = true
+      if(response.data.user_added == null){
+        liked = true
+      }
+      else{
+        liked = !response.data.user_added.liked
+      }
+      setUsersLiked((usersLiked) => ({
+        ...usersLiked,
+        [user]: liked,
+      })
+      )
   };
-
+  
   const handleUserItemClick = (user) => {
     setSelectedUser(user);
     setIsUserModalVisible(true);
@@ -81,11 +84,8 @@ export default function MainFeed({navigation}){
 
 
 const onRefresh = async() => {
-  // Perform the data fetching or refreshing logic here
-  // For example, you can make an API request to fetch new data
-  // Don't forget to set the refreshing state to false when the data is fetched
   setRefreshing(true);
-  console.log("here")
+  setUsersLiked({})
   handleRefreshFeed();
   // ... Fetch data ...
 
@@ -96,7 +96,7 @@ const onRefresh = async() => {
   const FeedItem = ({ user, onLikePress }) => (
     <View style={styles.feedItem}>
       <Image
-        source={require('./troy.jpeg')} // Replace with the actual image source
+        source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + user.username + '.jpg'}} // Replace with the actual image source
         resizeMode="cover"
         style={{
           height: 320, // Adjust the height as needed
@@ -106,15 +106,15 @@ const onRefresh = async() => {
         }}
       />
       <Text style={{justifyContent: 'center',}}>{user.username}</Text>
-      <Text>Email: {user.email}</Text>
-      <Text>Gender: {user.gender}</Text>
-      <Text>Year: {user.year}</Text>
-      <Text>Hobbies: {user.hobbies}</Text>
+      <Text>Name: {user.information.firstName} {user.information.lastName}</Text>
+      <Text>Gender: {user.information.gender}</Text>
+      <Text>Grad Year: {user.information.graduation}</Text>
+      <Text>Major: {user.information.major}</Text>
       {/* Add other user information as needed */}
-      <TouchableOpacity onPress={() => onLikePress(user.key)}>
+      <TouchableOpacity onPress={() => handleLikePress(user.username)}>
       <Icon
-        name={user.liked ? 'heart' : 'heart-o'} // Use 'heart' for filled heart and 'heart-o' for outline heart
-        color={user.liked ? 'red' : 'gray'}
+        name={usersLiked[user.username] ? 'heart' : 'heart-o'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+        color={usersLiked[user.username] ? 'red' : 'gray'}
         size={30}
       />
     </TouchableOpacity>
@@ -132,19 +132,7 @@ const onRefresh = async() => {
   const toggleUser = () => {
     setUserNotFound(!userNotFound);
   };
-  /*
-  useEffect(() => {
-    // Fetch potential users from your database and set them as suggestions
-    axios
-      .get(`http://localhost:3000/api/users/potential/${searchTerm}`)
-      .then((response) => {
-        setPotentialUsers(response.data.users);
-      })
-      .catch((error) => {
-        console.log('Error occurred while fetching potential users:', error);
-      });
-  }, [searchTerm]);
-  */
+ 
 
   const handleSearchButtonPress = () => {
     console.log(searchTerm)
@@ -162,30 +150,19 @@ const onRefresh = async() => {
       });
 
     };
-    
-        // const likeUser = async () => {
-    //   const tokenVal = await SecureStore.getItemAsync('token')
+  
+   const handleLikedMeButtonPress = () => {
+      setShowOnlyUsersLikedBy(!showOnlyUsersLikedBy)
+      onRefresh()
 
-    //   if (!tokenVal) {
-    //       return
-    //   }
+   }
 
-    //   const response = await axios.post('http://localhost:3000/api/user/verifylanding', {
-    //     token: tokenVal,
-    //   }).catch((error) => {
-    //     if (error.response) {
-    //       return error.response.data
-    //     }
-
-    //     return
-    //   })
-
-    // }
 
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
-      console.log(tokenVal)
-      const response = await axios.post(`http://localhost:3000/api/user/refreshfeed`, {
+      console.log(showOnlyUsersLikedBy)
+      if(!showOnlyUsersLikedBy){
+        const response = await axios.post(`http://localhost:3000/api/user/refreshfeed`, {
         token: tokenVal
       }
       ).catch(error => {
@@ -194,8 +171,31 @@ const onRefresh = async() => {
       console.log(response.data.users)
         console.log("updated")
         setDisplayedUsers(response.data.users)
-      return response.data.users;
     }
+    else{
+      const response = await axios.post(`http://localhost:3000/api/user/userslikedby`, {
+        token: tokenVal
+      }
+      ).catch(error => {
+        console.log("Error occured while searching:", error)
+      })
+      console.log(response.data.users)
+        console.log("updated")
+        setDisplayedUsers(response.data.users)
+    }
+    }
+
+    // const getUserLiked = async() => {
+    //   const tokenVal = await SecureStore.getItemAsync('token')
+    //  const response = await axios.post(`http://localhost:3000/api/user/isUserLiked`, {
+    //     token: tokenVal
+    //   }
+    //   ).catch(error => {
+    //     console.log("Error occured while checking:", error)
+    //   })
+    //   console.log(response.data)
+    // }
+    
 
     /*
     plan to use once we get the data from the database.. then we use the userProfile class
@@ -298,9 +298,9 @@ const onRefresh = async() => {
         <View style={styles.topBar}>
         <TouchableOpacity
           style={styles.filterButton}
-          onPress={handleSearchButtonPress}
+          onPress={handleLikedMeButtonPress}
         >
-          <Text style={styles.searchButtonText}>Filter</Text>
+          <Text style={styles.searchButtonText}>{showOnlyUsersLikedBy ? 'All' : 'Liked Me'} </Text>
         </TouchableOpacity>
 
         <TextInput
@@ -328,24 +328,41 @@ const onRefresh = async() => {
         <View style={modalStyles.modalContainer}>
           <View style={modalStyles.modalContent}>
             <View>
-          <Image
-                source={require('./testImage.png')}
-                resizeMode="cover"
-                style={{
-                  height: 270,
-                  width: 270,
-                  borderRadius: 999,
-                  marginTop: -90,
-                }}
-              />
-            <Text>Name: {selectedUser.username}</Text>
-            <Text>Email: {selectedUser.email}</Text>
-            <Text>Gender: {selectedUser.gender}</Text>
-            <Text>Year: {selectedUser.year}</Text>
-            <Text>Hobbies: {selectedUser.hobbies}</Text>
+            <Avatar
+              size='xlarge'
+              rounded
+              source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
+              containerStyle={{backgroundColor: 'grey'}}
+              onPress={() => pickImage()}
+              activeOpacity={0.8}
+            />
+            <Text>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
+          <Text>Gender: {selectedUser.information.gender}</Text>
+          <Text>Grad Year: {selectedUser.information.graduation}</Text>
+         <Text>Major: {selectedUser.information.major}</Text>
             {/* Add more user information as needed */}
-            <Text>This is where we would add more information</Text>
-            </View>
+            <Text>{'\n'}Information:</Text>
+            <Text>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
+            <Text>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
+            <Text>Political Views: {selectedUser.information.politicalViews}</Text>
+            <Text>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
+            <Text>Pets: {selectedUser.information.pets}</Text>
+           
+
+            <Text>{'\n'}Housing Information:</Text>
+            <Text>Housing: {selectedUser.housingInformation.housing}</Text>
+            <Text>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
+            <Text>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
+            <Text>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
+
+            <Text>{'\n'}Preferences:</Text>
+            <Text>Gender: {selectedUser.preferences.gender}</Text>
+            <Text>Bedtime: {selectedUser.preferences.bedtime}</Text>
+            <Text>Guests: {selectedUser.preferences.guests}</Text>
+            <Text>Clean: {selectedUser.preferences.clean}</Text>
+            <Text>Noise: {selectedUser.preferences.noise}</Text>
+
+           </View>
             <View style={modalStyles.closeButtonContainer}>
               <Button title="Close" onPress={handleCloseUserModal} />
             </View>
@@ -357,6 +374,7 @@ const onRefresh = async() => {
       
       {renderModel()}
       <View style={styles.flatListContainer}>
+    {displayedUsers.length > 0 ? (
     <FlatList
       data={displayedUsers} // Replace with your data array
       renderItem={({ item }) => <FeedItem user={item} onLikePress={handleLikePress}/>}
@@ -370,6 +388,16 @@ const onRefresh = async() => {
         />
       }
     />
+    ) : (
+      <ScrollView
+
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
+      <Text style={styles.noMatchesText}>
+        You have no potential matches. Consider adjusting your preferences to gain a broader suggestion of users
+      </Text>
+    </ScrollView>
+    )}
   </View>
     </View>
   );
@@ -418,7 +446,7 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     margin: 5,
-    backgroundColor: 'blue', // Change the background color as desired
+    backgroundColor: 'gold', // Change the background color as desired
     padding: 10,
     borderRadius: 5,
   },
@@ -441,6 +469,14 @@ const styles = StyleSheet.create({
   flatListContent: {
     flexGrow: 1, // Ensure the content can grow within the container
   },
+  noMatchesText: {
+    fontSize: 15,
+    textAlign: "center",
+    alignSelf: "center",
+    justifyContent: "center",
+    marginTop: "50%",
+    marginHorizontal: "5%"
+  }
   
 
   });

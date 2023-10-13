@@ -11,13 +11,17 @@ import * as SecureStore from 'expo-secure-store';
 export default function Profile({navigation}){
   const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/sprocket710.jpg')
   const [profilePicExists, setProfilePicExists] = useState(false)
-
+  const [discoverability, setDiscoverability] = useState(false)
+  
   useEffect(() => {
     if (!profilePicExists) {
       checkPfpExist()
     }
   },[]);
 
+  useEffect(()=> {
+    getDiscoverability()
+  },[])
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -33,27 +37,32 @@ export default function Profile({navigation}){
     }
   };
 
-  const confirmDeactivation = async () => {
-    try {
-      // Send a request to your server to deactivate the account
-      const response = await axios.post('http://localhost:3000/api/user/getDiscoverability');
-      if (response.status === 200) {
-
-        // Account deactivated successfully
-        // Perform any necessary cleanup and navigation
-        // For example, log the user out and navigate to the landing page
-        await SecureStore.deleteItemAsync('token');
-        await SecureStore.deleteItemAsync('username');
-        navigation.navigate('Landing');
-      } else {
-        // Handle deactivation error
-        Alert.alert('Deactivation Failed', 'Something went wrong while deactivating your account.');
+  const toggleDiscoverability = async () => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+      console.log(tokenVal)
+      const response = await axios.post(`http://localhost:3000/api/user/updateDiscoverability`, {
+        token: tokenVal
       }
-    } catch (error) {
-      // Handle network or other errors
-      Alert.alert('Deactivation Error', 'An error occurred while deactivating your account.');
+      ).catch(error => {
+        console.log("Error occured while searching:", error)
+      })
+      
+      setDiscoverability(response.data.userUpdated.discoverable)
     }
-  };
+  const getDiscoverability = async () => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+      console.log(tokenVal)
+      const response = await axios.post(`http://localhost:3000/api/user/getDiscoverability`, {
+        token: tokenVal
+      }
+      ).catch(error => {
+        console.log("Error occured while searching:", error)
+      })
+        console.log("updated")
+      setDiscoverability(response.data.discoverability)
+      return response.data.user;
+    }
+
 
   const navigateToManagePreferences = () => {
     navigation.navigate('ManagePreferences');
@@ -166,8 +175,8 @@ export default function Profile({navigation}){
           <Text style={styles.buttonText}> Manage Preference Rank</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={confirmDeactivation}>
-          <Text style={styles.buttonText}> Deactivate Account</Text>
+          <TouchableOpacity style={styles.button} onPress={toggleDiscoverability}>
+          <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+const jwt = require( 'jsonwebtoken');
 
 export default async function handler(req, res) {
     console.log("fetching discoverability")
@@ -7,15 +8,25 @@ export default async function handler(req, res) {
     const { database } = await connectToDatabase();
     const users = database.collection("users");
     
-    const userId = new ObjectId("65179cef3a0d783d76159f8b");
 
 
-    console.log(req.body.user)
+    const token = req.body.token
 
+
+  const currentUser= jwt.verify(token, 'MY_SECRET', (err, payload) => {
+      if (err) {
+          return res.status(400).json({
+              success: false,
+          })
+      } else {
+          return payload.username
+      }
+  });
+console.log(currentUser)
     try {
     // Query the database for potential user suggestions based on the search term
     const user = await users.findOne(
-        {_id: userId},
+        {username: currentUser},
         {_id: 0,discoverable: 1}
         )
     return res.status(200).json({
