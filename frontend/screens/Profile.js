@@ -74,7 +74,6 @@ export default function Profile({navigation}){
 
   
   const sendImage = async (imageToUpload) => {
-
     if (!imageToUpload) {
       // Image is null for some reason
       return
@@ -85,12 +84,14 @@ export default function Profile({navigation}){
       type: 'image/jpeg',
       name: 'testImage.jpg',
     });
-
+    const tokenVal = await SecureStore.getItemAsync('token')
+    formData.append('token', tokenVal)
     // TODO: Errors need to be caught here (server down/no connection, etc.)
-    await axios.post('http://localhost:3000/api/user/pfp/update', formData, {
+    const apiAddr = 'http://localhost:3000/api/user/pfp/update/' + tokenVal
+    await axios.post(apiAddr, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-      },
+      }
     }).catch(err => {
         if (err.response) {
           return err.response.data;
