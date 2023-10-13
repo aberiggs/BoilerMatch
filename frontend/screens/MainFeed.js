@@ -185,18 +185,16 @@ const onRefresh = async() => {
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
       console.log(tokenVal)
-      console.log("1")
-      await axios.post(`http://localhost:3000/api/user/refreshfeed/`,  {
-          token: tokenVal ,
+      const response = await axios.post(`http://localhost:3000/api/user/refreshfeed`, {
+        token: tokenVal
       }
-      ).then((response) => {
-        console.log(response.data.users)
-        console.log("updated")
-        setDisplayedUsers(response.data.users)
-       return response.data.users;
-      }).catch(error => {
+      ).catch(error => {
         console.log("Error occured while searching:", error)
       })
+      console.log(response.data.users)
+        console.log("updated")
+        setDisplayedUsers(response.data.users)
+      return response.data.users;
     }
 
     /*

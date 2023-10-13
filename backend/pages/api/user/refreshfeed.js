@@ -17,8 +17,6 @@ export default async function handler(req, res) {
 //       message: "Missing user",
 //     });
 //   }
-console.log("hello")
-console.log(req);
 
 const token = req.body.token
 
@@ -29,7 +27,7 @@ const currentUserID = jwt.verify(token, 'MY_SECRET', (err, payload) => {
             success: false,
         })
     } else {
-        return payload._id
+        return payload
     }
 });
 
