@@ -50,6 +50,7 @@ export default function MainFeed({navigation}){
       padding: 20,
       flex: 1,
       justifyContent: 'center',
+      alignItems: 'center'
     },
     closeButtonContainer: {
       marginTop: 20,
@@ -125,10 +126,10 @@ const checkPfpExist = async(username) => {
         
       />
       <Text style={{justifyContent: 'center',}}>{user.username}</Text>
-      <Text>Name: {user.information.firstName} {user.information.lastName}</Text>
-      <Text>Gender: {user.information.gender}</Text>
-      <Text>Grad Year: {user.information.graduation}</Text>
-      <Text>Major: {user.information.major}</Text>
+      <Text style={styles.subtitle}>Name: {user.information.firstName} {user.information.lastName}</Text>
+      <Text style={styles.subtitle}>Gender: {user.information.gender}</Text>
+      <Text style={styles.subtitle}>Grad Year: {user.information.graduation}</Text>
+      <Text style={styles.subtitle}>Major: {user.information.major}</Text>
       {/* Add other user information as needed */}
       <TouchableOpacity onPress={() => handleLikePress(user.username)}>
       <Icon
@@ -348,34 +349,34 @@ const checkPfpExist = async(username) => {
               size='xlarge'
               rounded
               source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
-              containerStyle={{backgroundColor: 'grey'}}
+              containerStyle={{backgroundColor: 'grey', margin: 10}}
               activeOpacity={0.8}
             />
-            <Text>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
-          <Text>Gender: {selectedUser.information.gender}</Text>
-          <Text>Grad Year: {selectedUser.information.graduation}</Text>
-         <Text>Major: {selectedUser.information.major}</Text>
+            <Text style={styles.subtitle}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
+          <Text style={styles.subtitle}>Gender: {selectedUser.information.gender}</Text>
+          <Text style={styles.subtitle}>Grad Year: {selectedUser.information.graduation}</Text>
+         <Text style={styles.subtitle}>Major: {selectedUser.information.major}</Text>
             {/* Add more user information as needed */}
-            <Text>{'\n'}Information:</Text>
-            <Text>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
-            <Text>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
-            <Text>Political Views: {selectedUser.information.politicalViews}</Text>
-            <Text>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
-            <Text>Pets: {selectedUser.information.pets}</Text>
+            <Text style={styles.title}>{'\n'}Information</Text>
+            <Text style={styles.subtitle}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
+            <Text style={styles.subtitle}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
+            <Text style={styles.subtitle}>Political Views: {selectedUser.information.politicalViews}</Text>
+            <Text style={styles.subtitle}>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
+            <Text style={styles.subtitle}>Pets: {selectedUser.information.pets}</Text>
            
 
-            <Text>{'\n'}Housing Information:</Text>
-            <Text>Housing: {selectedUser.housingInformation.housing}</Text>
-            <Text>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
-            <Text>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
-            <Text>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
+            <Text style={styles.title}>{'\n'}Housing Information</Text>
+            <Text style={styles.subtitle}>Housing: {selectedUser.housingInformation.housing}</Text>
+            <Text style={styles.subtitle}>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
+            <Text style={styles.subtitle}>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
+            <Text style={styles.subtitle}>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
 
-            <Text>{'\n'}Preferences:</Text>
-            <Text>Gender: {selectedUser.preferences.gender}</Text>
-            <Text>Bedtime: {selectedUser.preferences.bedtime}</Text>
-            <Text>Guests: {selectedUser.preferences.guests}</Text>
-            <Text>Clean: {selectedUser.preferences.clean}</Text>
-            <Text>Noise: {selectedUser.preferences.noise}</Text>
+            <Text style={styles.title}>{'\n'}Preferences</Text>
+            <Text style={styles.subtitle}>Gender: {selectedUser.preferences.gender}</Text>
+            <Text style={styles.subtitle}>Bedtime: {selectedUser.preferences.bedtime}</Text>
+            <Text style={styles.subtitle}>Guests: {selectedUser.preferences.guests}</Text>
+            <Text style={styles.subtitle}>Clean: {selectedUser.preferences.clean}</Text>
+            <Text style={styles.subtitle}>Noise: {selectedUser.preferences.noise}</Text>
 
             </View>
             ))}
@@ -479,34 +480,34 @@ const checkPfpExist = async(username) => {
               size='xlarge'
               rounded
               source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
-              containerStyle={{backgroundColor: 'grey'}}
+              containerStyle={{backgroundColor: 'grey', margin: 10}}
               activeOpacity={0.8}
             />
-            <Text>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
-          <Text>Gender: {selectedUser.information.gender}</Text>
-          <Text>Grad Year: {selectedUser.information.graduation}</Text>
-         <Text>Major: {selectedUser.information.major}</Text>
+            <Text style={styles.subtitle}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
+          <Text style={styles.subtitle}>Gender: {selectedUser.information.gender}</Text>
+          <Text style={styles.subtitle}>Grad Year: {selectedUser.information.graduation}</Text>
+         <Text style={styles.subtitle}>Major: {selectedUser.information.major}</Text>
             {/* Add more user information as needed */}
-            <Text>{'\n'}Information:</Text>
-            <Text>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
-            <Text>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
-            <Text>Political Views: {selectedUser.information.politicalViews}</Text>
-            <Text>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
-            <Text>Pets: {selectedUser.information.pets}</Text>
+            <Text style={styles.title}>{'\n'}Information</Text>
+            <Text style={styles.subtitle}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
+            <Text style={styles.subtitle}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
+            <Text style={styles.subtitle}>Political Views: {selectedUser.information.politicalViews}</Text>
+            <Text style={styles.subtitle}>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
+            <Text style={styles.subtitle}>Pets: {selectedUser.information.pets}</Text>
            
 
-            <Text>{'\n'}Housing Information:</Text>
-            <Text>Housing: {selectedUser.housingInformation.housing}</Text>
-            <Text>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
-            <Text>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
-            <Text>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
+            <Text style={styles.title}>{'\n'}Housing Information</Text>
+            <Text style={styles.subtitle}>Housing: {selectedUser.housingInformation.housing}</Text>
+            <Text style={styles.subtitle}>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
+            <Text style={styles.subtitle}>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
+            <Text style={styles.subtitle}>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
 
-            <Text>{'\n'}Preferences:</Text>
-            <Text>Gender: {selectedUser.preferences.gender}</Text>
-            <Text>Bedtime: {selectedUser.preferences.bedtime}</Text>
-            <Text>Guests: {selectedUser.preferences.guests}</Text>
-            <Text>Clean: {selectedUser.preferences.clean}</Text>
-            <Text>Noise: {selectedUser.preferences.noise}</Text>
+            <Text style={styles.title}>{'\n'}Preferences:</Text>
+            <Text style={styles.subtitle}>Gender: {selectedUser.preferences.gender}</Text>
+            <Text style={styles.subtitle}>Bedtime: {selectedUser.preferences.bedtime}</Text>
+            <Text style={styles.subtitle}>Guests: {selectedUser.preferences.guests}</Text>
+            <Text style={styles.subtitle}>Clean: {selectedUser.preferences.clean}</Text>
+            <Text style={styles.subtitle}>Noise: {selectedUser.preferences.noise}</Text>
 
            </View>
             <View style={modalStyles.closeButtonContainer}>
@@ -663,7 +664,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: "50%",
     marginHorizontal: "5%"
-  }
+  },    
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 10
+  },
+  subtitle: {
+    fontSize: 15,
+    textAlign: 'left',
+    marginVertical: 1,
+  },
   
 
   });
