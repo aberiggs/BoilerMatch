@@ -296,9 +296,15 @@ const onRefresh = () => {
   }
 };  
     return(
-      
         <View style={styles.container}>
         <View style={styles.topBar}>
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={handleSearchButtonPress}
+        >
+          <Text style={styles.searchButtonText}>Filter</Text>
+        </TouchableOpacity>
+
         <TextInput
           style={styles.input}
           placeholder="Search for a user"
@@ -312,7 +318,6 @@ const onRefresh = () => {
         >
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
-
         </View>
 
         
@@ -413,6 +418,12 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
+  filterButton: {
+    margin: 5,
+    backgroundColor: 'blue', // Change the background color as desired
+    padding: 10,
+    borderRadius: 5,
+  },
   searchButtonText: {
     color: 'gray', // Change the text color as desired
     fontSize: 13,
@@ -422,7 +433,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: 'white',
-    padding: 10,
+    padding: 20,
   },
   flatListContainer: {
     flex: 1, // Take up the remaining available space
