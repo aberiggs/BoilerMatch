@@ -2,21 +2,30 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Avatar } from 'react-native-elements';
+import { Avatar } from '@rneui/themed';
 import axios from 'axios'
 
 import * as SecureStore from 'expo-secure-store';
 
 
 export default function Profile({navigation}){
-  const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/sprocket710.jpg')
+  const [username, setUsername] = useState("")
+  const [profilePic, setProfilePic] = useState('')
   const [profilePicExists, setProfilePicExists] = useState(false)
 
   useEffect(() => {
     if (!profilePicExists) {
       checkPfpExist()
     }
+    fetchUsername()
   },[]);
+
+
+  const fetchUsername = async () => {
+    const userVal = await SecureStore.getItemAsync('username')
+    setUsername(userVal)
+    setProfilePic('https://boilermatch.blob.core.windows.net/pfp/' + userVal + '.jpg')
+  }
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -103,7 +112,10 @@ export default function Profile({navigation}){
     }
 
   const checkPfpExist = async () => {
-    const response = await axios.get(profilePic).catch((error) => {
+    const userVal = await SecureStore.getItemAsync('username')
+    const pfpUrl = 'https://boilermatch.blob.core.windows.net/pfp/' + userVal + '.jpg'
+    console.log(pfpUrl)
+    const response = await axios.get(pfpUrl).catch((error) => {
       return error.response
     })
     setProfilePicExists(response.status === 200)
@@ -116,27 +128,16 @@ export default function Profile({navigation}){
     }
 
   const ProfilePic = () => {
-    if (profilePicExists) {
-      return (
-        <Avatar
-          size="xlarge"
-          rounded
-          source={{uri: profilePic}}
-          onPress={() => pickImage()}
-          activeOpacity={0.8}>
-        </Avatar>
-      )
-    } else {
-      return (
-        <Avatar
-          size="xlarge"
-          title="Hi"
-          rounded
-          onPress={() => pickImage()}
-          activeOpacity={0.8}>
-        </Avatar>
-      )
-    }
+    return (
+      <Avatar
+        size='xlarge'
+        rounded
+        source={profilePicExists ? {uri: profilePic} : {}}
+        containerStyle={{backgroundColor: 'grey'}}
+        onPress={() => pickImage()}
+        activeOpacity={0.8}
+      />
+    )
   }
 
   return(
@@ -144,8 +145,7 @@ export default function Profile({navigation}){
         <ScrollView style={styles.scrollView}>
         <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
               <ProfilePic />
-          <Text>Username</Text>
-          <Text> This is your profile page</Text>
+          <Text style={styles.title}>{username}</Text>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
           <Text style={styles.buttonText}>Manage Information</Text>
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
   },
   button: {
       width: "40%",
@@ -191,7 +192,6 @@ const styles = StyleSheet.create({
       backgroundColor: "gold",
       borderRadius: 6,
       justifyContent: 'center',
-      
       
     },
     buttonText: {
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       textAlign: 'center',
       lineHeight: 25,
-      marginBottom: 30,
+      marginVertical: 14,
     },
     subtitle: {
       fontSize: 15,

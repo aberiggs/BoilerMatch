@@ -232,6 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
+    alignSelf: 'center',
     margin: 10,   
     
   },
@@ -275,7 +276,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     padding: 10,
-    marginBottom: 20,
   },
   input: {
     width: '80%',

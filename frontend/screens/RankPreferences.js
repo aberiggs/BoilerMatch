@@ -238,8 +238,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     justifyContent: 'center',
     margin: 10,
-    
-    
+    alignSelf: 'center'    
   },
   modalView: {
     flex:1,
@@ -281,7 +280,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     padding: 10,
-    marginBottom: 20,
   },
   input: {
     width: '80%',
