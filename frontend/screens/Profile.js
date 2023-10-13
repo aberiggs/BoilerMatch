@@ -144,8 +144,10 @@ export default function Profile({navigation}){
         containerStyle={{backgroundColor: 'grey'}}
         onPress={() => pickImage()}
         activeOpacity={0.8}
+        
+      >
         <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
-      />
+      </Avatar>
     )
   }
 
