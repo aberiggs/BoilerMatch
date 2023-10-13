@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import * as SecureStore from 'expo-secure-store'
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -19,11 +20,44 @@ export default function ManagePreferences({navigation}) {
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    setupInitialPrefs()
+  }, [])
+
+  const setupInitialPrefs = async() => {
+    const resData = await getInitialPrefs()
+    // No data or success is false
+    if (!resData || !resData.success) {
+      return
+    }
+
+    setGender(resData.preferences.gender)
+    setBedtime(resData.preferences.bedtime)
+    setGuest(resData.preferences.guest)
+    setClean(resData.preferences.clean)
+    setNoise(resData.preferences.noise)
+  }
+
+  const getInitialPrefs = async() => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post('http://localhost:3000/api/user/preferences', {
+      token: tokenVal,
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
+    })
+
+    return response.data
+  }
+
+  const handleSubmit = async () => {
     if (!gender || !bedtime || !guest || !clean || !noise ){
       setErrMsgVisible(true);
     } else {
-      updatePreferencesThroughApi();
+      //TODO: Error checking
+      const res = await updatePreferencesThroughApi();
       setSubmitMsgVisible(true);
     }
   }
@@ -33,12 +67,21 @@ export default function ManagePreferences({navigation}) {
   }
 
   const updatePreferencesThroughApi = async() => {
-    const response  = await axios.post('http://192.168.101.160:3000/api/user/preferences', {
+
+    console.log(gender,clean)
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post('http://localhost:3000/api/user/preferences/update', {
+      token: tokenVal,
       gender: gender,
       bedtime: bedtime,
       guest: guest,
       clean: clean,
       noise: noise
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
     })
     return response
   }
@@ -50,6 +93,7 @@ export default function ManagePreferences({navigation}) {
        <RNPickerSelect
           placeholder={ {label: "Select gender.", value: null}}
           onValueChange={(value) => setGender(value)}
+          value={gender}
           items={[
               { label: "Male", value: "male" },
               { label: "Female", value: "female" },
@@ -61,6 +105,7 @@ export default function ManagePreferences({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select bedtime: ", value: null}}
           onValueChange={(value) => setBedtime(value)}
+          value={bedtime}
           items={[
               { label: "Before 9PM", value: "9" },
               { label: "9PM-10PM", value: "10" },
@@ -75,6 +120,7 @@ export default function ManagePreferences({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select:", value: null}}
           onValueChange={(value) => setGuest(value)}
+          value={guest}
           items={[
               { label: "Never", value: "never" },
               { label: "Weekends only", value: "weekend" },
@@ -87,6 +133,7 @@ export default function ManagePreferences({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select cleanliness.", value: null}}
           onValueChange={(value) => setClean(value)}
+          value={clean}
           items={[
               { label: "5: Spotless, very organized.", value: "5" },
               { label: "4: Clean, but doesn't have to be perfect", value: "4" },
@@ -100,6 +147,7 @@ export default function ManagePreferences({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "Select noise level:", value: null}}
           onValueChange={(value) => setNoise(value)}
+          value={noise}
           items={[
               { label: "5: Be as loud as you want.", value: "5" },
               { label: "4: We can be loud on the weekends", value: "4" },
@@ -112,6 +160,10 @@ export default function ManagePreferences({navigation}) {
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Submit Preferences</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
+        <Text style={styles.buttonText}>Go Back to Profile</Text>
         </TouchableOpacity>
 
         <Modal
@@ -180,7 +232,8 @@ const styles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
-    
+    alignSelf: 'center',
+    margin: 10,   
     
   },
   modalView: {
@@ -223,7 +276,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     padding: 10,
-    marginBottom: 20,
   },
   input: {
     width: '80%',

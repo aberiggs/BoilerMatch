@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import * as SecureStore from 'expo-secure-store'
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -21,7 +22,38 @@ export default function ManagePreferenceRankings({navigation}) {
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    setupInitialRanks()
+  }, [])
+
+  const setupInitialRanks = async() => {
+    const resData = await getInitialRanks()
+    // No data or success is false
+    if (!resData || !resData.success) {
+      return
+    }
+    setRank1(resData.rankings.rank1)
+    setRank2(resData.rankings.rank2)
+    setRank3(resData.rankings.rank3)
+    setRank4(resData.rankings.rank4)
+    setRank5(resData.rankings.rank5)
+  }
+
+  const getInitialRanks = async() => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post('http://localhost:3000/api/user/preferenceRank', {
+      token: tokenVal,
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
+    })
+
+    return response.data
+  }
+
+  const handleSubmit = async () => {
     if (!rank1 || !rank2 || !rank3 || !rank4 || !rank5 ){
       setErrMsgVisible(true);
     }
@@ -31,7 +63,8 @@ export default function ManagePreferenceRankings({navigation}) {
         setErrMsgVisible(true);
         console.log("Cannot specify same preference for same rank")
     } else {
-        updateRankingsThroughApi();
+      // TODO: Error checking
+      const res = await updateRankingsThroughApi();
       setSubmitMsgVisible(true);
     }
   }
@@ -41,23 +74,20 @@ export default function ManagePreferenceRankings({navigation}) {
   }
 
   const updateRankingsThroughApi = async() => {
-    const response  = await axios.post('http://192.168.101.160:3000/api/user/preferencerank', {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post('http://localhost:3000/api/user/preferenceRank/update', {
+      token: tokenVal,
       rank1: rank1,
       rank2: rank2,
       rank3: rank3,
       rank4: rank4,
       rank5: rank5
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
     })
-
-
-    if (response.status === 200) {
-      // API call was successful
-      console.log('API Response:', response.data);
-      return response.data; // You can return the data to the caller if needed
-    } else {
-      // Handle other response status codes here
-      console.error('API Error:', response.status);
-    }
 
     return response
   }
@@ -67,8 +97,9 @@ export default function ManagePreferenceRankings({navigation}) {
       <ScrollView style={styles.scrollView}>
       <Text style={styles.subtitle}>Rank your preferences in order of importance to you! Do not select the same preference for different ranks.</Text>
        <RNPickerSelect
-          placeholder={ {label: "#1 Most important:", value: null}}
+          placeholder={ {label: "#1 Most important:", value: "Test"}}
           onValueChange={(value) => setRank1(value)}
+          value={rank1}
           items={[
               { label: "Gender of roommate", value: "gender" },
               { label: "Bedtime", value: "bedtime" },
@@ -81,6 +112,7 @@ export default function ManagePreferenceRankings({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "#2:", value: null}}
           onValueChange={(value) => setRank2(value)}
+          value={rank2}
           items={[
               { label: "Gender of roommate", value: "gender" },
               { label: "Bedtime", value: "bedtime" },
@@ -93,6 +125,7 @@ export default function ManagePreferenceRankings({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "#3:", value: null}}
           onValueChange={(value) => setRank3(value)}
+          value={rank3}
           items={[
               { label: "Gender of roommate", value: "gender" },
               { label: "Bedtime", value: "bedtime" },
@@ -105,6 +138,7 @@ export default function ManagePreferenceRankings({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "#4:", value: null}}
           onValueChange={(value) => setRank4(value)}
+          value={rank4}
           items={[
               { label: "Gender of roommate", value: "gender" },
               { label: "Bedtime", value: "bedtime" },
@@ -117,6 +151,7 @@ export default function ManagePreferenceRankings({navigation}) {
         <RNPickerSelect
           placeholder={ {label: "#5:", value: null}}
           onValueChange={(value) => setRank5(value)}
+          value={rank5}
           items={[
               { label: "Gender of roommate", value: "gender" },
               { label: "Bedtime", value: "bedtime" },
@@ -130,6 +165,10 @@ export default function ManagePreferenceRankings({navigation}) {
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Submit Rankings</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
+        <Text style={styles.buttonText}>Go Back to Profile</Text>
         </TouchableOpacity>
 
         <Modal
@@ -198,8 +237,8 @@ const styles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
-    
-    
+    margin: 10,
+    alignSelf: 'center'    
   },
   modalView: {
     flex:1,
@@ -241,7 +280,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     padding: 10,
-    marginBottom: 20,
   },
   input: {
     width: '80%',

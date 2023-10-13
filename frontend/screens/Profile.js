@@ -1,16 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Avatar } from 'react-native-elements';
 import { Icon } from 'react-native-vector-icons/Feather';
+import { Avatar } from '@rneui/themed';
 import axios from 'axios'
 
 import * as SecureStore from 'expo-secure-store';
 
 
 export default function Profile({navigation}){
-  const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/sprocket710.jpg')
+  const [username, setUsername] = useState("")
+  const [profilePic, setProfilePic] = useState('')
   const [profilePicExists, setProfilePicExists] = useState(false)
 
   const iconProps = () => {
@@ -23,7 +24,15 @@ export default function Profile({navigation}){
     if (!profilePicExists) {
       checkPfpExist()
     }
+    fetchUsername()
   },[]);
+
+
+  const fetchUsername = async () => {
+    const userVal = await SecureStore.getItemAsync('username')
+    setUsername(userVal)
+    setProfilePic('https://boilermatch.blob.core.windows.net/pfp/' + userVal + '.jpg')
+  }
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -110,7 +119,10 @@ export default function Profile({navigation}){
     }
 
   const checkPfpExist = async () => {
-    const response = await axios.get(profilePic).catch((error) => {
+    const userVal = await SecureStore.getItemAsync('username')
+    const pfpUrl = 'https://boilermatch.blob.core.windows.net/pfp/' + userVal + '.jpg'
+    console.log(pfpUrl)
+    const response = await axios.get(pfpUrl).catch((error) => {
       return error.response
     })
     setProfilePicExists(response.status === 200)
@@ -123,66 +135,56 @@ export default function Profile({navigation}){
     }
 
   const ProfilePic = () => {
-    if (profilePicExists) {
-      return (
-        <Avatar
-          size="xlarge"
-          rounded
-          source={{uri: profilePic}}
-          activeOpacity={0.8}>
-          <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
-        </Avatar>
-      )
-    } else {
-      return (
-        <Avatar
-          size="xlarge"
-          rounded
-          title="Hi"
-          activeOpacity={0.8}>
+    return (
+      <Avatar
+        size='xlarge'
+        rounded
+        source={profilePicExists ? {uri: profilePic} : {}}
+        containerStyle={{backgroundColor: 'grey'}}
+        onPress={() => pickImage()}
+        activeOpacity={0.8}
         <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
-        </Avatar>
-      )
-    }
+      />
+    )
   }
 
   return(
       <View style={styles.container}>
+        <ScrollView style={styles.scrollView}>
         <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
               <ProfilePic />
-          <Text>Username</Text>
-          <Text> This is your profile page</Text>
-          
-          <Pressable style={styles.button} onPress={handleLogout}>
-            <Text style={styles.buttonText}> Logout </Text>
-          </Pressable>
+          <Text style={styles.title}>{username}</Text>
 
-        <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
-        <Text style={styles.buttonText}> Manage Information</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
+          <Text style={styles.buttonText}>Manage Information</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={navigateToManageHousingInformation}>
-        <Text style={styles.buttonText}> Manage Housing Info</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={navigateToManageHousingInformation}>
+          <Text style={styles.buttonText}>Manage Housing Info</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferences}>
-          <Text style={styles.buttonText}> Manage Preferences</Text>
+          <Text style={styles.buttonText}>Manage Preferences</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferenceRankings}>
-          <Text style={styles.buttonText}> Manage Preference Rank</Text>
+          <Text style={styles.buttonText}>Manage Preference Rank</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={confirmDeactivation}>
-          <Text style={styles.buttonText}> Deactivate Account</Text>
+            <Text style={styles.buttonText}> Deactivate Account</Text>
           </TouchableOpacity>
+
+          <Pressable style={styles.button} onPress={handleLogout}>
+            <Text style={styles.buttonText}>Logout</Text>
+          </Pressable>
+
         </View>
+
+        </ScrollView>
       </View>
   )
 }
-
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -190,6 +192,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
   },
   button: {
       width: "40%",
@@ -197,7 +200,6 @@ const styles = StyleSheet.create({
       backgroundColor: "gold",
       borderRadius: 6,
       justifyContent: 'center',
-      
       
     },
     buttonText: {
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       textAlign: 'center',
       lineHeight: 25,
-      marginBottom: 30,
+      marginVertical: 14,
     },
     subtitle: {
       fontSize: 15,
@@ -237,16 +239,18 @@ const styles = StyleSheet.create({
       marginBottom: 8,
     },
     button: {
-      width: "40%",
-      height: 40,
+      width: "99%",
+      height: 50,
       backgroundColor: "gold",
       borderRadius: 6,
       justifyContent: 'center',
-      margin:20,
+      margin:10,
+      
     },
     buttonText: {
       fontSize: 15,
-      alignSelf: "center"
+      alignSelf: "center",
+      textAlign:"center",
     },
     errorMes: {
       fontSize: 15,
