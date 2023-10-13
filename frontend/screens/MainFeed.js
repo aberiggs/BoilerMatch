@@ -98,7 +98,7 @@ const onRefresh = async() => {
 
   setRefreshing(false);
 };
-
+  
 
   const FeedItem = ({ user, onLikePress }) => (
     <View style={styles.feedItem}>
@@ -111,6 +111,7 @@ const onRefresh = async() => {
           alignSelf: 'center',
           justifyContent: 'center',
         }}
+        
       />
       <Text style={{justifyContent: 'center',}}>{user.username}</Text>
       <Text>Email: {user.email}</Text>
@@ -179,11 +180,12 @@ const onRefresh = async() => {
   */
 
   const handleSearchButtonPress = () => {
-    console.log(searchTerm)
+   // console.log(searchTerm)
       axios.get(`http://localhost:3000/api/user/search/${searchTerm}`).then((response) => {
         if (response.data.users.length > 0) {
           console.log(response.data.users)
           setSearchResult(response.data.users);
+          console.log(searchResult.length)
           toggleModal();
           setUserNotFound(false);
         }
@@ -195,28 +197,27 @@ const onRefresh = async() => {
       });
       console.log(searchResult)
     };
+    useEffect(() => {
+      if (selectedUser) {
+        setSearchResult([selectedUser]);
+      } else {
+        setSearchResult([]);
+      }
+    }, [selectedUser]);
+    
     const handleSearchListButtonPress = (value,index) => {
-      console.log(value)
-      console.log(index)
-      setSearchTerm(value.username)
-      setSearchResult([])
-
-        axios.get(`http://localhost:3000/api/user/search/${value}`).then((response) => {
-          //if (response.data.users.length == 0) return setSearchResult([])
-          if (response.data.users.length > 0) {
-            console.log(response.data.users)
-           setSearchResult(response.data.users)
+           setSelectedUser(value);
+           //console.log(searchResult)
+           //console.log(searchResult.length)
+           //console.log("here")
            toggleModal()
-           setUserNotFound(false);
-          }
+           //console.log(isModalVisible)
+           //setUserNotFound(false);
+          
          //return response.data.users;
-        }).catch(error => {
-          console.log("Error occured while searching:", error)
-          setSearchResult([])
-          setUserNotFound(true);
-        });
        // console.log(searchResult)
       };
+      
     
         // const likeUser = async () => {
     //   const tokenVal = await SecureStore.getItemAsync('token')
@@ -288,7 +289,7 @@ const onRefresh = async() => {
 
     
   
-  if (isModalVisible && searchResult && searchResult.length > 0) {
+  if (isModalVisible && searchResult) {
    
     return (
       <Modal
@@ -347,46 +348,6 @@ const onRefresh = async() => {
       </Modal>
     );
   }
-  else if (newSearch) {
-    return (
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={isNewSearch}
-      >
-        <View style={modalStyles.modalContainer}>
-          <View style={modalStyles.modalContent}>
-            <View>
-              <Image
-                source={require('./testImage.png')}
-                resizeMode="cover"
-                style={{
-                  height: 270,
-                  width: 270,
-                  borderRadius: 999,
-                  marginTop: -90,
-                }}
-              />
-              {newSearch.map((user, index) => (
-                <View key={index}>
-                  <Text>Name: {user.username}</Text>
-                  <Text>Email: {user.email}</Text>
-                  <Text>Gender:</Text>
-                  <Text>Year:</Text>
-                  <Text>Hobbies:</Text>
-                  <Text>etc:</Text>
-                </View>
-              ))}
-            </View>
-            <View style={modalStyles.closeButtonContainer}>
-              <Button title="Close" onPress={toggleNewSearch} />
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-    );
-  }
    else {
     return null;
   }
@@ -425,7 +386,7 @@ const onRefresh = async() => {
     renderItem={({item,index }) => (
       <TouchableOpacity
         //value={searchTerm}
-        onPress={() => handleSearchListButtonPress(item,index )}
+        onPress={() => handleSearchListButtonPress(item,index)}
         //activeOpacity={0.7} // You can adjust this value
         underlayColor="gray">
           <View style={styles.dropdownItemContainer}>
@@ -435,7 +396,7 @@ const onRefresh = async() => {
       
     )}
     
-    style={styles.dropdownList} // Apply a fixed height
+    //style={styles.dropdownList} // Apply a fixed height
    
   />
   </View>
@@ -489,7 +450,7 @@ const onRefresh = async() => {
     )}
     
       
-      {renderModel()}
+      
       <View style={styles.flatListContainer}>
     <FlatList
       data={displayedUsers} // Replace with your data array
@@ -504,6 +465,7 @@ const onRefresh = async() => {
         />
       }
     />
+    {renderModel()}
   </View>
     </View>
   );
@@ -553,6 +515,7 @@ const styles = StyleSheet.create({
     marginRight: 10,   // Margin between items
   },
   dropdownContainer: {
+    backgroundColor: 'white',
     width: '100%',
     borderColor: 'white',
     borderWidth: 1,
@@ -561,6 +524,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     top: 46,
     position: 'absolute',
+    zIndex: 90,
     },
   inputContainer: {
     flex : 1,
@@ -602,11 +566,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: 'white',
     padding: 20,
+    zIndex: 1,
   },
   flatListContainer: {
     flex: 1, // Take up the remaining available space
     width: '100%', // Take up the entire width
     paddingHorizontal: 10, // Add padding to the sides
+    zIndex: 0,
   },
   flatListContent: {
     flexGrow: 1, // Ensure the content can grow within the container
