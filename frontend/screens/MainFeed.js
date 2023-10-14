@@ -67,6 +67,9 @@ export default function MainFeed({navigation}){
       ).catch(error => {
         console.log("Error occured while searching:", error)
       })
+
+      //Update returns what the data previously look like so if there was no interaction
+      //we set to true and if there was an interaction we said liked to the reciprocal
       let liked = true
       if(response.data.user_added == null){
         liked = true
@@ -74,11 +77,13 @@ export default function MainFeed({navigation}){
       else{
         liked = !response.data.user_added.liked
       }
+
       setUsersLiked((usersLiked) => ({
         ...usersLiked,
         [user]: liked,
       })
       )
+
   };
   
   const handleUserItemClick = (user) => {
@@ -251,7 +256,6 @@ const checkPfpExist = async(username) => {
   
    const handleLikedMeButtonPress = () => {
       setShowOnlyUsersLikedBy(!showOnlyUsersLikedBy)
-      onRefresh()
 
 
    }
@@ -259,7 +263,6 @@ const checkPfpExist = async(username) => {
 
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
-      console.log(showOnlyUsersLikedBy)
       if(!showOnlyUsersLikedBy){
         const response = await axios.post(`http://localhost:3000/api/user/refreshfeed`, {
         token: tokenVal
@@ -268,7 +271,7 @@ const checkPfpExist = async(username) => {
         console.log("Error occured while searching:", error)
       })
       console.log(response.data.users)
-        console.log("updated")
+        console.log("set all users")
         setDisplayedUsers(response.data.users)
     }
     else{
@@ -279,7 +282,7 @@ const checkPfpExist = async(username) => {
         console.log("Error occured while searching:", error)
       })
       console.log(response.data.users)
-        console.log("updated")
+        console.log("set liked by users")
         setDisplayedUsers(response.data.users)
     }
     }

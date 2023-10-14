@@ -49,7 +49,6 @@ console.log(currentUser)
             $and:[ { $or: [{"InteractionsWhereUserIsLiked.userLiking": { $not: { $eq: currentUser} }},{"InteractionsWhereUserIsLiked.liked": false}]},
             {"username" : { $not: { $eq: currentUser} }},
             {"discoverable": true}]
-      
         }
     }, 
     {$sample: {
@@ -60,12 +59,7 @@ console.log(currentUser)
     // }
    
     ]).toArray()
-    for (const obj of potentialUsers) {
-      console.log(obj)
-      // for (const key in obj) {
-      //   console.log(key + ': ' + obj[key]);
-      // }
-    }
+    
     return res.status(200).json({
       success: true,
       users: potentialUsers,
