@@ -8,6 +8,8 @@ import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
+import UserProfile from './UserProfile'
+
 
 
 export default function MainFeed({navigation}){
@@ -35,27 +37,6 @@ export default function MainFeed({navigation}){
     handleRefreshFeed()
    
   },[showOnlyUsersLikedBy]);
-  
-
-  
-  const modalStyles = {
-    modalContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'white',
-    },
-    modalContent: {
-      backgroundColor: 'white',
-      padding: 20,
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center'
-    },
-    closeButtonContainer: {
-      marginTop: 20,
-    },
-  };
   
   const handleLikePress = async(user) => {
     // Find the feed item with the specified key
@@ -105,31 +86,16 @@ const onRefresh = async() => {
 
   setRefreshing(false);
 };
-  
-const checkPfpExist = async(username) => {
-  const pfpUrl = 'https://boilermatch.blob.core.windows.net/pfp/' + username + '.jpg'
-  const response = await axios.get(pfpUrl).catch((error) => {
-    return false
-  })
-  return true
-}
 
   const FeedItem = ({ user, onLikePress }) => (
     <View style={styles.feedItem}>
-      <Image
-        source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + user.username + '.jpg'}} // Replace with the actual image source
-        resizeMode="cover"
-        style={{
-          height: 320, // Adjust the height as needed
-          width: "100%",  // Adjust the width as needed
-          alignSelf: 'center',
-          justifyContent: 'center',
-          backgroundColor: "grey",
-          borderRadius: 10,
-          marginBottom: 10
-        }}
-        
-      />
+      <Avatar
+          size={250}
+          rounded
+          source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
+          containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
+          activeOpacity={0.8}
+        />
       <Text style={{justifyContent: 'center',}}>{user.username}</Text>
       <Text style={styles.subtitle}>Name: {user.information.firstName} {user.information.lastName}</Text>
       <Text style={styles.subtitle}>Gender: {user.information.gender}</Text>
@@ -180,7 +146,7 @@ const checkPfpExist = async(username) => {
       setIsDropdownVisible(response.data.users.length > 0)
       //console.log(isDropdownVisible);
     }).catch(error => {
-      console.log("Error occured while searching:", error)
+      console.log("Error occurred while searching:", error)
     });
   };
   /*
@@ -196,28 +162,6 @@ const checkPfpExist = async(username) => {
       });
   }, [searchTerm]);
   */
-
- 
-
-
-  const handleSearchButtonPress = () => {
-   // console.log(searchTerm)
-      axios.get(`http://localhost:3000/api/user/search/${searchTerm}`).then((response) => {
-        if (response.data.users.length > 0) {
-          console.log(response.data.users)
-          setSearchResult(response.data.users);
-          console.log(searchResult.length)
-          toggleModal();
-          setUserNotFound(false);
-        }
-       //return response.data.users;
-      }).catch(error => {
-        console.log("Error occured while searching:", error)
-        setSearchResult([])
-        setUserNotFound(true);
-      });
-      console.log(searchResult)
-    };
 
     useEffect(() => {
       if (selectedUser) {
@@ -257,8 +201,6 @@ const checkPfpExist = async(username) => {
   
    const handleLikedMeButtonPress = () => {
       setShowOnlyUsersLikedBy(!showOnlyUsersLikedBy)
-
-
    }
 
 
@@ -287,9 +229,6 @@ const checkPfpExist = async(username) => {
         setDisplayedUsers(response.data.users)
     }
     }
-    const pressablefunc = () => {
-      console.log("i was pressed")
-    };
 
     // const getUserLiked = async() => {
     //   const tokenVal = await SecureStore.getItemAsync('token')
@@ -313,28 +252,7 @@ const checkPfpExist = async(username) => {
    */
 
   const renderModel = () => {
-  const modalStyles = {
-    modalContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'white',
-    },
-    modalContent: {
-      backgroundColor: 'white',
-      padding: 20,
-      flex: 1,
-      justifyContent: 'center',
-    },
-    closeButtonContainer: {
-      marginTop: 20,
-    },
-  };
 
-  
-  
-
-    
   
   if (isModalVisible && searchResult) {
    
@@ -344,50 +262,7 @@ const checkPfpExist = async(username) => {
         transparent={false}
         visible={isModalVisible}
       >
-        <View style={modalStyles.modalContainer}>
-          <View style={modalStyles.modalContent}>
-            {searchResult.map((user, index) => (
-            <View key={index}>
-              <Avatar
-              size='xlarge'
-              rounded
-              source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
-              containerStyle={{backgroundColor: 'grey', margin: 10}}
-              activeOpacity={0.8}
-            />
-            <Text style={styles.subtitle}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
-          <Text style={styles.subtitle}>Gender: {selectedUser.information.gender}</Text>
-          <Text style={styles.subtitle}>Grad Year: {selectedUser.information.graduation}</Text>
-         <Text style={styles.subtitle}>Major: {selectedUser.information.major}</Text>
-            {/* Add more user information as needed */}
-            <Text style={styles.title}>{'\n'}Information</Text>
-            <Text style={styles.subtitle}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
-            <Text style={styles.subtitle}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
-            <Text style={styles.subtitle}>Political Views: {selectedUser.information.politicalViews}</Text>
-            <Text style={styles.subtitle}>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
-            <Text style={styles.subtitle}>Pets: {selectedUser.information.pets}</Text>
-           
-
-            <Text style={styles.title}>{'\n'}Housing Information</Text>
-            <Text style={styles.subtitle}>Housing: {selectedUser.housingInformation.housing}</Text>
-            <Text style={styles.subtitle}>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
-            <Text style={styles.subtitle}>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
-            <Text style={styles.subtitle}>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
-
-            <Text style={styles.title}>{'\n'}Preferences</Text>
-            <Text style={styles.subtitle}>Gender: {selectedUser.preferences.gender}</Text>
-            <Text style={styles.subtitle}>Bedtime: {selectedUser.preferences.bedtime}</Text>
-            <Text style={styles.subtitle}>Guests: {selectedUser.preferences.guests}</Text>
-            <Text style={styles.subtitle}>Clean: {selectedUser.preferences.clean}</Text>
-            <Text style={styles.subtitle}>Noise: {selectedUser.preferences.noise}</Text>
-
-            </View>
-            ))}
-            </View>
-              </View>
-            <View style={modalStyles.closeButtonContainer}>
-              <Button title="Close" onPress={toggleModal} />
-            </View>
+        <UserProfile user={selectedUser} closeModal={() => setIsModalVisible(false)}/>
       </Modal>
     );
   }  else if (userNotFound) {
@@ -415,7 +290,6 @@ const checkPfpExist = async(username) => {
   }
 };  
     return(
-      
         <View style={styles.container}>
         <View style={styles.topBar}>
         
@@ -470,54 +344,13 @@ const checkPfpExist = async(username) => {
         </View>
 
         
-        {selectedUser && (
+      {selectedUser && (
       <Modal
         animationType="slide"
         transparent={false}
         visible={isUserModalVisible}
       >
-        <View style={modalStyles.modalContainer}>
-          <View style={modalStyles.modalContent}>
-            <View>
-            <Avatar
-              size='xlarge'
-              rounded
-              source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + selectedUser.username + '.jpg'}}
-              containerStyle={{backgroundColor: 'grey', margin: 10}}
-              activeOpacity={0.8}
-            />
-            <Text style={styles.subtitle}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
-          <Text style={styles.subtitle}>Gender: {selectedUser.information.gender}</Text>
-          <Text style={styles.subtitle}>Grad Year: {selectedUser.information.graduation}</Text>
-         <Text style={styles.subtitle}>Major: {selectedUser.information.major}</Text>
-            {/* Add more user information as needed */}
-            <Text style={styles.title}>{'\n'}Information</Text>
-            <Text style={styles.subtitle}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
-            <Text style={styles.subtitle}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
-            <Text style={styles.subtitle}>Political Views: {selectedUser.information.politicalViews}</Text>
-            <Text style={styles.subtitle}>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
-            <Text style={styles.subtitle}>Pets: {selectedUser.information.pets}</Text>
-           
-
-            <Text style={styles.title}>{'\n'}Housing Information</Text>
-            <Text style={styles.subtitle}>Housing: {selectedUser.housingInformation.housing}</Text>
-            <Text style={styles.subtitle}>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
-            <Text style={styles.subtitle}>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
-            <Text style={styles.subtitle}>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
-
-            <Text style={styles.title}>{'\n'}Preferences:</Text>
-            <Text style={styles.subtitle}>Gender: {selectedUser.preferences.gender}</Text>
-            <Text style={styles.subtitle}>Bedtime: {selectedUser.preferences.bedtime}</Text>
-            <Text style={styles.subtitle}>Guests: {selectedUser.preferences.guests}</Text>
-            <Text style={styles.subtitle}>Clean: {selectedUser.preferences.clean}</Text>
-            <Text style={styles.subtitle}>Noise: {selectedUser.preferences.noise}</Text>
-
-           </View>
-            <View style={modalStyles.closeButtonContainer}>
-              <Button title="Close" onPress={handleCloseUserModal} />
-            </View>
-          </View>
-        </View>
+        <UserProfile user={selectedUser} closeModal={handleCloseUserModal}/>
       </Modal>
     )}
     
