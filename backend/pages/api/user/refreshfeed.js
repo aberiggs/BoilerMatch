@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 const token = req.body.token
 
 
-const currentUser= jwt.verify(token, 'MY_SECRET', (err, payload) => {
+const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
     if (err) {
         return res.status(400).json({
             success: false,
@@ -31,8 +31,7 @@ const currentUser= jwt.verify(token, 'MY_SECRET', (err, payload) => {
     }
 });
 
-console.log(currentUser)
-
+//const currentUser = req.body.username
   try {
     // Query the database for potential user suggestions based on the search term
     const potentialUsers = await users.aggregate([
@@ -46,11 +45,14 @@ console.log(currentUser)
         },
         {
             $match: {
-            $and:[ { $or: [{"InteractionsWhereUserIsLiked.userLiking": { $not: { $eq: currentUser} }},{"InteractionsWhereUserIsLiked.liked": false}]},
+            $and:[ 
+              {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, liked: true}}} },
             {"username" : { $not: { $eq: currentUser} }},
-            {"discoverable": true}]
-        }
-    }, 
+            {"discoverable": true}
+          ]
+    }
+  }
+    , 
     {$sample: {
       size: 5
     }},
