@@ -1,8 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import MainFeed from '../screens/MainFeed'
-import ChatRoom from '../screens/ChatRoom'
-import Profile from '../screens/Profile'
-import {Ionicons } from '@expo/vector-icons';
+import MainFeed from '../screens/MainFeed/MainFeed'
+import Messages from '../screens/Messages/Messages'
+import Profile from '../screens/Profile/Profile'
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 
@@ -14,9 +14,9 @@ export default function MainTabNavigator() {
         tabBarIcon: ({color, size }) => {
           let iconName;
         
-          if (route.name === "MainFeed") {
+          if (route.name === "Main Feed") {
             iconName =  "ios-home"
-          } else if (route.name === "ChatRoom") {
+          } else if (route.name === "Messages") {
             iconName = "chatbubble"
           }
           else {
@@ -30,8 +30,8 @@ export default function MainTabNavigator() {
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="MainFeed" component={MainFeed} />
-      <Tab.Screen name="ChatRoom" component={ChatRoom} />
+      <Tab.Screen name="Main Feed" component={MainFeed} />
+      <Tab.Screen name="Messages" component={Messages} />
       <Tab.Screen name="Profile" component={Profile} />
       
     </Tab.Navigator>

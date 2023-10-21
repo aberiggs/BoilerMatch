@@ -14,7 +14,7 @@ export default function ResetPassword({route, navigation}){
     const email = route.params.email
 
     const resetThroughApi = async () => {
-        const response = await axios.post('http://localhost:3000/api/user/resetpassword', {
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/resetpassword', {
           email: email,
           password: password,
         }).catch((error) => {

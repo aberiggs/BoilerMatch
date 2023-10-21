@@ -37,7 +37,7 @@ export default function ManageHousingInformation({navigation}) {
 
   const getInitialHousingInfo = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post('http://localhost:3000/api/user/housingInformation', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/housingInformation', {
       token: tokenVal,
     }).catch((error) => {
       if (error.response) {
@@ -72,7 +72,7 @@ export default function ManageHousingInformation({navigation}) {
     }
     // port is 3000, numbers before that is my IP address
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response = await axios.post('http://localhost:3000/api/user/housingInformation/update', {
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/housingInformation/update', {
       token: tokenVal,
       housingInformation: housingInformation
     }).catch((error) => {

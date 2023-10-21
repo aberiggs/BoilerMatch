@@ -12,18 +12,18 @@ export default function Landing({navigation}){
 
     const handleRemember = async () => {
       const tokenVal = await SecureStore.getItemAsync('token')
+      const usernameVal = await SecureStore.getItemAsync('username')
 
-      if (!tokenVal) {
+      if (!tokenVal || !usernameVal) {
           return
       }
 
-      const response = await axios.post('http://localhost:3000/api/user/verifylanding', {
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/verifylanding', {
         token: tokenVal,
       }).catch((error) => {
         if (error.response) {
           return error.response.data
         }
-
         return
       })
 

@@ -11,8 +11,7 @@ import * as SecureStore from 'expo-secure-store';
 
 export default function Profile({navigation}){
   const [username, setUsername] = useState("")
-  const [profilePic, setProfilePic] = useState('')
-  const [profilePicExists, setProfilePicExists] = useState(false)
+  const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/')
   const [discoverability, setDiscoverability] = useState(false)
   
   const iconProps = () => {
@@ -22,17 +21,11 @@ export default function Profile({navigation}){
   };
 
   useEffect(() => {
-    if (!profilePicExists) {
-      checkPfpExist()
-    }
-    fetchUsername()
+    fetchUsernameAndProfilePic()
+    getDiscoverability()
   },[]);
 
-  useEffect(()=> {
-    getDiscoverability()
-  },[])
-
-  const fetchUsername = async () => {
+  const fetchUsernameAndProfilePic = async () => {
     const userVal = await SecureStore.getItemAsync('username')
     setUsername(userVal)
     setProfilePic('https://boilermatch.blob.core.windows.net/pfp/' + userVal + '.jpg')
@@ -55,29 +48,27 @@ export default function Profile({navigation}){
 
   const toggleDiscoverability = async () => {
     const tokenVal = await SecureStore.getItemAsync('token')
-      console.log(tokenVal)
-      const response = await axios.post(`http://localhost:3000/api/user/updateDiscoverability`, {
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/updateDiscoverability', {
         token: tokenVal
       }
       ).catch(error => {
-        console.log("Error occured while searching:", error)
+        console.log("Error occurred while searching:", error)
       })
       
       setDiscoverability(!response.data.userUpdated.discoverable)
-    }
+  }
+
   const getDiscoverability = async () => {
     const tokenVal = await SecureStore.getItemAsync('token')
-      console.log(tokenVal)
-      const response = await axios.post(`http://localhost:3000/api/user/getDiscoverability`, {
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getDiscoverability', {
         token: tokenVal
       }
       ).catch(error => {
-        console.log("Error occured while searching:", error)
+        console.log("Error occurred while searching:", error)
       })
-        console.log("updated")
       setDiscoverability(response.data.discoverability)
       return response.data.user;
-    }
+  }
 
 
   const navigateToManagePreferences = () => {
@@ -103,7 +94,7 @@ export default function Profile({navigation}){
     const tokenVal = await SecureStore.getItemAsync('token')
     formData.append('token', tokenVal)
     // TODO: Errors need to be caught here (server down/no connection, etc.)
-    const apiAddr = 'http://localhost:3000/api/user/pfp/update/' + tokenVal
+    const apiAddr = process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/pfp/update/' + tokenVal
     await axios.post(apiAddr, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -113,7 +104,6 @@ export default function Profile({navigation}){
           return err.response.data;
         }
     });
-
     setProfilePic(imageToUpload)
     setProfilePicExists(true)
   }
@@ -127,16 +117,6 @@ export default function Profile({navigation}){
     const navigateToManageHousingInformation = () => {
       navigation.navigate('ManageHousingInformation')
     }
-
-  const checkPfpExist = async () => {
-    const userVal = await SecureStore.getItemAsync('username')
-    const pfpUrl = 'https://boilermatch.blob.core.windows.net/pfp/' + userVal + '.jpg'
-    console.log(pfpUrl)
-    const response = await axios.get(pfpUrl).catch((error) => {
-      return error.response
-    })
-    setProfilePicExists(response.status === 200)
-  }
   
    const handleLogout = async () => {
         await SecureStore.deleteItemAsync('token')
@@ -149,7 +129,7 @@ export default function Profile({navigation}){
       <Avatar
         size='xlarge'
         rounded
-        source={profilePicExists ? {uri: profilePic} : {}}
+        source={{uri: profilePic}}
         containerStyle={{backgroundColor: 'grey'}}
         onPress={() => pickImage()}
         activeOpacity={0.8}
@@ -186,7 +166,6 @@ export default function Profile({navigation}){
           <TouchableOpacity style={styles.button} onPress={toggleDiscoverability}>
           <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
           </TouchableOpacity>
-
 
           <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>

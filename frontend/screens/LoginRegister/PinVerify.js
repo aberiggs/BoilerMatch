@@ -1,23 +1,29 @@
-import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native';
 import axios from "axios"
 
-export default function ForgotPassword({navigation}){
-    const forgotThroughApi = async () => {
-        const response = await axios.post('http://localhost:3000/api/user/forgotpassword', {
+export default function PinVerify({route, navigation}){
+    const [pin, setPin] = useState('');
+    const [errorMessage, setErrorMessage] = useState('')
+    const email = route.params.email;
+
+    const verifyThroughApi = async () => {
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/pinverify', {
           email: email,
+          pin: pin,
         }).catch((error) => {
           if (error.response) {
             return error.response.data
           }
+
+          return
         })
 
         return response
     }
 
-    const handleForgot = async () => {
-        const res = await forgotThroughApi()
+    const handleVerify = async () => {
+        const res = await verifyThroughApi()
 
         if (!res || res.success === false) {
           if (res) {
@@ -26,41 +32,38 @@ export default function ForgotPassword({navigation}){
             setErrorMessage("An unexpected error occurred")
           }
         } else {
-          navigation.push('pinVerify', {
+          navigation.push('ResetPassword', {
             email: email,
           });
         }
     }
 
-    const [email, setEmail] = useState('')
-    const [errorMessage, setErrorMessage] = useState('')
-
     return(
         <View style={styles.container}>
-          <Text style={styles.title}>Forgot Password</Text>
           <View style={{flex: 'column', width: "45%"}}>
-            
-            <Text style={styles.subtitle}>Purdue Email</Text>
+            <Text style={styles.subtitle}>Verify PIN</Text>
             <TextInput
-            autoCapitalize = "none"
-            autoCorrect={false}
-            autoComplete="off"
+              autoCapitalize = "none"
+              autoCorrect={false}
+              autoComplete="off"
 
-            onChangeText={email => setEmail(email)}
+              onChangeText={pin => setPin(pin)}
 
-            style={styles.inputFieldBox}
+              style={styles.inputFieldBox}
             />
           </View>
-       
-        <Text style={styles.errorMes}>{errorMessage}</Text>
-        <Pressable style={styles.button} onPress={handleForgot}>
+            <Text style={styles.errorMes}>{errorMessage}</Text>
 
-        <Text style={styles.buttonText}> Reset Password</Text>
-        </Pressable>
-      
-       </View>
+            <Pressable style={styles.button} onPress={handleVerify}>
+
+            <Text style={styles.buttonText}> Submit </Text>
+            </Pressable>
+
+        </View>
     )
+
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -75,15 +78,13 @@ const styles = StyleSheet.create({
         backgroundColor: "gold",
         borderRadius: 6,
         justifyContent: 'center',
-        
-        
     },
     buttonText: {
         fontSize: 20,
         alignSelf: "center"
     },
     inputField: {
-      color:"black",
+      color:'black',
       height: 40,
       width: "45%",
       borderColor: 'black',
@@ -118,12 +119,11 @@ const styles = StyleSheet.create({
       marginBottom: 8,
     },
     errorMes: {
-        fontSize: 15,
-        fontWeight: 'bold',
-        textAlign: 'left',
-        marginBottom: 8,
-        color: 'red',
-        marginHorizontal: 'auto'
+      fontSize: 15,
+      fontWeight: 'bold',
+      textAlign: 'left',
+      marginBottom: 8,
+      color: 'red',
+      marginHorizontal: 'auto'
     }
   });
-  

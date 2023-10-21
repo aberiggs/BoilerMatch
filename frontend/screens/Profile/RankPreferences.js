@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
@@ -10,37 +10,38 @@ import RNPickerSelect from "react-native-picker-select"
 
 
 
-export default function ManagePreferences({navigation}) {
+export default function ManagePreferenceRankings({navigation}) {
 
-  const [gender, setGender] = useState('');
-  const [bedtime, setBedtime] = useState('');
-  const [guest, setGuest] = useState('');
-  const [clean, setClean] = useState('');
-  const [noise, setNoise] = useState('');
+  const [rank1, setRank1] = useState('');
+  const [rank2, setRank2] = useState('');
+  const [rank3, setRank3] = useState('');
+  const [rank4, setRank4] = useState('');
+  const [rank5, setRank5] = useState('');
+
+
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
 
   useEffect(() => {
-    setupInitialPrefs()
+    setupInitialRanks()
   }, [])
 
-  const setupInitialPrefs = async() => {
-    const resData = await getInitialPrefs()
+  const setupInitialRanks = async() => {
+    const resData = await getInitialRanks()
     // No data or success is false
     if (!resData || !resData.success) {
       return
     }
-
-    setGender(resData.preferences.gender)
-    setBedtime(resData.preferences.bedtime)
-    setGuest(resData.preferences.guest)
-    setClean(resData.preferences.clean)
-    setNoise(resData.preferences.noise)
+    setRank1(resData.rankings.rank1)
+    setRank2(resData.rankings.rank2)
+    setRank3(resData.rankings.rank3)
+    setRank4(resData.rankings.rank4)
+    setRank5(resData.rankings.rank5)
   }
 
-  const getInitialPrefs = async() => {
+  const getInitialRanks = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post('http://localhost:3000/api/user/preferences', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferenceRank', {
       token: tokenVal,
     }).catch((error) => {
       if (error.response) {
@@ -53,11 +54,17 @@ export default function ManagePreferences({navigation}) {
   }
 
   const handleSubmit = async () => {
-    if (!gender || !bedtime || !guest || !clean || !noise ){
+    if (!rank1 || !rank2 || !rank3 || !rank4 || !rank5 ){
       setErrMsgVisible(true);
+    }
+    else if(rank1 == rank2 || rank1 == rank3 || rank1 == rank4 || rank1 == rank5
+            || rank2 == rank3 || rank2 == rank4 || rank2 == rank5
+            || rank3 == rank4 || rank3 == rank5|| rank4 == rank5) {
+        setErrMsgVisible(true);
+        console.log("Cannot specify same preference for same rank")
     } else {
-      //TODO: Error checking
-      const res = await updatePreferencesThroughApi();
+      // TODO: Error checking
+      const res = await updateRankingsThroughApi();
       setSubmitMsgVisible(true);
     }
   }
@@ -66,100 +73,98 @@ export default function ManagePreferences({navigation}) {
     navigation.goBack()
   }
 
-  const updatePreferencesThroughApi = async() => {
-
-    console.log(gender,clean)
+  const updateRankingsThroughApi = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post('http://localhost:3000/api/user/preferences/update', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferenceRank/update', {
       token: tokenVal,
-      gender: gender,
-      bedtime: bedtime,
-      guest: guest,
-      clean: clean,
-      noise: noise
+      rank1: rank1,
+      rank2: rank2,
+      rank3: rank3,
+      rank4: rank4,
+      rank5: rank5
     }).catch((error) => {
       if (error.response) {
         return error.response.data
       }
       return
     })
+
     return response
   }
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
-      <Text style={styles.subtitle}>Select the preferred gender of your roommate</Text>
+      <Text style={styles.subtitle}>Rank your preferences in order of importance to you! Do not select the same preference for different ranks.</Text>
        <RNPickerSelect
-          placeholder={ {label: "Select gender.", value: null}}
-          onValueChange={(value) => setGender(value)}
-          value={gender}
+          placeholder={ {label: "#1 Most important:", value: "Test"}}
+          onValueChange={(value) => setRank1(value)}
+          value={rank1}
           items={[
-              { label: "Male", value: "male" },
-              { label: "Female", value: "female" },
-              { label: "Other/No preference", value: "other" }
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
-        <Text style={styles.subtitle}>Select your preferred bedtime:</Text>
         <RNPickerSelect
-          placeholder={ {label: "Select bedtime: ", value: null}}
-          onValueChange={(value) => setBedtime(value)}
-          value={bedtime}
+          placeholder={ {label: "#2:", value: null}}
+          onValueChange={(value) => setRank2(value)}
+          value={rank2}
           items={[
-              { label: "Before 9PM", value: "9" },
-              { label: "9PM-10PM", value: "10" },
-              { label: "10PM-11PM", value: "11" },
-              { label: "11PM-12PM", value: "12" },
-              { label: "12PM-1AM", value: "1" },
-              { label: "1AM+", value: "2" }
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
-        <Text style={styles.subtitle}>How comfortable are you with guests:</Text>
         <RNPickerSelect
-          placeholder={ {label: "Select:", value: null}}
-          onValueChange={(value) => setGuest(value)}
-          value={guest}
+          placeholder={ {label: "#3:", value: null}}
+          onValueChange={(value) => setRank3(value)}
+          value={rank3}
           items={[
-              { label: "Never", value: "never" },
-              { label: "Weekends only", value: "weekend" },
-              { label: "Most of the time (weekends, some weekdays)", value: "sometimes" },
-              { label : "Anytime!", value: "anytime"}
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
-        <Text style={styles.subtitle}>On a scale of 1-5, how clean do you prefer your environment:</Text>
         <RNPickerSelect
-          placeholder={ {label: "Select cleanliness.", value: null}}
-          onValueChange={(value) => setClean(value)}
-          value={clean}
+          placeholder={ {label: "#4:", value: null}}
+          onValueChange={(value) => setRank4(value)}
+          value={rank4}
           items={[
-              { label: "5: Spotless, very organized.", value: "5" },
-              { label: "4: Clean, but doesn't have to be perfect", value: "4" },
-              { label: "3: Not clean, but not filthy", value: "3" },
-              { label: "2: Not so clean", value: "2"},
-              { label: "1: Dumpster", value: "1"}
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
-         <Text style={styles.subtitle}>What's your preferred noise level?</Text>
         <RNPickerSelect
-          placeholder={ {label: "Select noise level:", value: null}}
-          onValueChange={(value) => setNoise(value)}
-          value={noise}
+          placeholder={ {label: "#5:", value: null}}
+          onValueChange={(value) => setRank5(value)}
+          value={rank5}
           items={[
-              { label: "5: Be as loud as you want.", value: "5" },
-              { label: "4: We can be loud on the weekends", value: "4" },
-              { label: "3: A good balance of loud and quiet", value: "3" },
-              { label: "2: I prefer it to be quiet more often", value: "2"},
-              { label: "1: Library, 24/7.", value: "1"}
+              { label: "Gender of roommate", value: "gender" },
+              { label: "Bedtime", value: "bedtime" },
+              { label: "Guest comfort", value: "guest" },
+              { label: "Cleanliness", value: "clean" },
+              { label: "Noise level", value: "noise" }
           ]}
           style={pickerSelectStyles}
         />
+        
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Submit Preferences</Text>
+        <Text style={styles.buttonText}>Submit Rankings</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
@@ -176,7 +181,7 @@ export default function ManagePreferences({navigation}) {
         >
            <View style={styles.modalView}>
             <Text style={styles.modalText}>
-              Please make sure all the fields are filled out.
+              Please make sure all the fields are filled out and no two fields are the same.
             </Text>
             <Pressable
               style={styles.modalButton}
@@ -232,9 +237,8 @@ const styles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
-    alignSelf: 'center',
-    margin: 10,   
-    
+    margin: 10,
+    alignSelf: 'center'    
   },
   modalView: {
     flex:1,
