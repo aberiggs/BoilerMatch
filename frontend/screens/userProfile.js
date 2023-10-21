@@ -112,7 +112,5 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginVertical: 1,
   },
-  
-
   });
   

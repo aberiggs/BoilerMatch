@@ -34,7 +34,7 @@ export default function Register({navigation}){
 
     const createAccountThroughApi = async () => {
       // TODO: .env for dev/production environments
-      const response = await axios.post('http://localhost:3000/api/user/register', {
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/register', {
           email: email,
           password: password,
       }).catch((error) => {

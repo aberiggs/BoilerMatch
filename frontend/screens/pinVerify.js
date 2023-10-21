@@ -8,7 +8,7 @@ export default function PinVerify({route, navigation}){
     const email = route.params.email;
 
     const verifyThroughApi = async () => {
-        const response = await axios.post('http://localhost:3000/api/user/pinverify', {
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/pinverify', {
           email: email,
           pin: pin,
         }).catch((error) => {

@@ -19,7 +19,7 @@ export default function Login({navigation}){
     }
 
     const loginThroughApi = async () => {
-        const response = await axios.post('http://localhost:3000/api/user/login', {
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/login', {
           username: username,
           password: password,
           stayLoggedIn: stayLoggedIn,

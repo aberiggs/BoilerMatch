@@ -51,7 +51,7 @@ export default function ManageInformation({navigation}) {
 
   const getInitialInfo = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post('http://localhost:3000/api/user/information', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/information', {
       token: tokenVal,
     }).catch((error) => {
       if (error.response) {
@@ -102,7 +102,7 @@ export default function ManageInformation({navigation}) {
     }
     // port is 3000, numbers before that is my IP address
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response = await axios.post('http://localhost:3000/api/user/information/update', {
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/information/update', {
       token: tokenVal,
       information: information
     }).catch((error) => {

@@ -41,7 +41,7 @@ export default function ManagePreferenceRankings({navigation}) {
 
   const getInitialRanks = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post('http://localhost:3000/api/user/preferenceRank', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferenceRank', {
       token: tokenVal,
     }).catch((error) => {
       if (error.response) {
@@ -75,7 +75,7 @@ export default function ManagePreferenceRankings({navigation}) {
 
   const updateRankingsThroughApi = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post('http://localhost:3000/api/user/preferenceRank/update', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferenceRank/update', {
       token: tokenVal,
       rank1: rank1,
       rank2: rank2,

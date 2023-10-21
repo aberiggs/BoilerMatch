@@ -5,13 +5,13 @@ import axios from "axios"
 
 export default function ForgotPassword({navigation}){
     const forgotThroughApi = async () => {
-        const response = await axios.post('http://localhost:3000/api/user/forgotpassword', {
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/forgotpassword', {
           email: email,
         }).catch((error) => {
           if (error.response) {
             return error.response.data
           }
-        })
+        })  
 
         return response
     }

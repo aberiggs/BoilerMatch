@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MainFeed from '../screens/MainFeed'
 import ChatRoom from '../screens/ChatRoom'
 import Profile from '../screens/Profile'
-import {Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 

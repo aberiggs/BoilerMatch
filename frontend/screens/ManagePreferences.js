@@ -40,7 +40,7 @@ export default function ManagePreferences({navigation}) {
 
   const getInitialPrefs = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post('http://localhost:3000/api/user/preferences', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferences', {
       token: tokenVal,
     }).catch((error) => {
       if (error.response) {
@@ -67,10 +67,8 @@ export default function ManagePreferences({navigation}) {
   }
 
   const updatePreferencesThroughApi = async() => {
-
-    console.log(gender,clean)
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post('http://localhost:3000/api/user/preferences/update', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferences/update', {
       token: tokenVal,
       gender: gender,
       bedtime: bedtime,
