@@ -167,7 +167,6 @@ export default function Profile({navigation}){
           <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
           </TouchableOpacity>
 
-
           <Pressable style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
           </Pressable>

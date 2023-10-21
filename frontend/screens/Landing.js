@@ -24,7 +24,6 @@ export default function Landing({navigation}){
         if (error.response) {
           return error.response.data
         }
-
         return
       })
 
