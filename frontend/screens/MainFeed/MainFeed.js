@@ -151,10 +151,11 @@ export default function MainFeed({navigation}){
       
       if (response.data.users.length > 0) {
         setSearchResults(response.data.users.map(user => user));
+        setIsDropdownVisible(response.data.users.length > 0)
       }
-      setIsDropdownVisible(response.data.users.length > 0)
+      
     }).catch(error => {
-      console.log("Error occurred while searching:", error)
+      setIsDropdownVisible(false);
     });
   };
 
@@ -250,7 +251,7 @@ export default function MainFeed({navigation}){
             onChangeText={(text) => {
               setSearchTerm(text); // Update the search term state
               fetchUsers(text);
-              setIsDropdownVisible(!!text); // Fetch data from the database based on the search term
+              setIsDropdownVisible(!!text);
             }}
               //value={searchTerm}
               autoCapitalize="none"
