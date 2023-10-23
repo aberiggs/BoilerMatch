@@ -13,13 +13,13 @@ const MatchPopUp = ({user, hideMatchPopUp}) => {
         Alert.alert('Modal has been closed.');
         hideMatchPopUp();
       }}>
-      <View style={styles.centeredView}>
+      <View style={styles.container}>
         <View style={styles.modalView}>
-          <Text style={styles.modalText}>You matched with </Text>
+          <Text style={styles.modalText}>You matched with {user}!</Text>
           <Pressable
-            style={[styles.button, styles.buttonClose]}
+            style={[styles.button]}
             onPress={() => hideMatchPopUp()}>
-            <Text style={styles.textStyle}>Hide Modal</Text>
+            <Text style={styles.textStyle}>Start Chatting!</Text>
           </Pressable>
         </View>
       </View>
@@ -28,11 +28,10 @@ const MatchPopUp = ({user, hideMatchPopUp}) => {
 }
 
 const styles = StyleSheet.create({
-  centeredView: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 22,
   },
   modalView: {
     margin: 20,
@@ -53,15 +52,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 10,
     elevation: 2,
-  },
-  buttonOpen: {
-    backgroundColor: '#F194FF',
-  },
-  buttonClose: {
-    backgroundColor: '#2196F3',
+    backgroundColor: 'gold',
   },
   textStyle: {
-    color: 'white',
+    color: 'grey',
     fontWeight: 'bold',
     textAlign: 'center',
   },

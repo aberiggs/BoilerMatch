@@ -57,20 +57,20 @@ export default function MainFeed({navigation}){
       else{
         liked = !response.data.user_added.liked
       }
-    //   if(liked == true){
-    //   const res = await axios.post(`http://localhost:3000/api/user/isUserLiked`, {
-    //     token: tokenVal,
-    //     userShown: user,
-    //   }
-    //   ).catch(error => {
-    //     console.log("Error occured while searching:", error)
-    //   })
-    //   console.log(res.liked)
-    //   if(res.liked == true){
-    //     console.log(res.userLiked)
-    //     setMatchPopUpUserShown(res.userLiked)
-    //   }
-    // }
+      if(liked == true){
+      const res = await axios.post(`http://localhost:3000/api/user/isUserLiked`, {
+        token: tokenVal,
+        userShown: user,
+      }
+      ).catch(error => {
+        console.log("Error occured while searching:", error)
+      })
+      console.log(res.data)
+      if(res.data.liked == true){
+       // console.log(res.data.userLiked)
+        setMatchPopUpUserShown(res.data.userLiked)
+      }
+    }
 
       setUsersLiked((usersLiked) => ({
         ...usersLiked,

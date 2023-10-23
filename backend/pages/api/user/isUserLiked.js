@@ -41,7 +41,8 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      user: user,
+      liked: user.liked,
+      userLiked: user.userLiked,
       message: "Potential users found",
     });
   } catch (error) {
