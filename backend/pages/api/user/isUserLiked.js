@@ -35,13 +35,13 @@ export default async function handler(req, res) {
         "userLiking": currentUser, "userLiked": req.body.userShown
      },
      {
-        "userLiking":0, "userLiked":0, "liked": 1
+        "userLiking":0, "userLiked":1, "liked": 1
      }
     )
 
     return res.status(200).json({
       success: true,
-      liked: user.liked,
+      user: user,
       message: "Potential users found",
     });
   } catch (error) {

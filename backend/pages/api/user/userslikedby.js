@@ -70,8 +70,8 @@ export default async function handler(req, res) {
          }
     ]).toArray()
     
-    const potentialUsers = usersLikedBy.filter((userBy) => {
-      return !usersLiked.some((userLiked) => userLiked.username === userBy.username);
+    const potentialUsers = usersLikedBy.filter((userLikedBy) => {
+      return !usersLiked.some((userLiked) => userLiked.username === userLikedBy.username);
     });
     console.log(usersLiked)
     //console.log(potentialUsers)
