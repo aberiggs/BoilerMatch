@@ -117,6 +117,10 @@ export default function Profile({navigation}){
     const navigateToManageHousingInformation = () => {
       navigation.navigate('ManageHousingInformation')
     }
+
+    const navigateToSettings = () => {
+      navigation.navigate('Settings')
+    }
   
    const handleLogout = async () => {
         await SecureStore.deleteItemAsync('token')
@@ -165,6 +169,10 @@ export default function Profile({navigation}){
 
           <TouchableOpacity style={styles.button} onPress={toggleDiscoverability}>
           <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToSettings}>
+          <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
 
           <Pressable style={styles.button} onPress={handleLogout}>

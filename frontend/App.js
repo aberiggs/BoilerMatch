@@ -19,6 +19,14 @@ import ForgotPassword from './screens/LoginRegister/ForgotPassword';
 import PinVerify from './screens/LoginRegister/PinVerify';
 import ResetPassword from './screens/LoginRegister/ResetPassword';
 
+import Settings from './screens/Settings/Settings'
+import UpdateCredentials from './screens/Settings/UpdateCredentials'
+import ReportFeedback from './screens/Settings/ReportFeedback'
+import VerifyForUsername from './screens/Settings/VerifyForUsername'
+import VerifyForPassword from './screens/Settings/VerifyForPassword'
+import UpdateUsername from './screens/Settings/UpdateUsername'
+import UpdatePassword from './screens/Settings/UpdatePassword'
+
 
 const Stack = createStackNavigator();
 
@@ -42,6 +50,13 @@ export default function App() {
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
         <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
+        <Stack.Screen name="Settings" component={Settings} />
+        <Stack.Screen name="UpdateCredentials" component={UpdateCredentials} />
+        <Stack.Screen name="ReportFeedback" component={ReportFeedback} />
+        <Stack.Screen name="VerifyForUsername" component={VerifyForUsername} />
+        <Stack.Screen name="VerifyForPassword" component={VerifyForPassword} />
+        <Stack.Screen name="UpdateUsername" component={UpdateUsername} />
+        <Stack.Screen name="UpdatePassword" component={UpdatePassword} />
       </Stack.Navigator>
     </NavigationContainer>
   );
