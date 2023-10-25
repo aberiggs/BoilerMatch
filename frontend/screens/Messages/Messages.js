@@ -1,13 +1,24 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View,TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
 
-export default function ChatRoom({navigation}){
+import Conversation from './Conversation';
 
+
+export default function ChatRoom({navigation}) {
+    const [chatOpened, setChatOpened] = useState(true) 
 
 
     return(
         <View style={styles.container}>
         <Text>this is the chat room</Text>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={chatOpened}>
+            
+            <Conversation />
+        </Modal>
        </View>
     )
 
