@@ -67,13 +67,11 @@ export default function VerifyForPassword({navigation}){
               }
             </Pressable>
           </View>
-
-          <Text style={styles.errorMes}>{errorMessage}</Text>
-        <Pressable style={styles.button} onPress={handleVerifyPassword}>
-        <Text style={styles.buttonText}> Reset </Text>
-        </Pressable>
-
        </View>
+       <Text style={styles.errorMes}>{errorMessage}</Text>
+        <Pressable style={styles.button} onPress={handleVerifyPassword}>
+        <Text style={styles.buttonText}> Verify </Text>
+        </Pressable>
        </View>
     )
 }

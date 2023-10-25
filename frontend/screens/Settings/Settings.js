@@ -18,6 +18,7 @@ export default function Settings({navigation}){
         <View style={styles.container}>
             <ScrollView style={styles.scrollView}>
             <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
+              <Text style={styles.title}> Settings </Text>
                     <TouchableOpacity style={styles.button} onPress={navigateToUpdateCredentials}>
                     <Text style={styles.buttonText}>Update Credentials</Text>
                     </TouchableOpacity>
@@ -43,21 +44,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   scrollView: {
-    marginVertical:50,
-    marginHorizontal:15,
+    marginLeft: 30,
+    width: '100%',
   },
-  button: {
-      width: "40%",
-      height: 50,
-      backgroundColor: "gold",
-      borderRadius: 6,
-      justifyContent: 'center',
-      
-    },
-    buttonText: {
-      fontSize: 20,
-      alignSelf: "center"
-    },
     otherText: {
       fontSize: 16,
       paddingLeft: 5
@@ -114,3 +103,4 @@ const styles = StyleSheet.create({
       marginHorizontal: 'auto'
     }
   });
+

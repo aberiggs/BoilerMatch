@@ -41,22 +41,42 @@ export default function App() {
         <Stack.Screen name = "Login" component={Login} options={{
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
         }}/>
-        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-        <Stack.Screen name="PinVerify" component={PinVerify} />
-        <Stack.Screen name="ResetPassword" component={ResetPassword} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="PinVerify" component={PinVerify} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="ResetPassword" component={ResetPassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
         <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} options={{gestureEnabled: false}}/>
         <Stack.Screen name="ManageInformation" component={ManageInformation} />
         <Stack.Screen name="ManageHousingInformation" component={ManageHousingInformation} />
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
         <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
-        <Stack.Screen name="Settings" component={Settings} />
-        <Stack.Screen name="UpdateCredentials" component={UpdateCredentials} />
-        <Stack.Screen name="ReportFeedback" component={ReportFeedback} />
-        <Stack.Screen name="VerifyForUsername" component={VerifyForUsername} />
-        <Stack.Screen name="VerifyForPassword" component={VerifyForPassword} />
-        <Stack.Screen name="UpdateUsername" component={UpdateUsername} />
-        <Stack.Screen name="UpdatePassword" component={UpdatePassword} />
+        <Stack.Screen name="Settings" component={Settings} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="UpdateCredentials" component={UpdateCredentials} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="ReportFeedback" component={ReportFeedback} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="VerifyForUsername" component={VerifyForUsername} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="VerifyForPassword" component={VerifyForPassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="UpdateUsername" component={UpdateUsername} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="UpdatePassword" component={UpdatePassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

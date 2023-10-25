@@ -112,6 +112,7 @@ export default function UpdatePassword({route, navigation}){
           />
           </View>
 
+        <Text style={styles.errorMes}>{errorMessage}</Text>
         <Pressable style={styles.button} onPress={handleUpdate}>
         <Text style={styles.buttonText}> Update </Text>
         </Pressable>

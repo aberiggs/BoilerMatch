@@ -18,13 +18,7 @@ export default function Settings({navigation}){
         <View style={styles.container}>
             <ScrollView style={styles.scrollView}>
                 <View style={{flex: 'column', width: "45%"}}>
-                    <TouchableOpacity style={styles.button} onPress={navigateToUpdateCredentials}>
-                    <Text style={styles.buttonText}>Update Credentials</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.button} onPress={navigateToReportFeedback}>
-                    <Text style={styles.buttonText}>Submit Request</Text>
-                    </TouchableOpacity>
+                    <Text> test </Text>
 
                 </View>
             </ScrollView>

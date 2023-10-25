@@ -1,29 +1,28 @@
+import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
+import { StyleSheet, Text, View, Pressable, TextInput } from 'react-native';
 import axios from "axios"
 
-export default function PinVerifyForUsername({route, navigation}){
-    const [pin, setPin] = useState('');
-    const [errorMessage, setErrorMessage] = useState('')
-    const email = route.params.email;
-
-    const verifyThroughApi = async () => {
-        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/pinverify', {
-          email: email,
-          pin: pin,
+export default function VerifyForUsername({navigation}){
+    const verifyPasswordThroughApi = async () => {
+      const username = await SecureStore.getItemAsync('username')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/verifypassword', {
+          username: username,
+          password: oldPassword,
         }).catch((error) => {
           if (error.response) {
             return error.response.data
           }
-
-          return
-        })
+        })  
 
         return response
     }
 
-    const handleVerify = async () => {
-        const res = await verifyThroughApi()
+    const handleVerifyPassword = async () => {
+        const res = await verifyPasswordThroughApi()
+        const username = await SecureStore.getItemAsync('username')
 
         if (!res || res.success === false) {
           if (res) {
@@ -33,65 +32,71 @@ export default function PinVerifyForUsername({route, navigation}){
           }
         } else {
           navigation.push('UpdateUsername', {
-            email: email,
+            username: username,
           });
         }
     }
 
+    const [oldPassword, setOldPassword] = useState('')
+    const [showPass, setShowPass] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
+
     return(
-        <View style={styles.container}>
+      <View style={styles.container}>
           <View style={{flex: 'column', width: "45%"}}>
-            <Text style={styles.subtitle}>Verify PIN</Text>
-            <TextInput
-              autoCapitalize = "none"
+          <Text style={styles.subtitle}>Verify Current Password</Text>
+
+          <View style={styles.inputFieldBox}>
+
+            <TextInput 
+              autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
+              placeholderTextColor={"grey"}
 
-              onChangeText={pin => setPin(pin)}
+              onChangeText={text => setOldPassword(text)}
+              secureTextEntry={!showPass}
 
-              style={styles.inputFieldBox}
+              style={styles.inputField}
             />
-          </View>
-            <Text style={styles.errorMes}>{errorMessage}</Text>
 
-            <Pressable style={styles.button} onPress={handleVerify}>
-
-            <Text style={styles.buttonText}> Submit </Text>
+            <Pressable style={{position: 'absolute', paddingRight: 10}} onPress={() => setShowPass(!showPass)}>
+              { showPass ?
+                <Ionicons name="eye-off-outline" size={26} color="black" /> :
+                <Ionicons name="eye-outline" size={26} color="black" />
+              }
             </Pressable>
-
-        </View>
+          </View>
+       </View>
+       <Text style={styles.errorMes}>{errorMessage}</Text>
+        <Pressable style={styles.button} onPress={handleVerifyPassword}>
+        <Text style={styles.buttonText}> Verify </Text>
+        </Pressable>
+       </View>
     )
-
 }
 
-
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  button: {
+      width: "40%",
+      height: 50,
+      backgroundColor: "gold",
+      borderRadius: 6,
       justifyContent: 'center',
     },
-    button: {
-        width: "40%",
-        height: 50,
-        backgroundColor: "gold",
-        borderRadius: 6,
-        justifyContent: 'center',
-    },
     buttonText: {
-        fontSize: 20,
-        alignSelf: "center"
+      fontSize: 20,
+      alignSelf: "center"
     },
-    inputField: {
-      color:'black',
-      height: 40,
-      width: "45%",
-      borderColor: 'black',
-      borderWidth: 1,
-      padding: 10,
-      marginBottom: 10,
-      borderRadius: 5,
+    otherText: {
+      fontSize: 16,
+      paddingLeft: 5
     },
     inputFieldBox: {   
       flexDirection: 'row',
@@ -104,6 +109,9 @@ const styles = StyleSheet.create({
       borderColor: 'black',
       borderWidth: 1,
       borderRadius: 5,        
+    },
+    inputField: {
+      width: "100%",
     },
     title: {
       fontSize: 25,
@@ -121,9 +129,11 @@ const styles = StyleSheet.create({
     errorMes: {
       fontSize: 15,
       fontWeight: 'bold',
-      textAlign: 'left',
+      textAlign: 'center',
+      paddingHorizontal: 10,
       marginBottom: 8,
       color: 'red',
       marginHorizontal: 'auto'
     }
-  });
+});
+  
