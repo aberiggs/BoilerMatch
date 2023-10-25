@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function Conversation({navigation}){
+export default function Conversation(props, {navigation}){
     const [newMessage, setNewMessage] = useState('')
 
     const sendMessage = () => {
@@ -14,6 +14,11 @@ export default function Conversation({navigation}){
     return(
         <KeyboardAvoidingView behavior={'padding'} style={conversationStyles.container}>
             <SafeAreaView style={conversationStyles.convoContainer}>
+                <View style={{height: '5%', alignItems: 'center', justifyContent: 'center'}}>
+                    <Pressable onPress={() => props.onClose()}>
+                        <Text style={{color: 'lightblue', fontWeight: 'bold'}}>Back</Text>
+                    </Pressable>
+                </View>
                 <ScrollView style={conversationStyles.chatScrollView}>
                     <Text>
                         THIS IS A CONVERSATION
@@ -55,6 +60,10 @@ const conversationStyles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         width: '100%',
+    },
+    backBannerContainer: {
+        width: '100%',
+
     },
     chatScrollView: {
         backgroundColor: 'pink',

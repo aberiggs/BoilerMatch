@@ -23,6 +23,7 @@ import ResetPassword from './screens/LoginRegister/ResetPassword';
 const Stack = createStackNavigator();
 
 export default function App() {
+  // TODO: Move/organize all these stack screens to individual navigation containers within other screens of the app
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
