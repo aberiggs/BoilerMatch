@@ -41,7 +41,7 @@ export default function MainFeed({navigation}){
     const tokenVal = await SecureStore.getItemAsync('token')
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/likeuser', {
         token: tokenVal,
-        userShown: user,
+        userShown: user.username,
       }
       ).catch(error => {
         console.log("Error occurred while searching:", error)
@@ -60,21 +60,21 @@ export default function MainFeed({navigation}){
       if(liked == true){
       const res = await axios.post(`http://localhost:3000/api/user/isUserLiked`, {
         token: tokenVal,
-        userShown: user,
+        userShown: user.username,
       }
       ).catch(error => {
-        console.log("Error occured while searching:", error)
+        console.log("error occurred w:", error)
       })
       console.log(res.data)
       if(res.data.liked == true){
        // console.log(res.data.userLiked)
-        setMatchPopUpUserShown(res.data.userLiked)
+        setMatchPopUpUserShown(user)
       }
     }
 
       setUsersLiked((usersLiked) => ({
         ...usersLiked,
-        [user]: liked,
+        [user.username]: liked,
       })
       )
 
@@ -108,7 +108,7 @@ export default function MainFeed({navigation}){
         />
       
       <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user.username)}>
+        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user)}>
           <Ionicons
             name={usersLiked[user.username] ? 'heart' : 'heart-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
             color={usersLiked[user.username] ? 'red' : 'gray'}
@@ -312,7 +312,7 @@ export default function MainFeed({navigation}){
     
        {renderModal()}
         
-        <MatchPopUp user={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp}/>
+        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp}/>
 
         <View style={styles.flatListContainer}>
           {displayedUsers.length > 0 ? (
