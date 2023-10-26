@@ -105,7 +105,6 @@ export default function Profile({navigation}){
         }
     });
     setProfilePic(imageToUpload)
-    setProfilePicExists(true)
   }
 
 
