@@ -11,7 +11,7 @@ import UserProfile from './UserProfile'
 import MatchPopUp from '../../screenComponents/MatchPopUp';
 
 
-export default function MainFeed({navigation}){
+export default function MainFeed({navigation,handleMatchMade}){
   const [usersLiked, setUsersLiked] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -58,7 +58,7 @@ export default function MainFeed({navigation}){
         liked = !response.data.user_added.liked
       }
       if(liked == true){
-      const res = await axios.post(`http://localhost:3000/api/user/isUserLiked`, {
+      const res = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
         token: tokenVal,
         userShown: user.username,
       }
@@ -69,6 +69,7 @@ export default function MainFeed({navigation}){
       if(res.data.liked == true){
        // console.log(res.data.userLiked)
         setMatchPopUpUserShown(user)
+        
       }
     }
 
@@ -77,6 +78,7 @@ export default function MainFeed({navigation}){
         [user.username]: liked,
       })
       )
+      handleMatchMade()
 
   };
   
