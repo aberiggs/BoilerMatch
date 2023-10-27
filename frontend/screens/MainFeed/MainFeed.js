@@ -9,15 +9,28 @@ import * as SecureStore from 'expo-secure-store';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import { AppState } from 'react-native';
 
 import UserProfile from './UserProfile'
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async () => {
+    if (appState === 'background') {
+      // Display the alert when the app is in the background
+      return {
+        shouldShowAlert: true,
+        shouldPlaySound: false, // You can control other notification behaviors here
+        shouldSetBadge: false,
+      };
+    } else {
+      // App is in the foreground, don't display the alert
+      return {
+        shouldShowAlert: false,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      };
+    }
+  },
 });
 
 
@@ -45,12 +58,25 @@ export default function MainFeed({navigation}){
   const notificationListener = useRef();
   const responseListener = useRef();
   const [username,setUsername] = useState("");
+  const [appState, setAppState] = useState(AppState.currentState);
   
 
   
   useEffect(() => {
     handleRefreshFeed()
   },[showOnlyUsersLikedBy]);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState) => {
+      setAppState(nextAppState);
+    };
+  
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+  
+    return () => {
+      subscription.remove();
+    };
+  }, []);
   
   useEffect(() => {
     fetchUsername();
