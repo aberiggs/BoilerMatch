@@ -8,6 +8,7 @@ import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 
 import UserProfile from './UserProfile'
 
@@ -43,23 +44,38 @@ export default function MainFeed({navigation}){
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+  const [username,setUsername] = useState("");
   
 
   
   useEffect(() => {
     handleRefreshFeed()
   },[showOnlyUsersLikedBy]);
-
+  
   useEffect(() => {
+    fetchUsername();
     registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
     if ( expoPushToken != null) {
-    updateNotificationsThroughApi();
+      updateNotificationsThroughApi();
     };
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+    console.log("in use Effect")
+    console.log(username);
+    notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
       setNotification(notification);
     });
-
+    
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
+        console.log(response.data.users);
+        console.log("FIRST:", response.data.users[0].information.firstName);
+        console.log("in api call");
+        setSelectedUser(response.data.users[0]);
+        //console.log(response.data);
+        toggleModal();
+        //setIsDropdownVisible(true);
+      }).catch((error) => {
+          console.log(error.response.data)
+      })
       console.log(response);
     });
 
@@ -69,10 +85,11 @@ export default function MainFeed({navigation}){
     };
   }, []);
   const updateNotificationsThroughApi = async() => {
+    console.log("inside", expoPushToken);
     const tokenVal = await SecureStore.getItemAsync('token')
     const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
       token: tokenVal,
-      pushToken: expoPushToken
+      pushToken: expoPushToken,
     }).catch((error) => {
       if (error.response) {
         return error.response.data
@@ -82,10 +99,15 @@ export default function MainFeed({navigation}){
 
     return response
   }
+
+  const fetchUsername = async () => {
+    const userVal = await SecureStore.getItemAsync('username')
+    setUsername(userVal);
+  }
   
   const handleLikePress = async(user) => {
     // Find the feed item with the specified key
-    console.log(user)
+    //console.log(user)
     const tokenVal = await SecureStore.getItemAsync('token')
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/likeuser', {
         token: tokenVal,
@@ -110,8 +132,24 @@ export default function MainFeed({navigation}){
         [user]: liked,
       })
       )
-
-      schedulePushNotification(user)
+      console.log("here");
+      if (liked) {
+        schedulePushNotification(username)
+      }
+      /*
+      const ans = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNotiToken', {
+        name: user,
+      }).catch((error) => {
+        if (error.response) {
+          console.log("error")
+        }
+        token = ans.data;
+        console.log(token);
+      });
+      */
+      
+      //commented out but this is how you send notifications to others
+      //await sendLikeNotification(token, username);
 
   };
   
@@ -374,11 +412,21 @@ export default function MainFeed({navigation}){
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "Someone liked you",
-          body: user + 'likes you',
-          data: { data: 'goes here' },
+          body: user + ' likes you',
         },
         trigger: { seconds: 2 },
-        //to: user,
+        to: user.notificationToken,
+      });
+    }
+    async function sendLikeNotification(recipientNotificationToken, senderUsername) {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "You have a new like!",
+          body: `${senderUsername} liked you.`,
+          data: { type: 'like' },
+        },
+        trigger: null, // Send the notification immediately
+        to: recipientNotificationToken,
       });
     }
     async function registerForPushNotificationsAsync() {
@@ -392,8 +440,7 @@ export default function MainFeed({navigation}){
           lightColor: '#FF231F7C',
         });
       }
-      await updateNotificationsThroughApi();
-    
+      //await updateNotificationsThroughApi();
       if (Device.isDevice) {
         const { status: existingStatus } = await Notifications.getPermissionsAsync();
         let finalStatus = existingStatus;
@@ -407,9 +454,8 @@ export default function MainFeed({navigation}){
         }
         // Learn more about projectId:
         // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
-        token = (await Notifications.getExpoPushTokenAsync({ projectId: Constants.expoConfig.extra.eas.projectId })).data;
-        await updateNotificationsThroughApi();
-
+        token = (await Notifications.getExpoPushTokenAsync("181661f8-d406-4a71-a48f-08829cc0ec4a")).data;
+        //await updateNotificationsThroughApi();
         console.log(token);
       } else {
         alert('Must use physical device for Push Notifications');
