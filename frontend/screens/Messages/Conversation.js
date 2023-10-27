@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+import axios from "axios"
+
 
 const messagesEx = [
         {
@@ -23,6 +26,22 @@ const messagesEx = [
     ]
 export default function Conversation(props, {navigation}){
     const [newMessage, setNewMessage] = useState('')
+
+    useEffect(() => {
+        waitForAWhile()
+    },[])
+
+    const waitForAWhile = async () => {
+        console.log("Waiting for a bit")
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/test', {
+          }).catch((error) => {
+            if (error.response) {
+              return error.response.data
+            }
+          })  
+  
+          console.log(response.data)
+    }
 
     const sendMessage = () => {
         Alert.alert('Send Message', 'Not implemented :)', [
@@ -75,7 +94,7 @@ export default function Conversation(props, {navigation}){
 
                         style={conversationStyles.messageField}
                     />
-                    
+
                     <Pressable onPress={() => sendMessage()}>
                         <Ionicons name="send-outline" size={24} color="black" />
                     </Pressable>
