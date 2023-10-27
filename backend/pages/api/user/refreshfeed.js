@@ -33,7 +33,6 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
 
 //const currentUser = req.body.username
   try {
-    // Query the database for potential user suggestions based on the search term
     const potentialUsers = await users.aggregate([
         { 
             $lookup: {

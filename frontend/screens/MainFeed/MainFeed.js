@@ -8,7 +8,7 @@ import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
 import UserProfile from './UserProfile'
-
+import MatchPopUp from '../../screenComponents/MatchPopUp';
 
 
 export default function MainFeed({navigation}){
@@ -29,8 +29,8 @@ export default function MainFeed({navigation}){
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isNewSearch, setIsNewSearch] = useState(false);
   const [newSearch, setNewSearch] = useState([]);
-  
-
+  //variables for match pop up
+  const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
   
   useEffect(() => {
     handleRefreshFeed()
@@ -41,7 +41,7 @@ export default function MainFeed({navigation}){
     const tokenVal = await SecureStore.getItemAsync('token')
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/likeuser', {
         token: tokenVal,
-        userShown: user,
+        userShown: user.username,
       }
       ).catch(error => {
         console.log("Error occurred while searching:", error)
@@ -50,16 +50,31 @@ export default function MainFeed({navigation}){
       //Update returns what the data previously look like so if there was no interaction
       //we set to true and if there was an interaction we said liked to the reciprocal
       let liked = true
+      
       if(response.data.user_added == null){
         liked = true
       }
       else{
         liked = !response.data.user_added.liked
       }
+      if(liked == true){
+      const res = await axios.post(`http://localhost:3000/api/user/isUserLiked`, {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("error occurred w:", error)
+      })
+      console.log(res.data)
+      if(res.data.liked == true){
+       // console.log(res.data.userLiked)
+        setMatchPopUpUserShown(user)
+      }
+    }
 
       setUsersLiked((usersLiked) => ({
         ...usersLiked,
-        [user]: liked,
+        [user.username]: liked,
       })
       )
 
@@ -93,7 +108,7 @@ export default function MainFeed({navigation}){
         />
       
       <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user.username)}>
+        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user)}>
           <Ionicons
             name={usersLiked[user.username] ? 'heart' : 'heart-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
             color={usersLiked[user.username] ? 'red' : 'gray'}
@@ -134,6 +149,10 @@ export default function MainFeed({navigation}){
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
+  
+  const hideMatchPopUp = () =>{
+    setMatchPopUpUserShown(null)
+  }
 
   const toggleNewSearch = () => {
     setIsNewSearch(!isNewSearch);
@@ -200,7 +219,7 @@ export default function MainFeed({navigation}){
     }
 
   const renderModal = () => {
-    if (isModalVisible && searchResult) {
+    if (searchResult) {
       return (
         <Modal
           animationType="slide"
@@ -289,8 +308,11 @@ export default function MainFeed({navigation}){
             <UserProfile user={selectedUser} closeModal={handleCloseUserModal}/>
           </Modal>
         )}
+
     
-        {renderModal()}
+       {renderModal()}
+        
+        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp}/>
 
         <View style={styles.flatListContainer}>
           {displayedUsers.length > 0 ? (
