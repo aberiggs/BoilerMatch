@@ -4,20 +4,12 @@ const jwt = require( 'jsonwebtoken');
 
 //TODO Have not tested
 export default async function handler(req, res) {
-  console.log("Attempting to pull users liked by");
+  console.log("Attempting to pull all matches");
 
   const { database } = await connectToDatabase();
   const users = database.collection("users")
   const interactions = database.collection("interactions")
-  // Get the search term from the query parameter
-  //const user = req.query.user;
 
-  // if (!user) {
-  //   return res.status(400).json({
-  //     success: false,
-  //     message: "Missing user",
-  //   });
-  // }
   const token = req.body.token;
 
     const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
@@ -29,9 +21,9 @@ export default async function handler(req, res) {
             return payload.username
         }
     });
-
+    
   try {
-    const usersLikedBy = await users.aggregate([
+    const matchedUsers = await users.aggregate([
       {
         $lookup: {
             from: "interactions",
@@ -51,21 +43,26 @@ export default async function handler(req, res) {
 },
       { $match: {
         $and: [
-          {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, liked: true}}}},
+          {InteractionsWhereUserIsLiked: {$elemMatch: {userLiking:currentUser, liked: true}}},
           {InteractionsWhereUserIsLiking: {$elemMatch: {userLiked:currentUser, liked: true}}},
-          {"username" : { $not: { $eq: currentUser} }},
-          {"discoverable": true}]
+          {"username" : { $not: { $eq: currentUser} }}]
       } },
+    {
+        $project: {
+            InteractionsWhereUserIsLiked:0,
+            InteractionsWhereUserIsLiking:0,
+        }
+    }
        
     ]).toArray()
    
     return res.status(200).json({
       success: true,
-      users: usersLikedBy,
-      message: "Potential users found",
+      users: matchedUsers,
+      message: "Matches found",
     });
   } catch (error) {
-    console.error("Error while searching for potential users:", error);
+    console.error("Error while searching for matched users:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

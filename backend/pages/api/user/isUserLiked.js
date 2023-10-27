@@ -32,16 +32,16 @@ export default async function handler(req, res) {
     // Query the database for potential user suggestions based on the search term
     const user = await interactions.findOne(
       {
-        "userLiking": currentUser, "userLiked": req.body.userShown
+        "userLiking": req.body.userShown, "userLiked": currentUser
      },
      {
-        "userLiking":0, "userLiked":0, "liked": 1
+        "userLiking":0, "userLiked":1, "liked": 1
      }
     )
 
     return res.status(200).json({
       success: true,
-      liked: user.liked,
+      liked: user!=null ? user.liked:false,
       message: "Potential users found",
     });
   } catch (error) {

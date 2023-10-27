@@ -54,7 +54,7 @@ export default function Profile({navigation}){
       ).catch(error => {
         console.log("Error occurred while searching:", error)
       })
-      
+      console.log("discoverable: " + !response.data.userUpdated.discoverable)
       setDiscoverability(!response.data.userUpdated.discoverable)
   }
 
