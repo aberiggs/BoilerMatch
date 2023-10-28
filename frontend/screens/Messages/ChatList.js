@@ -16,6 +16,20 @@ export default function ChatList({navigation,refreshOnMatch}) {
     const [searchTerm, setSearchTerm] = useState('');
     //variables for dropdown
     const [searchResults, setSearchResults] = useState([])
+
+    const [chatOpened, setChatOpened] = useState(false) 
+
+    // const fetchMessages = async (text) => {
+    //   // Make an API request to your database to search for users with similar names
+    //   axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/search/${text}`).then((response) => {
+    //     if (response.data.users.length > 0) {
+    //       setSearchResults(response.data.users.map(user => user));
+    //     }
+    //     setIsDropdownVisible(response.data.users.length > 0)
+    //   }).catch(error => {
+    //     console.log("Error occurred while searching:", error)
+    //   });
+    // };
     
     useEffect(() => {
       handleRefreshFeed()
@@ -40,10 +54,22 @@ export default function ChatList({navigation,refreshOnMatch}) {
       console.log(response.data)
       setDisplayedUsers(response.data.users)
     }
+
+    const ConversationModal = () => {
+      return (
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={chatOpened}>
+            <Conversation onClose={() => setChatOpened(false)}/>
+        </Modal>
+      )
+    }
   
     const handleChatPress = async(user) => {
       //open chat    
       console.log("chat pressed!")
+      setChatOpened(true)
     };
     
   
@@ -83,12 +109,15 @@ export default function ChatList({navigation,refreshOnMatch}) {
       <View style={styles.container}>
 
         <View style={styles.topBar}>
+
+          <ConversationModal />
           <View style ={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="Search for a message"
               onChangeText={(text) => {
                 setSearchTerm(text);
+                //fetchMessages(text);
               }}
               autoCapitalize="none"
             />
@@ -181,7 +210,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
       height: 40,
       fontSize: 15,
       borderWidth: 1,
-      borderColor: '#ccc',
+      borderColor: 'gray',
       borderRadius: 5,
       paddingLeft: 10,
     },
@@ -209,7 +238,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: 'white',
-      padding: 20,
+      padding: 10,
       zIndex: 1,
     },
     flatListContainer: {
