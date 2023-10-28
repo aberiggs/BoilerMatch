@@ -9,6 +9,7 @@ import Login from './screens/LoginRegister/Login'
 import MainTabNavigator from './routes/MainTabNavigator';
 
 import ManageInformation from './screens/Profile/ManageInformation';
+import ManageNotifications from './screens/Profile/ManageNotifications';
 import ManageHousingInformation from './screens/Profile/ManageHousingInformation';
 import Profile from './screens/Profile/Profile';
 
@@ -41,6 +42,7 @@ export default function App() {
         <Stack.Screen name="ManageHousingInformation" component={ManageHousingInformation} />
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
+        <Stack.Screen name="ManageNotifications" component={ManageNotifications}/>
         <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
       </Stack.Navigator>
     </NavigationContainer>

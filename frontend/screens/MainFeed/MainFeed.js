@@ -10,12 +10,15 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { AppState } from 'react-native';
+//import { NotificationSettings } from "../Profile/ManageNotifications"
+
+
 
 import UserProfile from './UserProfile'
 
 Notifications.setNotificationHandler({
   handleNotification: async () => {
-    if (appState === 'background') {
+    if (AppState === 'background') {
       // Display the alert when the app is in the background
       return {
         shouldShowAlert: true,
@@ -35,7 +38,9 @@ Notifications.setNotificationHandler({
 
 
 
-export default function MainFeed({navigation}){
+
+
+export default function MainFeed({}){
   const [usersLiked, setUsersLiked] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -59,12 +64,27 @@ export default function MainFeed({navigation}){
   const responseListener = useRef();
   const [username,setUsername] = useState("");
   const [appState, setAppState] = useState(AppState.currentState);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   
 
   
   useEffect(() => {
     handleRefreshFeed()
   },[showOnlyUsersLikedBy]);
+
+  //NotificationSettings()
+
+  useEffect(() => {
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      if (notificationsEnabled) {
+        setNotification(notification);
+      }
+    });
+  
+    // Other notification handling code
+  }, [notificationsEnabled]);
+
+  console.log("notification Listener", notificationsEnabled);
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState) => {
@@ -81,20 +101,17 @@ export default function MainFeed({navigation}){
   useEffect(() => {
     fetchUsername();
     registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-    if ( expoPushToken != null) {
+    console.log("before expoIf statement", expoPushToken)
+    if ( expoPushToken != '') {
+      console.log("inside when this is what ^")
       updateNotificationsThroughApi();
     };
-    console.log("in use Effect")
-    console.log(username);
     notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
       setNotification(notification);
     });
     
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
-        console.log(response.data.users);
-        console.log("FIRST:", response.data.users[0].information.firstName);
-        console.log("in api call");
         setSelectedUser(response.data.users[0]);
         //console.log(response.data);
         toggleModal();
@@ -116,6 +133,7 @@ export default function MainFeed({navigation}){
     const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
       token: tokenVal,
       pushToken: expoPushToken,
+      recieveNotifications: true,
     }).catch((error) => {
       if (error.response) {
         return error.response.data
@@ -482,7 +500,7 @@ export default function MainFeed({navigation}){
         // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
         token = (await Notifications.getExpoPushTokenAsync("181661f8-d406-4a71-a48f-08829cc0ec4a")).data;
         //await updateNotificationsThroughApi();
-        console.log(token);
+        console.log("token", token);
       } else {
         alert('Must use physical device for Push Notifications');
       }

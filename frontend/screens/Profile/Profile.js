@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Icon } from 'react-native-vector-icons/Feather';
 import { Avatar } from '@rneui/themed';
 import axios from 'axios'
+import NotificationSettings from './ManageNotifications'
 
 import * as SecureStore from 'expo-secure-store';
 
@@ -74,6 +75,11 @@ export default function Profile({navigation}){
   const navigateToManagePreferences = () => {
     navigation.navigate('ManagePreferences');
   };
+
+  const navigateToManageNotifications = () => {
+    navigation.navigate('ManageNotifications');
+  };
+  
 
   const navigateToManagePreferenceRankings = () => {
     navigation.navigate('ManagePreferenceRankings');
@@ -165,6 +171,10 @@ export default function Profile({navigation}){
 
           <TouchableOpacity style={styles.button} onPress={toggleDiscoverability}>
           <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToManageNotifications}>
+          <Text style={styles.buttonText}>Notifications/Other</Text>
           </TouchableOpacity>
 
           <Pressable style={styles.button} onPress={handleLogout}>
