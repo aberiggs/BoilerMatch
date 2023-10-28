@@ -12,9 +12,10 @@ export default function ChatList({navigation,refreshOnMatch}) {
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
-  
-    
-  
+
+    const [searchTerm, setSearchTerm] = useState('');
+    //variables for dropdown
+    const [searchResults, setSearchResults] = useState([])
     
     useEffect(() => {
       handleRefreshFeed()
@@ -79,23 +80,40 @@ export default function ChatList({navigation,refreshOnMatch}) {
   
   
     return (
-      <View style={styles.flatListContainer}>
-        {displayedUsers.length > 0 ? (
-          <FlatList
-            data={displayedUsers} // Replace with your data array
+      <View style={styles.container}>
+
+        <View style={styles.topBar}>
+          <View style ={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Search for a message"
+              onChangeText={(text) => {
+                setSearchTerm(text);
+              }}
+              autoCapitalize="none"
+            />
+          </View>          
+        </View>
+
+        <View style={styles.flatListContainer}>
+          {displayedUsers.length > 0 ? (
+            <FlatList
+              data={displayedUsers} // Replace with your data array
               renderItem={({ item }) => <ChatItem user={item} onChatPress={handleChatPress}/>}
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
               horizontal={false}
               contentContainerStyle={styles.flatListContent}
-          />
+            />
           ) : (
-            <ScrollView>
-              <Text style={styles.noMatchesText}>
-                You have no matches. L
-              </Text>
-            </ScrollView>
+          <ScrollView>
+            <Text style={styles.noMatchesText}>
+              You have no matches. L
+            </Text>
+          </ScrollView>
           )}
+        </View>
       </View>
+      
     );
   }
   
@@ -157,16 +175,15 @@ export default function ChatList({navigation,refreshOnMatch}) {
       flex : 1,
       position: 'relative',
       minHeight: 0,
-    }
-    ,
-    input: { // Adjust the width as needed to make it smaller
-      height: 40, // Adjust the height as needed
-      flex: 1,
+    },
+    input: {
+      width: '100%',
+      height: 40,
+      fontSize: 15,
       borderWidth: 1,
-      borderColor: 'gray',
+      borderColor: '#ccc',
       borderRadius: 5,
-      padding: 10,
-      marginRight: 30,
+      paddingLeft: 10,
     },
     hyperlink: {
       textDecorationLine: 'underline',
