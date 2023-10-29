@@ -84,30 +84,24 @@ export default function ChatList({navigation,refreshOnMatch}) {
     };
   
     const ChatItem = ({ user, onChatPress }) => (
-      <View style={styles.chatItem}>
-        
-        
-        <View style={{flexDirection: 'row', alignItems: 'center', }}>
-        <Avatar
-            size={100}
-            rounded
-            source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + user.username + '.jpg'}}
-            containerStyle={{backgroundColor: 'grey', margin: 10}}
-            activeOpacity={0.8}
-            
-          />
-          <Text style={feedStyles.name}>{user.information.firstName} {user.information.lastName}</Text>
-          <TouchableOpacity style={feedStyles.iconContainer} onPress={() => onChatPress(user)}>
-            <Ionicons
-              name={'chatbubble-outline'} 
-              color={'gray'}
-              size={40}
-              
-            />
-          </TouchableOpacity>
+      <TouchableOpacity style={feedStyles.iconContainer} onPress={() => onChatPress(user)}>
+        <View style={styles.chatItem}>
           
-        </View>    
-      </View>
+          
+          <View style={{flexDirection: 'row', alignItems: 'center', }}>
+            <Avatar
+                size={100}
+                rounded
+                source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + user.username + '.jpg'}}
+                containerStyle={{backgroundColor: 'grey', margin: 10}}
+                activeOpacity={0.8}
+                
+              />
+            <Text style={feedStyles.name}>{user.information.firstName} {user.information.lastName}</Text>
+
+          </View>    
+        </View>
+      </TouchableOpacity>
     );
   
   
@@ -157,8 +151,8 @@ export default function ChatList({navigation,refreshOnMatch}) {
     container: {
       flex: 1,
       backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: 'left',
+      justifyContent: 'left',
     },
     searchContainer: {
       backgroundColor: 'white',
@@ -175,7 +169,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
      // Take up the entire available space
       backgroundColor: 'white',
       alignContent: 'center',
-      alignItems: 'center',
+      alignItems: 'left',
       padding: 15,
       marginBottom: 10,
       shadowColor: 'black',
@@ -281,7 +275,9 @@ export default function ChatList({navigation,refreshOnMatch}) {
   
   const feedStyles = StyleSheet.create({
     iconContainer: {
-      paddingHorizontal: 10
+      paddingHorizontal: 10,
+      textAlign: "right",
+      alignContent: "right"
     },
     infoContainer: {
       width: '100%',
@@ -290,6 +286,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
       lineHeight: 40
     },
     name: {
+      padding: 10,
       fontSize: 20
     },
     username: {
