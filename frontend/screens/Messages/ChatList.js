@@ -85,20 +85,24 @@ export default function ChatList({navigation,refreshOnMatch}) {
   
     const ChatItem = ({ user, onChatPress }) => (
       <View style={styles.chatItem}>
+        
+        
+        <View style={{flexDirection: 'row', alignItems: 'center', }}>
         <Avatar
-            size={250}
+            size={100}
             rounded
             source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + user.username + '.jpg'}}
-            containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'left'}}
+            containerStyle={{backgroundColor: 'grey', margin: 10}}
             activeOpacity={0.8}
+            
           />
-        
-        <View style={{flexDirection: 'row'}}>
+          <Text style={feedStyles.name}>{user.information.firstName} {user.information.lastName}</Text>
           <TouchableOpacity style={feedStyles.iconContainer} onPress={() => onChatPress(user)}>
             <Ionicons
               name={'chatbubble-outline'} 
               color={'gray'}
               size={40}
+              
             />
           </TouchableOpacity>
           
@@ -286,7 +290,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
       lineHeight: 40
     },
     name: {
-      fontSize: 25
+      fontSize: 20
     },
     username: {
       fontSize: 16,
