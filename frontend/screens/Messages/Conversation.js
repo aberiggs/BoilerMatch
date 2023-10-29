@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 
 import axios from "axios"
 
@@ -24,35 +25,87 @@ const messagesEx = [
         },
 
     ]
-export default function Conversation(props, {navigation}){
+
+export default function Conversation(props, {navigation}) {
+    const [currentMessages, setCurrentMessages] = useState(null)
     const [newMessage, setNewMessage] = useState('')
+    const [username, setUsername] = useState(null)
+
+    const otherUser = props.otherUser
 
     useEffect(() => {
-        waitForAWhile()
+        initialize()
     },[])
 
-    const waitForAWhile = async () => {
-        console.log("Waiting for a bit")
-        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/test', {
-          }).catch((error) => {
-            if (error.response) {
-              return error.response.data
+    const initialize = async () => {
+        const userVal = await SecureStore.getItemAsync('username')
+        setUsername(userVal)
+        //TODO: Fix so that if the request fails, we're not just infinitely spamming
+        let continueFetching = true
+        let messageList = currentMessages
+        while (continueFetching) {
+            console.log("Fetching")
+            messageList = await fetchMessages(messageList)
+            setCurrentMessages(messageList)
+            if (!messageList) {
+                console.log("No message list")
+                continueFetching = false
             }
-          })  
-  
-          console.log(response.data)
+        }
     }
 
-    const sendMessage = () => {
-        Alert.alert('Send Message', 'Not implemented :)', [
-           {text: 'OK'},
-          ]);
+    const fetchMessages = async (previousMessages) => {
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/getConversation', {
+            token: tokenVal,
+            otherUser: otherUser,
+            previousMessages: previousMessages
+        }).catch(error => {
+            console.log("Couldn't fetch messages")
+            return null
+        })
+        
+        if (!response) {
+            console.log("No response for messages")
+            return null
+        }
+
+        //console.log(response.data)
+        if (response.data.messages) {
+            return response.data.messages
+        }
+        return null
+
+    }
+
+    const sendMessage = async () => {
+        console.log("Sending Message")
+        const messageObj = {from: username, message: newMessage}
+        const updatedMessages = (currentMessages ? currentMessages : [])
+        updatedMessages.push(messageObj)
+        setCurrentMessages(updatedMessages)
+        setNewMessage('')
+
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/send', {
+            token: tokenVal,
+            toUser: otherUser,
+            messageToSend: newMessage
+        }).catch(error => {
+            console.log("Couldn't send messages: ", error.response.data)
+            return null
+        })
+        
+        if (!response) {
+            console.log("No response for sending message")
+            return false
+        }
     }
 
     const messageItem = ({item}) => {
         
-        const messageContainerStyle = (item.from === "A") ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg
-        const messageBoxStyle = (item.from === "A") ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox
+        const messageContainerStyle = (item.from === username) ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg
+        const messageBoxStyle = (item.from === username) ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox
 
         return (
             <View style={messageContainerStyle}>
@@ -73,15 +126,15 @@ export default function Conversation(props, {navigation}){
                 </View>
                 
                 <View style={{width: '30%', alignItems: 'center'}}>
-                    <Text style={{}}>User</Text>
+                    <Text style={{}}>{otherUser}</Text>
                 </View>
                 <View style={{width: '30%'}} />
             </View>
 
-            <KeyboardAvoidingView behavior={'padding'} style={conversationStyles.convoContainer}>
+            <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={conversationStyles.convoContainer}>
                 <FlatList
                     style={conversationStyles.chatScrollView}
-                    data={messagesEx}
+                    data={currentMessages}
                     renderItem={({item}) => messageItem({item})}
                 />
 
@@ -89,6 +142,7 @@ export default function Conversation(props, {navigation}){
                     <TextInput
                         placeholder='Message'
                         placeholderTextColor='gray'
+                        value={newMessage}
 
                         onChangeText={message => setNewMessage(message)}
 

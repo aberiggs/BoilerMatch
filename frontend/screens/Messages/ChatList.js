@@ -19,6 +19,8 @@ export default function ChatList({navigation,refreshOnMatch}) {
 
     const [chatOpened, setChatOpened] = useState(false) 
 
+    const [selectedUser, setSelectedUser] = useState('')
+
     // const fetchMessages = async (text) => {
     //   // Make an API request to your database to search for users with similar names
     //   axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/search/${text}`).then((response) => {
@@ -61,14 +63,14 @@ export default function ChatList({navigation,refreshOnMatch}) {
           animationType="slide"
           transparent={false}
           visible={chatOpened}>
-            <Conversation onClose={() => setChatOpened(false)}/>
+            <Conversation otherUser={selectedUser} onClose={() => setChatOpened(false)}/>
         </Modal>
       )
     }
   
     const handleChatPress = async(user) => {
-      //open chat    
-      console.log("chat pressed!")
+      //open chat
+      setSelectedUser(user.username)
       setChatOpened(true)
     };
     

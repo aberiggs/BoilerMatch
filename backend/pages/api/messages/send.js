@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     }
 
     /* Authenticate the user */
-    const tokenData = jwt.verify(req.query.token, 'MY_SECRET', (err, payload) => {
+    const tokenData = jwt.verify(req.body.token, 'MY_SECRET', (err, payload) => {
         if (err) {
             return res.status(400).json({
                 success: false,
@@ -45,21 +45,21 @@ export default async function handler(req, res) {
     /* Create a conversation if one doesn't exist yet */
     /* TODO: This will be removed later once matching functionality triggers a conversation to be created. */
     if (!conversation) {
-        const conversation = {userOne: username, userTwo: req.body.toUser, messages: [newMessage]}
-        await messageCollection.insertOne(conversation).catch(err => {
+        const newConversation = {userOne: username, userTwo: req.body.toUser, messages: [newMessage]}
+        await messageCollection.insertOne(newConversation).catch(err => {
             return res.status(400).json({
                 success: false,
                 message: "An unexpected error occurred while creating a new conversation"
             })
         })
 
-        res.status(200).json({
+        
+        return res.status(200).json({
             success: true,
             message: "Message successfully added"
         })
     }
 
-    console.log("Wah")
     /* Add new message to message history */
 
     conversation.messages.push(newMessage)
