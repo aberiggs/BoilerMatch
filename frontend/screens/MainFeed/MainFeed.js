@@ -175,7 +175,7 @@ export default function MainFeed({navigation,handleMatchMade}){
       }
       setIsDropdownVisible(response.data.users.length > 0)
     }).catch(error => {
-      console.log("Error occurred while searching:", error)
+      console.log("Error occurred while searching for users:", error)
     });
   };
 

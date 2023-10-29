@@ -21,17 +21,20 @@ export default function ChatList({navigation,refreshOnMatch}) {
 
     const [selectedUser, setSelectedUser] = useState('')
 
-    // const fetchMessages = async (text) => {
-    //   // Make an API request to your database to search for users with similar names
-    //   axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/search/${text}`).then((response) => {
-    //     if (response.data.users.length > 0) {
-    //       setSearchResults(response.data.users.map(user => user));
-    //     }
-    //     setIsDropdownVisible(response.data.users.length > 0)
-    //   }).catch(error => {
-    //     console.log("Error occurred while searching:", error)
-    //   });
-    // };
+    const fetchSearchMessages = async (text) => {
+      // Make an API request to your database to search for users with similar names
+      axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/search/${text}`).then((response) => {
+        // if you get messages, then set search results to the messages
+        if (response.data.messages.length > 0) {
+          // might have to change or something
+          setSearchResults(response.data.messages.map(messages => messages));
+        }
+        //setIsDropdownVisible(response.data.messages.length > 0)
+        // need pop up message saying that no messages match
+      }).catch(error => {
+        console.log("Error occurred while searching for messages:", error)
+      });
+    };
     
     useEffect(() => {
       handleRefreshFeed()
@@ -117,7 +120,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
               placeholder="Search for a message"
               onChangeText={(text) => {
                 setSearchTerm(text);
-                //fetchMessages(text);
+                fetchSearchMessages(text);
               }}
               autoCapitalize="none"
             />
