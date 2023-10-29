@@ -41,11 +41,12 @@ export default async function handler(req, res) {
     /* Look for a conversation between the two users */
     const query = {$or: [{userOne: req.body.toUser, userTwo: username},{userOne: username, userTwo: req.body.toUser}]}
     const conversation = await messageCollection.findOne(query)
+    const currentDateTime = new Date()
 
     /* Create a conversation if one doesn't exist yet */
     /* TODO: This will be removed later once matching functionality triggers a conversation to be created. */
     if (!conversation) {
-        const newConversation = {userOne: username, userTwo: req.body.toUser, messages: [newMessage]}
+        const newConversation = {userOne: username, userTwo: req.body.toUser, last_updated: currentDateTime, messages: [newMessage]}
         await messageCollection.insertOne(newConversation).catch(err => {
             return res.status(400).json({
                 success: false,
@@ -66,7 +67,8 @@ export default async function handler(req, res) {
 
     const updateDocument = {
         $set: {
-           messages: conversation.messages,
+            last_updated: currentDateTime,
+            messages: conversation.messages,
         },
     };
 
