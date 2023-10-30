@@ -69,16 +69,6 @@ export default function Profile({navigation}){
     setDiscoverability(response.data.discoverability)
     return response.data.user;
   }
-
-
-  const navigateToManagePreferences = () => {
-    navigation.navigate('ManagePreferences');
-  };
-
-  const navigateToManagePreferenceRankings = () => {
-    navigation.navigate('ManagePreferenceRankings');
-  };
-
   
   const sendImage = async (imageToUpload) => {
     if (!imageToUpload) {
@@ -116,6 +106,14 @@ export default function Profile({navigation}){
     const navigateToManageHousingInformation = () => {
       navigation.navigate('ManageHousingInformation')
     }
+
+    const navigateToManagePreferences = () => {
+      navigation.navigate('ManagePreferences');
+    };
+  
+    const navigateToManagePreferenceRankings = () => {
+      navigation.navigate('ManagePreferenceRankings');
+    };
   
    const handleLogout = async () => {
         await SecureStore.deleteItemAsync('token')

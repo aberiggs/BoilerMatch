@@ -6,25 +6,25 @@ import * as SecureStore from 'expo-secure-store';
 import axios from "axios"
 
 
-const messagesEx = [
-        {
-            from: "A",
-            message: "Yo what's up"
-        },
-        {
-            from: "B",
-            message: "Test text one"
-        },
-        {
-            from: "A",
-            message: "This is a bunch of of test text to see what happens when you create a larger message"
-        },
-        {
-            from: "B",
-            message: "💥💥💥"
-        },
+// const messagesEx = [
+//         {
+//             from: "A",
+//             message: "Yo what's up"
+//         },
+//         {
+//             from: "B",
+//             message: "Test text one"
+//         },
+//         {
+//             from: "A",
+//             message: "This is a bunch of of test text to see what happens when you create a larger message"
+//         },
+//         {
+//             from: "B",
+//             message: "💥💥💥"
+//         },
 
-    ]
+//     ]
 
 export default function Conversation(props, {navigation}) {
     const [currentMessages, setCurrentMessages] = useState(null)
@@ -128,7 +128,16 @@ export default function Conversation(props, {navigation}) {
                 <View style={{width: '30%', alignItems: 'center'}}>
                     <Text style={{}}>{otherUser}</Text>
                 </View>
-                <View style={{width: '30%'}} />
+                {/* <View style={{width: '30%'}} /> */}
+                <View style={{width: '30%', alignItems: 'right'}}>
+                    <TouchableOpacity style={conversationStyles.button}>
+                        <Text style={conversationStyles.buttonText}>Block or Report</Text>
+                    </TouchableOpacity>
+                    {/* do below code for an information button */}
+                    {/* <Pressable style={{paddingLeft:80}}>
+                        <Ionicons name="information-circle-outline" size={30} color="gold" />
+                    </Pressable> */}
+                </View>
             </View>
 
             <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={conversationStyles.convoContainer}>
@@ -164,6 +173,20 @@ export default function Conversation(props, {navigation}) {
 
 
 const conversationStyles = StyleSheet.create({
+    buttonText: {
+      fontSize: 15,
+      alignSelf: "center"
+    },
+    button: {
+      width: "100%",
+      height: 40,
+      backgroundColor: "gold",
+      borderWidth: 1,
+      borderRadius: 6,
+      borderBlockColor : "black",
+      justifyContent: 'center',
+      alignSelf: 'center',
+    },
     container: {
       flex: 1,
       backgroundColor: '#fff',
