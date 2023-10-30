@@ -52,6 +52,7 @@ export default async function handler(req, res) {
       { $match: {
         $and: [
           {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, liked: true}}}},
+          {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, disliked: true}}} },
           {InteractionsWhereUserIsLiking: {$elemMatch: {userLiked:currentUser, liked: true}}},
           {"username" : { $not: { $eq: currentUser} }},
           {"discoverable": true}]

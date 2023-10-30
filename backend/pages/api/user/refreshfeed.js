@@ -46,6 +46,7 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
             $match: {
             $and:[ 
               {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, liked: true}}} },
+              {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, disliked: true}}} },
             {"username" : { $not: { $eq: currentUser} }},
             {"discoverable": true}
           ]

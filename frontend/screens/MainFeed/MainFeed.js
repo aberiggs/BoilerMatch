@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Pressable, ScrollView, FlatList } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons,FontAwesome} from '@expo/vector-icons';
 import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
@@ -13,6 +13,7 @@ import MatchPopUp from '../../screenComponents/MatchPopUp';
 
 export default function MainFeed({navigation}){
   const [usersLiked, setUsersLiked] = useState({});
+  const [usersDisliked, setUsersDisliked] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
@@ -79,6 +80,43 @@ export default function MainFeed({navigation}){
       )
 
   };
+
+  const handleDislikePress = async(user) => {
+    // Find the feed item with the specified key
+    const tokenVal = await SecureStore.getItemAsync('token')
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/dislikeuser', {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("Error occurred while searching:", error)
+      })
+
+      //Update returns what the data previously look like so if there was no interaction
+      //we set to true and if there was an interaction we said liked to the reciprocal
+      let disliked = true
+      
+      if(response.data.user_added == null){
+        disliked = true
+      }
+      else{
+        disliked = !response.data.user_added.disliked
+      }
+
+      setUsersDisliked((usersDisliked) => ({
+        ...usersDisliked,
+        [user.username]: disliked,
+      })
+      )
+      if(disliked==true && usersDisliked[user.username].liked == true){
+        setUsersLiked((usersLiked) => ({
+          ...usersLiked,
+          [user.username]: false,
+        })
+        )
+      }
+
+  };
   
   const handleUserItemClick = (user) => {
     setSelectedUser(user);
@@ -97,7 +135,7 @@ export default function MainFeed({navigation}){
     setRefreshing(false);
   };
 
-  const FeedItem = ({ user, onLikePress }) => (
+  const FeedItem = ({ user }) => (
     <View style={styles.feedItem}>
       <Avatar
           size={250}
@@ -107,7 +145,7 @@ export default function MainFeed({navigation}){
           activeOpacity={0.8}
         />
       
-      <View style={{flexDirection: 'row'}}>
+      <View style={styles.iconRow}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user)}>
           <Ionicons
             name={usersLiked[user.username] ? 'heart' : 'heart-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
@@ -116,10 +154,28 @@ export default function MainFeed({navigation}){
           />
         </TouchableOpacity>
 
+        
+        <View style={{flexDirection:"row"}}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleUserItemClick(user)}>
           <Ionicons
             name={'information-circle-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
             color={'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleUserItemClick(user)}>
+          <Ionicons
+            name={usersLiked[user.username] ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            color={usersLiked[user.username] ? 'gold' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={feedStyles.iconContainer}>
+          <Ionicons
+            name={usersLiked[user.username] ? 'heart-dislike' : 'heart-dislike-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            color={usersLiked[user.username] ? 'red' : 'gray'}
             size={40}
           />
         </TouchableOpacity>
@@ -367,7 +423,6 @@ const styles = StyleSheet.create({
    // Take up the entire available space
     backgroundColor: 'white',
     alignContent: 'center',
-    alignItems: 'center',
     padding: 15,
     marginBottom: 10,
     shadowColor: 'black',
@@ -469,12 +524,16 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginVertical: 1,
   },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between"
+  }
   });
   
 
 const feedStyles = StyleSheet.create({
   iconContainer: {
-    paddingHorizontal: 10
+    paddingHorizontal: 5
   },
   infoContainer: {
     width: '100%',
@@ -493,5 +552,6 @@ const feedStyles = StyleSheet.create({
   infoLabel: {
     fontWeight: '600',
   },  
+  
   
 })
