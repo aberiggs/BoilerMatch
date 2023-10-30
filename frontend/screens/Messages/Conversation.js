@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
+import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModal component
 
 import axios from "axios"
 
@@ -30,6 +31,16 @@ export default function Conversation(props, {navigation}) {
     const [currentMessages, setCurrentMessages] = useState(null)
     const [newMessage, setNewMessage] = useState('')
     const [username, setUsername] = useState(null)
+
+    const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
+
+    const openReportBlockModal = () => {
+        setReportBlockModalVisible(true);
+    };
+
+    const closeReportBlockModal = () => {
+        setReportBlockModalVisible(false);
+    };
 
     const otherUser = props.otherUser
 
@@ -130,7 +141,7 @@ export default function Conversation(props, {navigation}) {
                 </View>
                 {/* <View style={{width: '30%'}} /> */}
                 <View style={{width: '30%', alignItems: 'right'}}>
-                    <TouchableOpacity style={conversationStyles.button}>
+                    <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
                         <Text style={conversationStyles.buttonText}>Block or Report</Text>
                     </TouchableOpacity>
                     {/* do below code for an information button */}
@@ -164,6 +175,7 @@ export default function Conversation(props, {navigation}) {
                 </View>
 
             </KeyboardAvoidingView>
+            <ReportBlockModal visible={reportBlockModalVisible} onClose={closeReportBlockModal} />
         </SafeAreaView>
     )
 
