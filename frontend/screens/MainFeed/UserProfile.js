@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
-import React from 'react';
+import { StyleSheet, Text, View, Pressable, ScrollView, Image} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
 import { Avatar } from '@rneui/themed';
-import Carousel from 'react-native-snap-carousel';
+import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 
 
 const carouselItems = [
@@ -28,21 +28,66 @@ const carouselItems = [
 ]
 
 export default function userProfile(props) {
+  const [entries, setEntries] = useState([]);
+  const carouselRef = useRef(null);
+
+  const goForward = () => {
+    carouselRef.current.snapToNext();
+  };
+
+  useEffect(() => {
+    setEntries(ENTRIES1);
+  }, []);
   
   const selectedUser = props.user
 
-  _renderItem = ({item, index}) => {
+  const ENTRIES1 = [
+    {
+      title: 'Beautiful and dramatic Antelope Canyon',
+      subtitle: 'Lorem ipsum dolor sit amet et nuncat mergitur',
+      illustration: 'https://i.imgur.com/UYiroysl.jpg',
+    },
+    {
+      title: 'Earlier this morning, NYC',
+      subtitle: 'Lorem ipsum dolor sit amet',
+      illustration: 'https://i.imgur.com/UPrs1EWl.jpg',
+    },
+    {
+      title: 'White Pocket Sunset',
+      subtitle: 'Lorem ipsum dolor sit amet et nuncat ',
+      illustration: 'https://i.imgur.com/MABUbpDl.jpg',
+    },
+    {
+      title: 'Acrocorinth, Greece',
+      subtitle: 'Lorem ipsum dolor sit amet et nuncat mergitur',
+      illustration: 'https://i.imgur.com/KZsmUi2l.jpg',
+    },
+    {
+      title: 'The lone tree, majestic landscape of New Zealand',
+      subtitle: 'Lorem ipsum dolor sit amet',
+      illustration: 'https://i.imgur.com/2nCt3Sbl.jpg',
+    },
+  ];
+
+  _renderItem = ({item, index}, parallaxProps) => {
     return (
-        <View style={styles.slide}>
-            <Text style={styles.title}>{ item.title }</Text>
-        </View>
+
+        <View style={sliderStyle.item}>
+                <ParallaxImage
+                    source={{ uri: item.illustration}}
+                    containerStyle={sliderStyle.imageContainer}
+                    style={sliderStyle.image}
+                    parallaxFactor={0.4}
+                    {...parallaxProps}
+                />
+          </View>
     );
 }
 
   return (
     <View style={modalStyles.modalContainer}>
       <View style={modalStyles.modalContent}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={{width: '90%'}}>
           <Avatar
             size='xlarge'
             rounded
@@ -51,20 +96,23 @@ export default function userProfile(props) {
             activeOpacity={0.8}
           />
 
-          <Carousel
-            ref={(c) => { this._carousel = c; }}
-            data={carouselItems}
-            renderItem={this._renderItem}
-            sliderWidth={300}
-            itemWidth={300}
-          />
-
-
           <Text style={styles.subtitle}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
           <Text style={styles.subtitle}>Gender: {selectedUser.information.gender}</Text>
           <Text style={styles.subtitle}>Grad Year: {selectedUser.information.graduation}</Text>
           <Text style={styles.subtitle}>Major: {selectedUser.information.major}</Text>
-          {/* Add more user information as needed */}
+
+
+          <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+            <Carousel
+              ref={carouselRef}
+              data={entries}
+              sliderWidth={400}
+              itemWidth={300}
+              hasParallaxImages={true}
+              renderItem={this._renderItem}
+            />
+          </View>
+
           <Text style={styles.title}>{'\n'}Information</Text>
           <Text style={styles.subtitle}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
           <Text style={styles.subtitle}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
@@ -107,7 +155,7 @@ const modalStyles = StyleSheet.create({
   },
   modalContent: {
     flex: 'column', 
-    width: '90%',
+    width: '100%',
     height: '90%', 
     alignItems: 'center',
   },
@@ -158,3 +206,19 @@ const styles = StyleSheet.create({
   },
   });
   
+  const sliderStyle = StyleSheet.create({
+    item: {
+      width: 300,
+      height: 200,
+    },
+    imageContainer: {
+      flex: 1,
+      marginBottom: Platform.select({ ios: 0, android: 1 }), // Prevent a random Android rendering issue
+      backgroundColor: 'white',
+      borderRadius: 8,
+    },
+    image: {
+      ...StyleSheet.absoluteFillObject,
+      resizeMode: 'cover',
+    },
+  })
