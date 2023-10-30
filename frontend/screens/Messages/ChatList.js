@@ -20,22 +20,42 @@ export default function ChatList({navigation,refreshOnMatch}) {
     const [chatOpened, setChatOpened] = useState(false) 
 
     const [selectedUser, setSelectedUser] = useState('')
-
-    const fetchSearchMessages = async (text) => {
-      // Make an API request to your database to search for users with similar names
-      axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/search/${text}`).then((response) => {
-        // if you get messages, then set search results to the messages
-        if (response.data.messages.length > 0) {
-          // might have to change or something
-          setSearchResults(response.data.messages.map(messages => messages));
-        }
-        //setIsDropdownVisible(response.data.messages.length > 0)
-        // need pop up message saying that no messages match
-      }).catch(error => {
-        console.log("Error occurred while searching for messages:", error)
-      });
-    };
     
+    const fetchSearchMessages = async (text) => {
+      try {
+        // get token value and set it as config to send in API call
+        const tokenVal = await SecureStore.getItemAsync('token'); 
+        const config = {
+          headers: {
+            authorization: tokenVal
+          }
+        };
+
+        const response = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_HOSTNAME}/api/messages/search/${text}`,
+          config
+        );
+    
+        // Check if the response status is 200 (OK)
+        if (response.status === 200) {
+          // Check if there are messages in the response
+          if (response.data.messages.length > 0) {
+            setSearchResults(response.data.messages.map((message) => message));
+            // Set your dropdown visibility state here if needed.
+          } else {
+            // Show a pop-up message saying that no messages match.
+            console.log("No messages match")
+          }
+        } else {
+          // Handle non-200 status codes if needed.
+          console.log(`Received a non-200 status code: ${response.status}`);
+        }
+      } catch (error) {
+        console.log("Error occurred while searching for messages:", error);
+        // Handle the error as needed.
+      }
+    };
+
     useEffect(() => {
       handleRefreshFeed()
     },[refreshOnMatch]);
