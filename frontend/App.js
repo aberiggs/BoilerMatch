@@ -14,6 +14,7 @@ import Profile from './screens/Profile/Profile';
 
 import ManagePreferences from './screens/Profile/ManagePreferences';
 import ManagePreferenceRankings from './screens/Profile/RankPreferences';
+import ManagePhotos from './screens/Profile/ManagePhotos';
 
 import ForgotPassword from './screens/LoginRegister/ForgotPassword';
 import PinVerify from './screens/LoginRegister/PinVerify';
@@ -43,6 +44,7 @@ export default function App() {
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
         <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
+        <Stack.Screen name="ManagePhotos" component={ManagePhotos} />
       </Stack.Navigator>
     </NavigationContainer>
   );

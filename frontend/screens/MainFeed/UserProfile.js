@@ -3,30 +3,6 @@ import React, {useState, useEffect, useRef} from 'react';
 import { Avatar } from '@rneui/themed';
 import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 
-
-const carouselItems = [
-  {
-      title:"Item 1",
-      text: "Text 1",
-  },
-  {
-      title:"Item 2",
-      text: "Text 2",
-  },
-  {
-      title:"Item 3",
-      text: "Text 3",
-  },
-  {
-      title:"Item 4",
-      text: "Text 4",
-  },
-  {
-      title:"Item 5",
-      text: "Text 5",
-  },
-]
-
 export default function userProfile(props) {
   const [entries, setEntries] = useState([]);
   const carouselRef = useRef(null);
@@ -41,46 +17,19 @@ export default function userProfile(props) {
   
   const selectedUser = props.user
 
-  const ENTRIES1 = [
-    {
-      title: 'Beautiful and dramatic Antelope Canyon',
-      subtitle: 'Lorem ipsum dolor sit amet et nuncat mergitur',
-      illustration: 'https://i.imgur.com/UYiroysl.jpg',
-    },
-    {
-      title: 'Earlier this morning, NYC',
-      subtitle: 'Lorem ipsum dolor sit amet',
-      illustration: 'https://i.imgur.com/UPrs1EWl.jpg',
-    },
-    {
-      title: 'White Pocket Sunset',
-      subtitle: 'Lorem ipsum dolor sit amet et nuncat ',
-      illustration: 'https://i.imgur.com/MABUbpDl.jpg',
-    },
-    {
-      title: 'Acrocorinth, Greece',
-      subtitle: 'Lorem ipsum dolor sit amet et nuncat mergitur',
-      illustration: 'https://i.imgur.com/KZsmUi2l.jpg',
-    },
-    {
-      title: 'The lone tree, majestic landscape of New Zealand',
-      subtitle: 'Lorem ipsum dolor sit amet',
-      illustration: 'https://i.imgur.com/2nCt3Sbl.jpg',
-    },
-  ];
+  const ENTRIES1 = [ 'https://i.imgur.com/UYiroysl.jpg', 'https://i.imgur.com/UPrs1EWl.jpg', 'https://i.imgur.com/MABUbpDl.jpg' ];
 
   _renderItem = ({item, index}, parallaxProps) => {
     return (
-
-        <View style={sliderStyle.item}>
-                <ParallaxImage
-                    source={{ uri: item.illustration}}
-                    containerStyle={sliderStyle.imageContainer}
-                    style={sliderStyle.image}
-                    parallaxFactor={0.4}
-                    {...parallaxProps}
-                />
-          </View>
+      <View style={sliderStyle.item}>
+        <ParallaxImage
+            source={{ uri: item}}
+            containerStyle={sliderStyle.imageContainer}
+            style={sliderStyle.image}
+            parallaxFactor={0}
+            {...parallaxProps}
+        />
+      </View>
     );
 }
 
@@ -107,7 +56,7 @@ export default function userProfile(props) {
               ref={carouselRef}
               data={entries}
               sliderWidth={400}
-              itemWidth={300}
+              itemWidth={270}
               hasParallaxImages={true}
               renderItem={this._renderItem}
             />
@@ -208,8 +157,8 @@ const styles = StyleSheet.create({
   
   const sliderStyle = StyleSheet.create({
     item: {
-      width: 300,
-      height: 200,
+      width: '100%',
+      height: 360,
     },
     imageContainer: {
       flex: 1,
