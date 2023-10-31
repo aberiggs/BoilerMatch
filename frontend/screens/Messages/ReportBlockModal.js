@@ -3,16 +3,38 @@ import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import RNPickerSelect from "react-native-picker-select"
 
-export default function ReportBlockModal({ visible, onClose }) {
+export default function ReportBlockModal({ visible, onClose , onCloseConversation}) {
   
   const [report, setReport] = useState('');
   const [reportReasonCategory, setReportReasonCategory] = useState('');
   const [reportReasonWritten, setReportReasonWritten] = useState('');
   const [block, setBlock] = useState('');
+  const [errMsgVisible, setErrMsgVisible] = useState(false);
+  const [submitMsgVisibleReport, setSubmitMsgVisibleReport] = useState(false);
+  const [submitMsgVisibleBlock, setSubmitMsgVisibleBlock] = useState(false);
+  const [invalidEntriesMsgVisible, setInvalidEntriesMsgVisible] = useState(false);
 
   const handleReportReasonWritten = (text) => {
     setReportReasonWritten(text);
   };
+
+  const handleSubmit = async () => {
+    // If not all the fields filled out then send error message
+    // If not all the fields filled out then send error message
+    if ( !report || !reportReasonCategory || !reportReasonWritten  || !block) {
+      setErrMsgVisible(true);
+    } else if ( report == "yes" && reportReasonCategory == "na"){
+      setInvalidEntriesMsgVisible(true);
+    } else if ( report == "no" && block == "yes" && reportReasonCategory != "na"){
+      setInvalidEntriesMsgVisible(true)
+    } else if (block == "yes"){
+      // const res = updateInformationThroughApi();
+      // TODO: Error checking
+      setSubmitMsgVisibleBlock(true);
+    } else if (report == "yes") {
+      setSubmitMsgVisibleReport(true);
+    }
+  }
 
   return (
     <Modal
@@ -63,7 +85,7 @@ export default function ReportBlockModal({ visible, onClose }) {
             style={pickerSelectStyles}
           /> 
 
-          <Text style={styles.subtitle}>If you are reporting this user, would you like to elaborate more on your reason and give any specifics? If you are not reporting this user, just select N/A. </Text>
+          <Text style={styles.subtitle}>If you are reporting this user, would you like to elaborate more on your reason and give any specifics? If you are not reporting this user or do not feel the need to give specifics, just select N/A. </Text>
 
           <TextInput
             style={styles.input}
@@ -85,9 +107,85 @@ export default function ReportBlockModal({ visible, onClose }) {
             style={pickerSelectStyles}
           /> 
                     
-          <Pressable style={styles.button} onPress={onClose}>
+          <Pressable style={styles.button} onPress={() => {handleSubmit()}}>
             <Text style={styles.modalButtonText}>OK</Text>
           </Pressable>
+
+          {/* Modal for error message */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={errMsgVisible}
+            onRequestClose={() => {
+              setErrMsgVisible(!errMsgVisible);
+            }}
+          >
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>
+                Please make sure all the fields are filled out.
+              </Text>
+              <Pressable style={styles.modalButton} onPress={() => setErrMsgVisible(!errMsgVisible)}>
+                <Text style={styles.modalButtonText}>OK</Text>
+              </Pressable>
+            </View>
+          </Modal>
+
+          {/* Modal for invalid fields message */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={invalidEntriesMsgVisible}
+            onRequestClose={() => {
+              setInvalidEntriesMsgVisible(!invalidEntriesMsgVisible);
+            }}
+          >
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>
+                Please make sure that the fields are filled out correctly. There are currently some conflicting answers to the fields.
+              </Text>
+              <Pressable style={styles.modalButton} onPress={() => setInvalidEntriesMsgVisible(!invalidEntriesMsgVisible)}>
+                <Text style={styles.modalButtonText}>OK</Text>
+              </Pressable>
+            </View>
+          </Modal>
+
+          {/* Modal for submit message block */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={submitMsgVisibleBlock}
+            onRequestClose={() => {
+              setSubmitMsgVisibleBlock(false); // Close the "submit" message modal
+            }}
+          >
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>
+                You have successfully reported/blocked this user.
+              </Text>
+              <Pressable style={styles.modalButton} onPress={() => {setSubmitMsgVisibleBlock(false); onClose(); onCloseConversation();}}>
+                <Text style={styles.modalButtonText}>OK</Text>
+              </Pressable>
+            </View>
+          </Modal>
+
+          {/* Modal for submit message report */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={submitMsgVisibleReport}
+            onRequestClose={() => {
+              setSubmitMsgVisibleReport(false); // Close the "submit" message modal
+            }}
+          >
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>
+                You have successfully reported/blocked this user.
+              </Text>
+              <Pressable style={styles.modalButton} onPress={() => {setSubmitMsgVisibleReport(false); onClose();}}>
+                <Text style={styles.modalButtonText}>OK</Text>
+              </Pressable>
+            </View>
+          </Modal>
 
         </View>
     </Modal>
