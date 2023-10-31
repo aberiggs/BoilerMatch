@@ -18,50 +18,72 @@ export default async function handler(req, res) {
 //     });
 //   }
 
-const token = req.body.token
+// const token = req.body.token
 
 
-const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
-    if (err) {
-        return res.status(400).json({
-            success: false,
-        })
-    } else {
-        return payload.username
-    }
-});
+// const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+//     if (err) {
+//         return res.status(400).json({
+//             success: false,
+//         })
+//     } else {
+//         return payload.username
+//     }
+// });
 
-//const currentUser = req.body.username
   try {
     const potentialUsers = await users.aggregate([
         { 
             $lookup: {
                 from: "interactions",
                 localField: "username",
-                foreignField: "userLiked",
-                as: "InteractionsWhereUserIsLiked"
+                foreignField: "userInteractedWith",
+                as: "InteractionsWithUser"
             },
         },
         {
             $match: {
             $and:[ 
-              {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, liked: true}}} },
-              {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, disliked: true}}} },
-            {"username" : { $not: { $eq: currentUser} }},
+              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:"jslutzky", liked_or_disliked: "liked"}}} },
+              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:"jslutzky", liked_or_disliked: "disliked"}}} },
+            {"username" : { $not: { $eq: "jslutzky"} }},
             {"discoverable": true}
           ]
-    }
-  }
-    , 
+    }},
+    
+    {
+      $project: {
+        user: "$$ROOT",
+          Interactions: {
+              $filter: {
+                  input: "$InteractionsWithUser",
+                  as: "interaction",
+                  cond: { $eq: ["$$interaction.userInteracting",  "jslutzky"] }
+              }
+              }
+          }
+      },
+      
     {$sample: {
       size: 5
     }},
-    // {
-    //   $project: { "InteractionsWhereUserIsLiked": 0}
-    // }
-   
+    {
+      $replaceRoot: {
+          newRoot: "$user"  
+      }
+    },
+    {
+      $addFields: {
+        "interaction": "$InteractionsWithUser",
+    }
+    },
+    {
+        $project: {
+            "InteractionsWithUser": 0,
+        }
+    }
     ]).toArray()
-    
+    console.log(potentialUsers)
     return res.status(200).json({
       success: true,
       users: potentialUsers,
