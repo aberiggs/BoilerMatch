@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList } from 'react-native';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
 import { Avatar } from '@rneui/themed';
@@ -10,6 +10,8 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { AppState } from 'react-native';
+import { useNotification } from '../../NotificationContext';
+
 //import { NotificationSettings } from "../Profile/ManageNotifications"
 
 
@@ -64,13 +66,18 @@ export default function MainFeed({}){
   const responseListener = useRef();
   const [username,setUsername] = useState("");
   const [appState, setAppState] = useState(AppState.currentState);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const { notificationsEnabled, setNotificationsEnabled } = useNotification();
+  const [hasNoti,setHasNoti] = useState(false);
+
   
+
 
   
   useEffect(() => {
     handleRefreshFeed()
   },[showOnlyUsersLikedBy]);
+
+    //  console.log("notiSettings: ", notificationsEnabled)
 
   //NotificationSettings()
 
@@ -84,7 +91,7 @@ export default function MainFeed({}){
     // Other notification handling code
   }, [notificationsEnabled]);
 
-  console.log("notification Listener", notificationsEnabled);
+  //console.log("notification Listener", notificationsEnabled);
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState) => {
@@ -97,21 +104,71 @@ export default function MainFeed({}){
       subscription.remove();
     };
   }, []);
+
   
+
   useEffect(() => {
-    fetchUsername();
-    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-    console.log("before expoIf statement", expoPushToken)
-    if ( expoPushToken != '') {
-      console.log("inside when this is what ^")
-      updateNotificationsThroughApi();
+  const fetchData = async () => {
+    const updateNotificationsThroughApi = async (pushToken, hasNoti) => {
+      console.log("inside", pushToken);
+      console.log(hasNoti)
+      const tokenVal = await SecureStore.getItemAsync('token');
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
+        token: tokenVal,
+        pushToken: pushToken,
+        recieveNotifications: hasNoti,
+      }).catch((error) => {
+        if (error.response) {
+          return error.response.data;
+        }
+        return;
+      });
+
+      return response;
     };
+
+    // Step 1: Get the push token
+    const pushToken = await registerForPushNotificationsAsync();
+    setExpoPushToken(pushToken);
+
+    // Step 2: Get the 'hasNoti' value
+    const tokenVal = await SecureStore.getItemAsync('token');
+    const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNoti', {
+      params: {
+        token: tokenVal,
+      }
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data;
+      }
+    });
+
+    if (response && response.data && response.data.notificationsEnabled !== undefined) {
+      setHasNoti(response.data.notificationsEnabled);
+
+      // Step 3: Update notifications through the API
+      const updateResponse = await updateNotificationsThroughApi(pushToken, hasNoti);
+      console.log(updateResponse);
+    }
+  };
+
+  fetchData();
+}, [hasNoti]);
+
+  
+  
+
+
+  
+  useEffect( () => {
+    fetchUsername();
+    //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
     notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
       setNotification(notification);
     });
-    
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
+       await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
+       //console.log(response.data.users[0]);
         setSelectedUser(response.data.users[0]);
         //console.log(response.data);
         toggleModal();
@@ -127,6 +184,8 @@ export default function MainFeed({}){
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, []);
+  /*
+  useEffect(() => {
   const updateNotificationsThroughApi = async() => {
     console.log("inside", expoPushToken);
     const tokenVal = await SecureStore.getItemAsync('token')
@@ -142,7 +201,10 @@ export default function MainFeed({}){
     })
 
     return response
-  }
+  };
+  updateNotificationsThroughApi();
+},[]);
+*/
 
   const fetchUsername = async () => {
     const userVal = await SecureStore.getItemAsync('username')
@@ -176,8 +238,7 @@ export default function MainFeed({}){
         [user]: liked,
       })
       )
-      console.log("here");
-      if (liked) {
+      if (liked && notificationsEnabled) {
         schedulePushNotification(username)
       }
       /*
@@ -277,6 +338,7 @@ export default function MainFeed({}){
   };
 
   const fetchUsers = async (text) => {
+  
     
     // Make an API request to your database to search for users with similar names
     axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${text}`).then((response) => {
@@ -473,40 +535,43 @@ export default function MainFeed({}){
         to: recipientNotificationToken,
       });
     }
-    async function registerForPushNotificationsAsync() {
-      let token;
-    
-      if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF231F7C',
-        });
-      }
-      //await updateNotificationsThroughApi();
-      if (Device.isDevice) {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
+
+      async function registerForPushNotificationsAsync() {
+        let token;
+      
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
         }
-        if (finalStatus !== 'granted') {
-          alert('Failed to get push token for push notification!');
-          return;
-        }
-        // Learn more about projectId:
-        // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
-        token = (await Notifications.getExpoPushTokenAsync("181661f8-d406-4a71-a48f-08829cc0ec4a")).data;
         //await updateNotificationsThroughApi();
-        console.log("token", token);
-      } else {
-        alert('Must use physical device for Push Notifications');
+        if (Device.isDevice) {
+          const { status: existingStatus } = await Notifications.getPermissionsAsync();
+          let finalStatus = existingStatus;
+          if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+          }
+          if (finalStatus !== 'granted') {
+            alert('Failed to get push token for push notification!');
+            return;
+          }
+          // Learn more about projectId:
+          // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
+          token = (await Notifications.getExpoPushTokenAsync("181661f8-d406-4a71-a48f-08829cc0ec4a")).data;
+          //await updateNotificationsThroughApi();
+          console.log("token", token);
+        } else {
+          alert('Must use physical device for Push Notifications');
+        }
+      
+        return token;
       }
     
-      return token;
-    }
+    
 
     
 

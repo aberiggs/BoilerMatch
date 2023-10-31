@@ -1,15 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View, Switch,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
+import { useNotification } from '../../NotificationContext';
 
 
 
 
 export default function NotificationSettings({navigation}) {
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+    const { notificationsEnabled, setNotificationsEnabled } = useNotification();
+    useEffect(() => {
+
+        async function fetchNotificationSetting() {
+          const tokenVal = await SecureStore.getItemAsync('token');
+          const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNoti', {
+            params :{
+            token: tokenVal,
+            }
+          }).catch((error) => {
+            if (error.response) {
+              return error.response.data;
+            }
+          });
+          console.log("after response")
+          //console.log(response)
+          console.log(response.data)
+          if (response.data.recieveNotifications === undefined) {
+            console.log("not undefined");
+          }
+          console.log(response.data.notificationsEnabled)
+          if (response && response.data && response.data.notificationsEnabled !== undefined) {
+            setNotificationsEnabled(response.data.notificationsEnabled);
+            console.log(notificationsEnabled)
+          }
+        }
+    
+        fetchNotificationSetting();
+      }, []);
   
     const toggleNotificationSwitch = async () => {
         //console.log(notificationsEnabled)
@@ -19,10 +49,9 @@ export default function NotificationSettings({navigation}) {
       const recieveNotifications = !notificationsEnabled;
       console.log(recieveNotifications)
       const tokenVal = await SecureStore.getItemAsync('token')
-        const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
+      const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notiSettings', {
           token: tokenVal,
           //this is where I last left off
-          //pushToken: expoPushToken,
           recieveNotifications: recieveNotifications,
         }).catch((error) => {
           if (error.response) {

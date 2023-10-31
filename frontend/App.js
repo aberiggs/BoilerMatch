@@ -1,4 +1,4 @@
-import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View,TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -19,12 +19,17 @@ import ManagePreferenceRankings from './screens/Profile/RankPreferences';
 import ForgotPassword from './screens/LoginRegister/ForgotPassword';
 import PinVerify from './screens/LoginRegister/PinVerify';
 import ResetPassword from './screens/LoginRegister/ResetPassword';
+import NotificationProvider from './NotificationContext';
+import MainFeed from './screens/MainFeed/MainFeed';
 
 
 const Stack = createStackNavigator();
 
 export default function App() {
+
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   return (
+    <NotificationProvider>
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Landing" component={Landing} />
@@ -36,6 +41,7 @@ export default function App() {
         }}/>
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="PinVerify" component={PinVerify} />
+        <Stack.Screen name="MainFeed" component={MainFeed} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
         <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} options={{gestureEnabled: false}}/>
         <Stack.Screen name="ManageInformation" component={ManageInformation} />
@@ -46,6 +52,7 @@ export default function App() {
         <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
       </Stack.Navigator>
     </NavigationContainer>
+    </NotificationProvider>
   );
 }
 
