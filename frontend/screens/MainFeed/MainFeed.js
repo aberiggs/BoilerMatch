@@ -66,8 +66,16 @@ export default function MainFeed({navigation,handleMatchMade}){
         console.log("error occurred w:", error)
       })
       console.log(res.data)
-      if(res.data.liked == true){
+      if(res.data.liked == true) {
        // console.log(res.data.userLiked)
+       const answer = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/createConversation`, {
+        token: tokenVal,
+        toUser: user
+      }
+      
+      ).catch(error => {
+        console.log("Error creating conversation: ", error)
+      })
         setMatchPopUpUserShown(user)
         
       }
