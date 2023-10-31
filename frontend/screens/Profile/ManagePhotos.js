@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Image, ScrollView, Modal, SafeAreaView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Icon } from 'react-native-vector-icons/Feather';
 import axios from 'axios'
@@ -8,27 +8,19 @@ import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 
 import * as SecureStore from 'expo-secure-store';
 
-const ENTRIES1 = [ 'https://i.imgur.com/UYiroysl.jpg', 'https://i.imgur.com/UPrs1EWl.jpg', 'https://i.imgur.com/MABUbpDl.jpg' ];
-
 export default function ManagePhotos({navigation}) { 
     const [userPhotos, setUserPhotos] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
         getUserPhotos()
     },[])
 
-    useEffect(() => {
-      console.log("User photos updated")
-    },[userPhotos])
-
-
     /* Gets the URI's for all user photos */
     const getUserPhotos = async () => {
-      setIsLoading(true)
-      const tokenVal = await SecureStore.getItemAsync('token')
+      const username = await SecureStore.getItemAsync('username')
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/otherphotos', {
-        token: tokenVal,
+        username: username
       }
       ).catch(error => {
         console.log("Error occurred while fetching other photos", error)
@@ -41,7 +33,6 @@ export default function ManagePhotos({navigation}) {
       }
 
       const photos = response.data.photos
-      console.log(photos)
       setUserPhotos(photos)
       setIsLoading(false)
     }
@@ -53,20 +44,20 @@ export default function ManagePhotos({navigation}) {
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: false,
           aspect: [3, 4],
-          quality: 1,
+          quality: 0,
         });
     
         if (!result.canceled) {
           const imageToUpload = result.assets[0].uri;
+          setIsLoading(true)
           await sendImage(imageToUpload)
-          getUserPhotos()
+          await getUserPhotos()
         }
     };
 
     const sendImage = async (imageToUpload) => {
         if (!imageToUpload) {
           // Image is null for some reason
-          console.log("Null image")
           return
         }
         const formData = new FormData();
@@ -132,20 +123,29 @@ export default function ManagePhotos({navigation}) {
         );
     }
 
-    return (
+
+      return (
         // TODO: Make modal for when userPhotos is null, or initialize it showing to true and change its state once we fetch images :)
         <View style={styles.container}>
-            <View style={{height: 400}}>
-                <CarouselDisplay />
-            </View>
-            <Pressable style={styles.button} onPress={() => pickImage()}>
-                <Text style={styles.buttonText}>Add New Photo</Text>
-            </Pressable>
-            <Pressable style={styles.button} onPress={() => navigation.goBack()}>
-                <Text style={styles.buttonText}>Back</Text>
-            </Pressable>
+          <Modal animationType='fade' visible={isLoading}>
+            <SafeAreaView style={styles.container}>
+            <Text style={{fontSize: 35, alignSelf: 'center'}}>Loading...</Text>
+            </SafeAreaView>
+          </Modal>
+
+          <View style={{height: 400}}>
+              <CarouselDisplay />
+          </View>
+          <Pressable style={styles.button} onPress={() => pickImage()}>
+              <Text style={styles.buttonText}>Add New Photo</Text>
+          </Pressable>
+          <Pressable style={styles.button} onPress={() => navigation.goBack()}>
+              <Text style={styles.buttonText}>Back</Text>
+          </Pressable>
         </View>
     )
+    
+    
 }
 
 const styles = StyleSheet.create({

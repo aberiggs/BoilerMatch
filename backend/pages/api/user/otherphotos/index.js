@@ -8,42 +8,23 @@ export default async function handler(req, res) {
     const { database } = await connectToDatabase();
     const users = database.collection("users");
     
-    const token = req.body.token
+    if (!req.body || !req.body.username) {
+        console.log("Not enough info")
+        return res.status(400).json({
+            success: false,
+        })
+    }
 
+    const username = req.body.username
 
-  const tokenData = jwt.verify(token, 'MY_SECRET', (err, payload) => {
-      if (err) {
-          return res.status(400).json({
-              success: false,
-          })
-      } else {
-          return payload
-      }
-  });
+    const user = await users.findOne({username: username})
 
-if (!tokenData) {
-    return res.status(400).json({
-        success: false,
+    const otherphotos = (user && user.otherphotos) ? user.otherphotos : []
+
+    return res.status(200).json({
+        success: true,
+        photos: otherphotos
     })
-}
-  const username = tokenData.username
-  console.log(username)
-
-  const user = await users.findOne({username: username})
-
-  if (!user) {
-    console.log("user issue")
-    return res.status(400).json({
-        success: false,
-    })
-}
-
-const otherphotos = (user.otherphotos) ? user.otherphotos : []
-
-return res.status(200).json({
-    success: true,
-    photos: otherphotos
-})
 
 
 }

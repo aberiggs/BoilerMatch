@@ -2,28 +2,51 @@ import { StyleSheet, Text, View, Pressable, ScrollView, Image} from 'react-nativ
 import React, {useState, useEffect, useRef} from 'react';
 import { Avatar } from '@rneui/themed';
 import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
+import axios from 'axios'
+import * as SecureStore from 'expo-secure-store';
 
 export default function userProfile(props) {
-  const [entries, setEntries] = useState([]);
+  const [userPhotos, setUserPhotos] = useState([]);
   const carouselRef = useRef(null);
+
+  const selectedUser = props.user
 
   const goForward = () => {
     carouselRef.current.snapToNext();
   };
 
   useEffect(() => {
-    setEntries(ENTRIES1);
+    getUserPhotos()
   }, []);
-  
-  const selectedUser = props.user
 
-  const ENTRIES1 = [ 'https://i.imgur.com/UYiroysl.jpg', 'https://i.imgur.com/UPrs1EWl.jpg', 'https://i.imgur.com/MABUbpDl.jpg' ];
+  /* Gets the URI's for all user photos */
+  const getUserPhotos = async () => {
+    console.log(selectedUser)
+    //setIsLoading(true)
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/otherphotos', {
+      username: selectedUser.username,
+    }
+    ).catch(error => {
+      console.log("Error occurred while fetching other photos", error)
+      console.log(error.data)
+    })
+
+    if (!response || !response.data || !response.data.photos) {
+      console.log("No response data")
+      return;
+    }
+
+    const photos = response.data.photos
+    setUserPhotos(photos)
+    //setIsLoading(false)
+  }
 
   _renderItem = ({item, index}, parallaxProps) => {
+    const photoUri = 'https://boilermatch.blob.core.windows.net/otherphotos/' + item
     return (
       <View style={sliderStyle.item}>
         <ParallaxImage
-            source={{ uri: item}}
+            source={{ uri: photoUri}}
             containerStyle={sliderStyle.imageContainer}
             style={sliderStyle.image}
             parallaxFactor={0}
@@ -54,7 +77,7 @@ export default function userProfile(props) {
           <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
             <Carousel
               ref={carouselRef}
-              data={entries}
+              data={userPhotos}
               sliderWidth={400}
               itemWidth={270}
               hasParallaxImages={true}
