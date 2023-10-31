@@ -35,13 +35,14 @@ export default async function handler(req, res) {
     
     const username = tokenData.username
 
+    const currentDateTime = new Date()
 
-    const newMessage = {from: username, message: req.body.messageToSend}
+    const newMessage = {from: username, message: req.body.messageToSend, timestamp: currentDateTime, opened: "no", readTime: "no"}
 
     /* Look for a conversation between the two users */
     const query = {$or: [{userOne: req.body.toUser, userTwo: username},{userOne: username, userTwo: req.body.toUser}]}
     const conversation = await messageCollection.findOne(query)
-    const currentDateTime = new Date()
+    
 
     /* Create a conversation if one doesn't exist yet */
     /* TODO: This will be removed later once matching functionality triggers a conversation to be created. */

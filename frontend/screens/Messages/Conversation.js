@@ -113,19 +113,64 @@ export default function Conversation(props, {navigation}) {
         }
     }
 
-    const messageItem = ({item}) => {
+    // const messageItem = ({item}) => {
         
-        const messageContainerStyle = (item.from === username) ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg
-        const messageBoxStyle = (item.from === username) ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox
+    //     const messageContainerStyle = (item.from === username) ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg
+    //     const messageBoxStyle = (item.from === username) ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox
 
+    //     return (
+    //         <View style={messageContainerStyle}>
+    //             <View style={messageBoxStyle}>
+    //                 <Text style={conversationStyles.messageText}>{item.message}</Text>
+    //             </View>
+    //         </View>
+    //     )
+    // }
+
+    const formatTimestamp = (timestamp) => {
+        const date = new Date(timestamp);
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+        // Convert hours from 24-hour format to 12-hour format
+        const formattedHours = hours % 12 || 12;
+    
+        // Pad single-digit minutes with a leading zero
+        const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    
+        // Get the month, day, and year
+        const month = date.getMonth() + 1; // Months are 0-indexed
+        const day = date.getDate();
+        const year = date.getFullYear();
+    
+        // Format the date part as MM/DD/YYYY
+        const formattedDate = `${month}/${day}/${year}`;
+    
+        return `${formattedDate}\n ${formattedHours}:${formattedMinutes} ${ampm}`;
+    };
+    
+    const messageItem = ({ item }) => {
+        const messageContainerStyle = item.from === username ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg;
+        const messageBoxStyle = item.from === username ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox;
+        const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
+        const isCurrentUser = item.from === username;
+    
         return (
             <View style={messageContainerStyle}>
                 <View style={messageBoxStyle}>
                     <Text style={conversationStyles.messageText}>{item.message}</Text>
                 </View>
+                <View style={conversationStyles.timestampContainer}>
+                    <Text style={conversationStyles.timestampText}>
+                        {formatTimestamp(item.timestamp)}
+                    </Text>
+                </View>
             </View>
-        )
-    }
+        );
+    };
+    
+      
 
     return(
         <SafeAreaView style={{height: '100%', width: '100%'}}>
@@ -178,9 +223,6 @@ export default function Conversation(props, {navigation}) {
             <ReportBlockModal visible={reportBlockModalVisible} onClose={closeReportBlockModal} onCloseConversation={props.onClose} />
         </SafeAreaView>
     )
-
-
-
 }
 
 
@@ -270,6 +312,36 @@ const conversationStyles = StyleSheet.create({
     },
     messageText: {
         fontSize: 15,
-    }
-  });
-  
+    },
+    timestampLeft: {
+        fontSize: 12, // Adjust the font size as needed
+        color: 'gray', // Color of the timestamp for messages sent by other users
+        alignSelf: 'flex-start', // Align on the left
+        //marginHorizontal: 10, // Add margin for spacing
+    },
+    timestampRight: {
+        fontSize: 12, // Adjust the font size as needed
+        color: 'gray', // Color of the timestamp for messages sent by you
+        alignSelf: 'flex-end', // Align on the right
+        //marginHorizontal: 10, // Add margin for spacing
+    },
+    timestampText: {
+        fontSize: 12, // Adjust the font size as needed
+        color: 'gray', // Color of the timestamp for messages sent by you
+        marginHorizontal: 10, // Add margin for spacing
+        alignSelf: 'center',
+    },
+     timestampContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 4, // Adjust the margin to control the space between the message and the timestamp
+    },
+    timestampText: {
+        fontSize: 12,
+        color: 'gray',
+    },
+});
+
+
+
+
