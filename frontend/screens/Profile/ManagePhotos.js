@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, Image, ScrollView, Modal, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Image, ScrollView, Modal, SafeAreaView, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Icon } from 'react-native-vector-icons/Feather';
+import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios'
 
 import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
@@ -82,8 +82,21 @@ export default function ManagePhotos({navigation}) {
     }
     
 
-    const deletePhoto = () => {
+    const deletePhoto = async (uri) => {
+      console.log("Deleting photo", uri)
+      setIsLoading(true)
+      const tokenVal = await SecureStore.getItemAsync('token')
+        // TODO: Errors need to be caught here (server down/no connection, etc.)
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/otherphotos/delete', {
+          token: tokenVal,
+          photoToDelete: uri
+        }
+        ).catch(error => {
+          console.log("Error occurred while deleting photos", error)
+          console.log(error.data)
+        })
 
+      getUserPhotos()
     }
 
     const CarouselDisplay = () => {
@@ -91,19 +104,21 @@ export default function ManagePhotos({navigation}) {
         else if (userPhotos.length === 0) {
             // No items to display
             return (
-                <Text>Nothing to display</Text>
+              <View>
+                <Text>No additional photos uploaded yet!</Text>
+              </View>
             )
         } else {
             return (
-                <View>
-                    <Carousel
-                    data={userPhotos}
-                    sliderWidth={400}
-                    itemWidth={300}
-                    hasParallaxImages={true}
-                    renderItem={this._renderItem}
-                    />
-                </View>
+              <View>
+                  <Carousel
+                  data={userPhotos}
+                  sliderWidth={400}
+                  itemWidth={300}
+                  hasParallaxImages={true}
+                  renderItem={this._renderItem}
+                  />
+              </View>
             )
         }
     }
@@ -112,6 +127,11 @@ export default function ManagePhotos({navigation}) {
       const photoUri = 'https://boilermatch.blob.core.windows.net/otherphotos/' + item
         return (
           <View style={sliderStyle.item}>
+            <View style={{alignSelf: 'flex-end', position: 'absolute', zIndex:3}}>
+              <TouchableOpacity style={{}} onPress={() => {deletePhoto(item)}}>
+                <Ionicons name="close-outline" size={35} color={'red'}/> 
+              </TouchableOpacity>
+            </View>
             <ParallaxImage
                 source={{ uri: photoUri }}
                 containerStyle={sliderStyle.imageContainer}
@@ -133,7 +153,7 @@ export default function ManagePhotos({navigation}) {
             </SafeAreaView>
           </Modal>
 
-          <View style={{height: 400}}>
+          <View style={{height: 400, justifyContent: 'center'}}>
               <CarouselDisplay />
           </View>
           <Pressable style={styles.button} onPress={() => pickImage()}>
