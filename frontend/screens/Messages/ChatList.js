@@ -106,8 +106,8 @@ export default function ChatList({navigation,refreshOnMatch}) {
       setRefreshing(false);
     };
   
-    const ChatItem = ({ user, onChatPress }) => (
-      <TouchableOpacity style={feedStyles.iconContainer} onPress={() => onChatPress(user)}>
+    const ChatItem = ({ item }) => (
+      <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
         <View style={styles.chatItem}>
           
           
@@ -115,17 +115,19 @@ export default function ChatList({navigation,refreshOnMatch}) {
             <Avatar
                 size={100}
                 rounded
-                source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + user.username + '.jpg'}}
+                source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + item.otherUser.username + '.jpg'}}
                 containerStyle={{backgroundColor: 'grey', margin: 10}}
                 activeOpacity={0.8}
                 
               />
-            <Text style={feedStyles.name}>{user.information.firstName} {user.information.lastName}</Text>
+            { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
 
           </View>    
         </View>
       </TouchableOpacity>
     );
+
+    console.log(displayedUsers)
   
   
     return (
@@ -151,7 +153,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
           {displayedUsers.length > 0 ? (
             <FlatList
               data={displayedUsers} // Replace with your data array
-              renderItem={({ item }) => <ChatItem user={item} onChatPress={handleChatPress}/>}
+              renderItem={({ item }) => ChatItem({item}) }
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
               horizontal={false}
               contentContainerStyle={styles.flatListContent}
