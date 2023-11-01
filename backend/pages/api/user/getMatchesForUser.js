@@ -47,6 +47,7 @@ export default async function handler(req, res) {
         $and: [
           {InteractionsWithUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
           {InteractionsByUser: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, blocked: true}}} },
           {"username" : { $not: { $eq: currentUser} }}]
       } },
     {
