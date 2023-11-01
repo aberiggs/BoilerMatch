@@ -43,8 +43,8 @@ export default async function handler(req, res) {
 },
       { $match: {
         $and: [
-          {InteractionsByUser: {$elemMatch: {userLiking:currentUser, liked_or_disliked: "liked"}}},
-          {InteractionsWithUser: {$elemMatch: {userLiked:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsWithUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsByUser: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}},
           {"username" : { $not: { $eq: currentUser} }}]
       } },
     {
