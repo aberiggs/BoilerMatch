@@ -75,11 +75,11 @@ export default function ChatList({navigation,refreshOnMatch}) {
     },[refreshOnMatch]);
     
     
-    /* edit this function to open chat */
-    const handleUserItemClick = (user) => {
-    //   setSelectedUser(user);
-    //   setIsUserModalVisible(true);
-    };
+    // useEffect(() => {
+    //   setDisplayedUsers([...displayedUsers].sort((a, b) => a.lastUpdated - b.lastUpdated));
+    // }, [displayedUsers])
+
+   
   
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
@@ -90,8 +90,12 @@ export default function ChatList({navigation,refreshOnMatch}) {
       ).catch(error => {
         console.log("Error occurred while pulling users", error)
       })
-      console.log(response.data)
-      setDisplayedUsers(response.data.users)
+      // console.log(response.data)
+      if (response.data.users.length > 0) {
+        const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+        console.log("SORTED USERS: ", sortedUsers)
+        setDisplayedUsers(sortedUsers);
+      }
     }
 
     const ConversationModal = () => {

@@ -42,10 +42,10 @@ export default async function handler(req, res) {
     
     const username = tokenData.username
 
-   const newMessage = {from: username, message: [], timestamp: currentDateTime, opened: "no", readTime: "no"}
+   //const newMessage = {from: username, message: [], timestamp: currentDateTime, opened: "no", readTime: "no"}
 
 
-    const newConversation = {userOne: username, userTwo: req.body.toUser.username, last_updated: currentDateTime, messages: [newMessage]}
+    const newConversation = {userOne: username, userTwo: req.body.toUser.username, last_updated: currentDateTime, messages: []}
     await messageCollection.insertOne(newConversation).catch(err => {
         return res.status(400).json({
             success: false,
