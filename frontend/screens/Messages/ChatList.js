@@ -66,10 +66,10 @@ export default function ChatList({navigation,refreshOnMatch}) {
     console.log(dataFromSearch);
     
 
-    console.log("SEARCHHHH")
-    console.log(searchResults)
-    console.log("NEWDATA")
-    console.log(dataFromSearch)
+    // console.log("SEARCHHHH")
+    // console.log(searchResults)
+    // console.log("NEWDATA")
+    // console.log(dataFromSearch)
 
     useEffect(() => {
       handleRefreshFeed()
@@ -132,6 +132,28 @@ export default function ChatList({navigation,refreshOnMatch}) {
       setRefreshing(false);
     };
   
+    {/* RENDER FOR BLUE DOT AND UNREAD MESSAGES */}
+
+    // const ChatItem = ({ item, hasUnreadMessages }) => (
+    //   <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
+    //     <View style={styles.chatItem}>
+          
+          
+    //       <View style={{flexDirection: 'row', alignItems: 'center', }}>
+    //         <Avatar
+    //             size={100}
+    //             rounded
+    //             source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + item.otherUser.username + '.jpg'}}
+    //             containerStyle={{backgroundColor: 'grey', margin: 10}}
+    //             activeOpacity={0.8}
+                
+    //           />
+    //         { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
+    //         {hasUnreadMessages && <View style={styles.unreadDot} />} 
+    //       </View>    
+    //     </View>
+    //   </TouchableOpacity>
+    // );
     const ChatItem = ({ item }) => (
       <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
         <View style={styles.chatItem}>
@@ -147,7 +169,6 @@ export default function ChatList({navigation,refreshOnMatch}) {
                 
               />
             { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
-
           </View>    
         </View>
       </TouchableOpacity>
@@ -179,6 +200,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
           {displayedUsers.length > 0 ? (
             <FlatList
               data={displayedUsers} // Replace with your data array
+              
               renderItem={({ item }) => ChatItem({item}) }
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
               horizontal={false}
@@ -320,6 +342,13 @@ export default function ChatList({navigation,refreshOnMatch}) {
       fontSize: 15,
       textAlign: 'left',
       marginVertical: 1,
+    },
+    unreadDot: {
+      width: 10,
+      height: 10,
+      backgroundColor: 'blue',
+      borderRadius: 5,
+      marginRight: 5, // Adjust the margin as needed
     },
     });
     

@@ -57,9 +57,31 @@ export default async function handler(req, res) {
             success: true,
             messages: conversation.messages
         })
+        console.log(conversation.messages)
         return
     }
 
+    // Mark the messages as "read"
+    const updatedMessages = conversation.messages.map(message => {
+        // Check if the message is from the other user and has not been read
+        if (message.from === req.body.otherUser && message.read === false) {
+            message.read = true;
+            message.readTime = new Date(); // Set the read time to the current time
+        }
+        console.log(message)
+        return message;
+    });
+  
+    // Update the conversation with the modified messages
+    await messageCollection.updateOne(
+    { _id: conversation._id },
+    {
+      $set: {
+        messages: updatedMessages
+      }
+    }
+    );
+  
     /* Check to see if the user already has the most updated chat history */
     let lastMessageOnClient = req.body.previousMessages[req.body.previousMessages.length - 1]
     let lastMessageInDb = conversation.messages[conversation.messages.length - 1]
