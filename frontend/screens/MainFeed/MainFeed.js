@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Pressable, ScrollView, FlatList } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons,FontAwesome} from '@expo/vector-icons';
 import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
@@ -13,6 +13,8 @@ import MatchPopUp from '../../screenComponents/MatchPopUp';
 
 export default function MainFeed({navigation,handleMatchMade}){
   const [usersLiked, setUsersLiked] = useState({});
+  const [usersDisliked, setUsersDisliked] = useState({});
+  const [usersBookmarked, setUsersBookmarked]= useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
@@ -36,6 +38,7 @@ export default function MainFeed({navigation,handleMatchMade}){
     handleRefreshFeed()
   },[showOnlyUsersLikedBy]);
   
+  
   const handleLikePress = async(user) => {
     // Find the feed item with the specified key
     const tokenVal = await SecureStore.getItemAsync('token')
@@ -55,18 +58,19 @@ export default function MainFeed({navigation,handleMatchMade}){
         liked = true
       }
       else{
-        liked = !response.data.user_added.liked
+        liked = !(response.data.user_added.liked_or_disliked == "liked")
       }
       if(liked == true){
-      const res = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
+
+      const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
         token: tokenVal,
         userShown: user.username,
       }
       ).catch(error => {
-        console.log("error occurred w:", error)
+        console.log("error occurred while liking user:", error)
       })
-      console.log(res.data)
-      if(res.data.liked == true) {
+   
+      if(isUserLiked.data.liked == true){
        // console.log(res.data.userLiked)
        const answer = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/createConversation`, {
         token: tokenVal,
@@ -86,9 +90,82 @@ export default function MainFeed({navigation,handleMatchMade}){
         [user.username]: liked,
       })
       )
-      handleMatchMade()
 
+      
+      if(liked && usersDisliked[user.username]){
+        setUsersDisliked((usersDisliked) => ({
+          ...usersDisliked,
+          [user.username]: false,
+        })
+        )
+      }
+    
+  handleMatchMade()
   };
+
+  const handleDislikePress = async(user) => {
+    // Find the feed item with the specified key
+    const tokenVal = await SecureStore.getItemAsync('token')
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/dislikeuser', {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("Error occurred while disliked users:", error)
+      })
+
+      //Update returns what the data previously look like so if there was no interaction
+      //we set to true and if there was an interaction we said liked to the reciprocal
+      let disliked = true
+      
+      if(response.data.user_added == null){
+        disliked = true
+      }
+      else{
+        disliked = !(response.data.user_added.liked_or_disliked == "disliked")
+      }
+
+      setUsersDisliked((usersDisliked) => ({
+        ...usersDisliked,
+        [user.username]: disliked,
+      })
+      )
+      
+      if(disliked && usersLiked[user.username]){
+        setUsersLiked((usersLiked) => ({
+          ...usersLiked,
+          [user.username]: false,
+        })
+        )
+      }
+    handleMatchMade()
+  };
+
+  const handleBookmarkPressed = async(user) => {
+      const tokenVal = await SecureStore.getItemAsync('token')
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/bookmarkuser', {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("Error occurred while bookmarking users:", error)
+      })
+      let bookmarked = true
+      console.log(response)
+      if(response.data.user_added == null){
+        bookmarked = true
+      }
+      else{
+        bookmarked = !(response.data.user_added.bookmarked)
+      }
+
+      setUsersBookmarked((usersBookmarked) => ({
+        ...usersBookmarked,
+        [user.username]: bookmarked,
+      })
+      )
+
+  }
   
   const handleUserItemClick = (user) => {
     setSelectedUser(user);
@@ -101,13 +178,12 @@ export default function MainFeed({navigation,handleMatchMade}){
 
   const onRefresh = async() => {
     setRefreshing(true);
-    setUsersLiked({})
     handleRefreshFeed();
     // ... Fetch data ...
     setRefreshing(false);
   };
 
-  const FeedItem = ({ user, onLikePress }) => (
+  const FeedItem = ({ user }) => (
     <View style={styles.feedItem}>
       <Avatar
           size={250}
@@ -117,7 +193,7 @@ export default function MainFeed({navigation,handleMatchMade}){
           activeOpacity={0.8}
         />
       
-      <View style={{flexDirection: 'row'}}>
+      <View style={styles.iconRow}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user)}>
           <Ionicons
             name={usersLiked[user.username] ? 'heart' : 'heart-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
@@ -126,10 +202,28 @@ export default function MainFeed({navigation,handleMatchMade}){
           />
         </TouchableOpacity>
 
+        
+        <View style={{flexDirection:"row"}}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleUserItemClick(user)}>
           <Ionicons
             name={'information-circle-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
             color={'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleBookmarkPressed(user)}>
+          <Ionicons
+            name={usersBookmarked[user.username] ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            color={usersBookmarked[user.username] ? 'gold' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleDislikePress(user)}>
+          <Ionicons
+            name={usersDisliked[user.username] ? 'heart-dislike' : 'heart-dislike-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            color={usersDisliked[user.username] ? 'red' : 'gray'}
             size={40}
           />
         </TouchableOpacity>
@@ -208,24 +302,28 @@ export default function MainFeed({navigation,handleMatchMade}){
 
   const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
+      let response = null
       if(!showOnlyUsersLikedBy){
-        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/refreshfeed', {
+        response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMainFeedUsers', {
         token: tokenVal
       }
       ).catch(error => {
-        console.log("Error occured while searching:", error)
+        console.log("Error occured while getting main feed users:", error)
       })
         setDisplayedUsers(response.data.users)
     }
     else{
-      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/userslikedby', {
+      response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getUsersLikedBy', {
         token: tokenVal
       }
       ).catch(error => {
-        console.log("Error occurred while searching:", error)
+        console.log("Error occurred while getting liked users:", error)
       })
         setDisplayedUsers(response.data.users)
     }
+    setUsersLiked({})
+    setUsersDisliked({})
+    setUsersBookmarked(response.data.users.map(user=>user.interaction.bookmarked != null?user.interaction.bookmarked:false))
     }
 
   const renderModal = () => {
@@ -264,13 +362,7 @@ export default function MainFeed({navigation,handleMatchMade}){
     return(
       <View style={styles.container}>
         <View style={styles.topBar}>
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={handleLikedMeButtonPress}>
-            <Text style={styles.searchButtonText}>{showOnlyUsersLikedBy ? 'All' : 'Liked Me'} </Text>
-          </TouchableOpacity>
-
-          <View style ={styles.inputContainer}>
+        <View style ={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="Search for a user"
@@ -306,6 +398,20 @@ export default function MainFeed({navigation,handleMatchMade}){
               </View>
             )}
           </View>
+          <TouchableOpacity
+            style={[styles.filterButton, showOnlyUsersLikedBy?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={handleLikedMeButtonPress}>
+            <Text style={styles.searchButtonText}>Liked Me </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterButton, showOnlyUsersLikedBy?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={handleLikedMeButtonPress}>
+             <Ionicons
+            name={showOnlyUsersLikedBy ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            color={"gray"}
+            size={15}
+          />
+          </TouchableOpacity>
         </View>
 
         
@@ -377,7 +483,6 @@ const styles = StyleSheet.create({
    // Take up the entire available space
     backgroundColor: 'white',
     alignContent: 'center',
-    alignItems: 'center',
     padding: 15,
     marginBottom: 10,
     shadowColor: 'black',
@@ -394,7 +499,6 @@ const styles = StyleSheet.create({
     borderWidth: .5,      // Border width
     borderRadius: .5,     // Border radius
      // Padding around the text
-    marginRight: 30,   // Margin between items
   },
   dropdownContainer: {
     backgroundColor: 'white',
@@ -414,32 +518,31 @@ const styles = StyleSheet.create({
     minHeight: 0,
   }
   ,
-  input: { // Adjust the width as needed to make it smaller
-    height: 40, // Adjust the height as needed
+  input: { 
+    height: 40, 
     flex: 1,
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-    marginRight: 30,
+    marginRight: 0,
   },
   hyperlink: {
     textDecorationLine: 'underline',
     color: 'blue',
   },
   searchButton: {
-    backgroundColor: 'gold', // Change the background color as desired
+    backgroundColor: 'gold', 
     padding: 10,
     borderRadius: 5,
   },
   filterButton: {
-    margin: 5,
-    backgroundColor: 'gold', // Change the background color as desired
+   
     padding: 10,
     borderRadius: 5,
   },
   searchButtonText: {
-    color: 'gray', // Change the text color as desired
+    color: 'gray', 
     fontSize: 13,
   },
   topBar: {
@@ -449,6 +552,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
     zIndex: 1,
+    gap: 10
   },
   flatListContainer: {
     flex: 1, // Take up the remaining available space
@@ -479,12 +583,16 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginVertical: 1,
   },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between"
+  }
   });
   
 
 const feedStyles = StyleSheet.create({
   iconContainer: {
-    paddingHorizontal: 10
+    paddingHorizontal: 5
   },
   infoContainer: {
     width: '100%',
@@ -503,5 +611,6 @@ const feedStyles = StyleSheet.create({
   infoLabel: {
     fontWeight: '600',
   },  
+  
   
 })

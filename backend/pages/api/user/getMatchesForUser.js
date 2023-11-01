@@ -30,29 +30,29 @@ export default async function handler(req, res) {
         $lookup: {
             from: "interactions",
             localField: "username",
-            foreignField: "userLiking",
-            as: "InteractionsWhereUserIsLiking"
+            foreignField: "userInteracting",
+            as: "InteractionsWithUser"
       },
     },
     {
       $lookup: {
         from: "interactions",
         localField: "username",
-        foreignField: "userLiked",
-        as: "InteractionsWhereUserIsLiked"
+        foreignField: "userInteractedWith",
+        as: "InteractionsByUser"
   },
 
 },
       { $match: {
         $and: [
-          {InteractionsWhereUserIsLiked: {$elemMatch: {userLiking:currentUser, liked: true}}},
-          {InteractionsWhereUserIsLiking: {$elemMatch: {userLiked:currentUser, liked: true}}},
+          {InteractionsWithUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsByUser: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}},
           {"username" : { $not: { $eq: currentUser} }}]
       } },
     {
         $project: {
-            InteractionsWhereUserIsLiked:0,
-            InteractionsWhereUserIsLiking:0,
+          InteractionsByUser:0,
+          InteractionsWithUser:0,
         }
     }
        

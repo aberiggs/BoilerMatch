@@ -4,7 +4,7 @@ const jwt = require( 'jsonwebtoken');
 
 //TODO Have not tested
 export default async function handler(req, res) {
-  console.log("Attempting to pull users liked by");
+  console.log("Attempting to pull bookmarked users");
 
   const { database } = await connectToDatabase();
   const users = database.collection("users")
@@ -31,37 +31,30 @@ export default async function handler(req, res) {
     });
 
   try {
-    const usersLikedBy = await users.aggregate([
-      {
-        $lookup: {
-            from: "interactions",
-            localField: "username",
-            foreignField: "userLiking",
-            as: "InteractionsWhereUserIsLiking"
-      },
-    },
-    {
+    const bookmarkedUsers = await interactions.aggregate([
+        { $match: {
+            $and: [
+              {"userInteracting":currentUser},
+              {"liked_or_disliked": "liked"},
+              {"userInteractedWith" : { $not: { $eq: currentUser} }}
+            ]
+          } },
+        {
       $lookup: {
-        from: "interactions",
-        localField: "username",
-        foreignField: "userLiked",
-        as: "InteractionsWhereUserIsLiked"
+        from: "users",
+        localField: "userInteractedWith",
+        foreignField: "username",
+        as: "userInfo"
   },
 
 },
-      { $match: {
-        $and: [
-          {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, liked: true}}}},
-          {InteractionsWhereUserIsLiking: {$elemMatch: {userLiked:currentUser, liked: true}}},
-          {"username" : { $not: { $eq: currentUser} }},
-          {"discoverable": true}]
-      } },
        
     ]).toArray()
+    console.log(bookmarkedUsers)
    
     return res.status(200).json({
       success: true,
-      users: usersLikedBy,
+      users: bookmarkedUsers,
       message: "Potential users found",
     });
   } catch (error) {
