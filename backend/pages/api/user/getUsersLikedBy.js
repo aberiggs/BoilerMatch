@@ -11,17 +11,17 @@ export default async function handler(req, res) {
   // Get the search term from the query parameter
   //const user = req.query.user;
 
-  // const token = req.body.token;
+  const token = req.body.token;
 
-  // const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
-  //     if (err) {
-  //         return res.status(400).json({
-  //             success: false,
-  //         })
-  //     } else {
-  //         return payload.username
-  //     }
-  // });
+  const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+      if (err) {
+          return res.status(400).json({
+              success: false,
+          })
+      } else {
+          return payload.username
+      }
+  });
   
 const usersLikedBy = await users.aggregate([
       {
@@ -43,10 +43,10 @@ const usersLikedBy = await users.aggregate([
 },
       { $match: {
         $and: [
-          {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:"jslutzky", liked_or_disliked: "liked"}}}},
-          {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:"jslutzky", liked_or_disliked: "disliked"}}} },
-          {InteractionsByUser: {$elemMatch: {userInteractedWith:"jslutzky", liked_or_disliked: "liked"}}},
-          {"username" : { $not: { $eq: "jslutzky"} }},
+          {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}}},
+          {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "disliked"}}} },
+          {InteractionsByUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
+          {"username" : { $not: { $eq: currentUser} }},
           {"discoverable": true}]
       } },
       {
@@ -56,7 +56,7 @@ const usersLikedBy = await users.aggregate([
                 $filter: {
                     input: "$InteractionsWithUser",
                     as: "interaction",
-                    cond: { $eq: ["$$interaction.userInteracting",  "jslutzky"] }
+                    cond: { $eq: ["$$interaction.userInteracting",  currentUser] }
                 }
                 }
             }

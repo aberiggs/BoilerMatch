@@ -18,18 +18,18 @@ export default async function handler(req, res) {
 //     });
 //   }
 
-// const token = req.body.token
+const token = req.body.token
 
 
-// const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
-//     if (err) {
-//         return res.status(400).json({
-//             success: false,
-//         })
-//     } else {
-//         return payload.username
-//     }
-// });
+const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+    if (err) {
+        return res.status(400).json({
+            success: false,
+        })
+    } else {
+        return payload.username
+    }
+});
 
   try {
     const potentialUsers = await users.aggregate([
@@ -44,9 +44,9 @@ export default async function handler(req, res) {
         {
             $match: {
             $and:[ 
-              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:"jslutzky", liked_or_disliked: "liked"}}} },
-              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:"jslutzky", liked_or_disliked: "disliked"}}} },
-            {"username" : { $not: { $eq: "jslutzky"} }},
+              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}} },
+              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "disliked"}}} },
+            {"username" : { $not: { $eq: currentUser} }},
             {"discoverable": true}
           ]
     }},
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
               $filter: {
                   input: "$InteractionsWithUser",
                   as: "interaction",
-                  cond: { $eq: ["$$interaction.userInteracting",  "jslutzky"] }
+                  cond: { $eq: ["$$interaction.userInteracting",  currentUser] }
               }
               }
           }

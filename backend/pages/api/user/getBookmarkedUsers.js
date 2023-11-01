@@ -18,25 +18,25 @@ export default async function handler(req, res) {
   //     message: "Missing user",
   //   });
   // }
-//   const token = req.body.token;
+  const token = req.body.token;
 
-//     const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
-//         if (err) {
-//             return res.status(400).json({
-//                 success: false,
-//             })
-//         } else {
-//             return payload.username
-//         }
-//     });
+    const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+            })
+        } else {
+            return payload.username
+        }
+    });
 
   try {
     const bookmarkedUsers = await interactions.aggregate([
         { $match: {
             $and: [
-              {"userInteracting":"jslutzky"},
+              {"userInteracting":currentUser},
               {"liked_or_disliked": "liked"},
-              {"userInteractedWith" : { $not: { $eq: "jslutzky"} }}
+              {"userInteractedWith" : { $not: { $eq: currentUser} }}
             ]
           } },
         {
