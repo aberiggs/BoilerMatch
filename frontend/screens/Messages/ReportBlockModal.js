@@ -29,10 +29,13 @@ export default function ReportBlockModal({ visible, onClose , onCloseConversatio
       setInvalidEntriesMsgVisible(true);
     } else if ( report == "no" && block == "yes" && reportReasonCategory != "na"){
       setInvalidEntriesMsgVisible(true)
+    } else if (block == "yes" && report == "yes") {
+      const res = reportThroughApi();
+      setSubmitMsgVisibleBlock(true)
     } else if (block == "yes"){
       // const res = updateInformationThroughApi();
       // TODO: Error checking
-      const res = blockThroughApi();
+      // const res = blockThroughApi();
       setSubmitMsgVisibleBlock(true);
     } else if (report == "yes") {
       const res = reportThroughApi();

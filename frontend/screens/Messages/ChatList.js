@@ -40,7 +40,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
         if (response.status === 200) {
           // Check if there are messages in the response
           if (response.data.messages.length > 0) {
-            setSearchResults(response.data.messages.map((message) => message));
+            setSearchResults(response.data.messages);
             // Set your dropdown visibility state here if needed.
           } else {
             // Show a pop-up message saying that no messages match.
@@ -55,6 +55,20 @@ export default function ChatList({navigation,refreshOnMatch}) {
         // Handle the error as needed.
       }
     };
+
+    const dataFromSearch = searchResults.map(result => ({
+      userOne: result.userOne,
+      userTwo: result.userTwo,
+      message: result.messages,
+    }));
+    
+    console.log(dataFromSearch);
+    
+
+    console.log("SEARCHHHH")
+    console.log(searchResults)
+    console.log("NEWDATA")
+    console.log(dataFromSearch)
 
     useEffect(() => {
       handleRefreshFeed()
@@ -95,6 +109,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
       //open chat
       setSelectedUser(user.username)
       setChatOpened(true)
+      console.log("CHAT PRESSED")
     };
     
   
