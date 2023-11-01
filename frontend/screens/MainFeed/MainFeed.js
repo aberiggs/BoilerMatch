@@ -11,7 +11,7 @@ import UserProfile from './UserProfile'
 import MatchPopUp from '../../screenComponents/MatchPopUp';
 
 
-export default function MainFeed({navigation}){
+export default function MainFeed({navigation,handleMatchMade}){
   const [usersLiked, setUsersLiked] = useState({});
   const [usersDisliked, setUsersDisliked] = useState({});
   const [usersBookmarked, setUsersBookmarked]= useState({});
@@ -61,7 +61,8 @@ export default function MainFeed({navigation}){
         liked = !(response.data.user_added.liked_or_disliked == "liked")
       }
       if(liked == true){
-      const isUserLiked = await axios.post(`http://localhost:3000/api/user/isUserLiked`, {
+
+      const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
         token: tokenVal,
         userShown: user.username,
       }
@@ -71,6 +72,7 @@ export default function MainFeed({navigation}){
       console.log(isUserLiked.data)
       if(isUserLiked.data.liked == true){
         setMatchPopUpUserShown(user)
+        
       }
     }
 
@@ -79,6 +81,7 @@ export default function MainFeed({navigation}){
         [user.username]: liked,
       })
       )
+
       
       if(liked && usersDisliked[user.username]){
         setUsersDisliked((usersDisliked) => ({
@@ -87,7 +90,8 @@ export default function MainFeed({navigation}){
         })
         )
       }
-
+    
+  handleMatchMade()
   };
 
   const handleDislikePress = async(user) => {
@@ -125,7 +129,7 @@ export default function MainFeed({navigation}){
         })
         )
       }
-
+    handleMatchMade()
   };
 
   const handleBookmarkPressed = async(user) => {
