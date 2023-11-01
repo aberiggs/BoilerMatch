@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
-import { StyleSheet, Text, View, Switch,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Switch,TouchableOpacity, ScrollView, Modal, Pressable, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { useNotification } from '../../NotificationContext';
@@ -12,9 +12,16 @@ import { useNotification } from '../../NotificationContext';
 export default function NotificationSettings({navigation}) {
 
     const { notificationsEnabled, setNotificationsEnabled } = useNotification();
+    const [isAlertDisplayed, setIsAlertDisplayed] = useState(false);
+    const [temporaryNotificationsEnabled, setTemporaryNotificationsEnabled] = useState(notificationsEnabled);
     useEffect(() => {
-
+        console.log("isAlert", isAlertDisplayed);
         async function fetchNotificationSetting() {
+          if (isAlertDisplayed) {
+            return; // If an alert is displayed, don't toggle the switch
+          }
+          setTemporaryNotificationsEnabled((prevState) => !prevState);
+
           const tokenVal = await SecureStore.getItemAsync('token');
           const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNoti', {
             params :{
@@ -40,7 +47,7 @@ export default function NotificationSettings({navigation}) {
     
         fetchNotificationSetting();
       }, []);
-  
+    
     const toggleNotificationSwitch = async () => {
         //console.log(notificationsEnabled)
       // Update the state to enable or disable notifications
@@ -49,19 +56,57 @@ export default function NotificationSettings({navigation}) {
       const recieveNotifications = !notificationsEnabled;
       console.log(recieveNotifications)
       const tokenVal = await SecureStore.getItemAsync('token')
+      try {
       const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notiSettings', {
           token: tokenVal,
           //this is where I last left off
           recieveNotifications: recieveNotifications,
-        }).catch((error) => {
-          if (error.response) {
-            return error.response.data
-          }
-          return
+        });
+        if (response.status === 200 && response.data.success) {
+          // Success response
+          console.log("Notification preferences updated");
+        } else {
+          // Handle any other cases as needed
+          console.log("Notification preferences not updated");
+          setIsAlertDisplayed(true);
+        }
+      } catch (error) {
+        console.log("Error in toggleNotificationSwitch:", error);
+        setIsAlertDisplayed(true);
+        Alert.alert('Unable to update notifications', null, [
+          {
+            text: 'OK',
+            onPress: () => {
+              setIsAlertDisplayed(false);
+              // Reset the temporary state to the previous value
+              console.log("tempnoti", temporaryNotificationsEnabled)
+              setNotificationsEnabled((prevState) => !prevState);
+              //setNotificationsEnabled(temporaryNotificationsEnabled);
+              console.log("tempnoti after", temporaryNotificationsEnabled)
+            },
+          },
+          ]);
+      }
+        /*
+        .catch((error) => {
+          console.log("Error in toggleNotificationSwitch:", error);
+
+      // Display the alert only if there is an error in the API request
+      setIsAlertDisplayed(true);
+      Alert.alert('Unable to update notifications', null, [
+        {
+          text: 'OK',
+          onPress: () => {
+            setIsAlertDisplayed(false);
+            // Reset the temporary state to the previous value
+            setTemporaryNotificationsEnabled(notificationsEnabled);
+          },
+        },
+        ]);
         })
-    
-        return response
-    };
+        */
+      };
+
     const navigateToProfile = () => {
         navigation.goBack()
       }
@@ -73,6 +118,7 @@ export default function NotificationSettings({navigation}) {
         <Switch
           value={notificationsEnabled}
           onValueChange={toggleNotificationSwitch}
+          disabled={isAlertDisplayed}
         />
         </View>
         <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
@@ -82,9 +128,6 @@ export default function NotificationSettings({navigation}) {
     );
   }
   
-
-
-
 const styles = StyleSheet.create({
   buttonText: {
     fontSize: 15,
