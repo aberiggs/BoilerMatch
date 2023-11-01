@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, Tex
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModal component
+import UnmatchModal from './UnmatchModal'; // Import the ReportBlockModal component
 
 import axios from "axios"
 
@@ -33,6 +34,15 @@ export default function Conversation(props, {navigation}) {
     const [username, setUsername] = useState(null)
 
     const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
+    const [UnmatchModalVisible, setUnmatchModalVisible] = useState(false);
+
+    const openUnmatchModal = () => {
+        setUnmatchModalVisible(true);
+    };
+
+    const closeUnmatchModal = () => {
+        setUnmatchModalVisible(false);
+    };
 
     const openReportBlockModal = () => {
         setReportBlockModalVisible(true);
@@ -186,8 +196,8 @@ export default function Conversation(props, {navigation}) {
                 </View>
                 {/* <View style={{width: '30%'}} /> */}
                 <View style={{width: '30%', alignItems: 'right'}}>
-                    <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
-                        <Text style={conversationStyles.buttonText}>Block or Report</Text>
+                    <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
+                        <Text style={conversationStyles.buttonText}>Remove</Text>
                     </TouchableOpacity>
                     {/* do below code for an information button */}
                     {/* <Pressable style={{paddingLeft:80}}>
@@ -220,7 +230,7 @@ export default function Conversation(props, {navigation}) {
                 </View>
 
             </KeyboardAvoidingView>
-            <ReportBlockModal visible={reportBlockModalVisible} onClose={closeReportBlockModal} onCloseConversation={props.onClose} otherUsername={otherUser} />
+            <UnmatchModal visible={UnmatchModalVisible} onClose={closeReportBlockModal} onCloseConversation={props.onClose} otherUsername={otherUser} />
         </SafeAreaView>
     )
 }
