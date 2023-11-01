@@ -77,6 +77,25 @@ export default function MainFeed({}){
     handleRefreshFeed()
   },[showOnlyUsersLikedBy]);
 
+  useEffect(() => {
+    // Define a separate async function to fetch the username
+    const fetchUsername = async () => {
+      try {
+        const userVal = await SecureStore.getItemAsync('username');
+        setUsername(userVal);
+        console.log("username in init", userVal); // Log the username here if needed
+      } catch (error) {
+        console.error("Error fetching username", error);
+      }
+    };
+  
+    // Call the function to fetch the username
+    fetchUsername();
+  
+    // Add a dependency on username to trigger the Axios call when username changes
+  }, [username]);
+  
+
     //  console.log("notiSettings: ", notificationsEnabled)
 
   //NotificationSettings()
@@ -109,14 +128,15 @@ export default function MainFeed({}){
 
   useEffect(() => {
   const fetchData = async () => {
-    const updateNotificationsThroughApi = async (pushToken, hasNoti) => {
+
+    const updateNotificationsThroughApi = async (pushToken, notiResponse) => {
       console.log("inside", pushToken);
-      console.log(hasNoti)
+      console.log(notiResponse)
       const tokenVal = await SecureStore.getItemAsync('token');
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
         token: tokenVal,
         pushToken: pushToken,
-        recieveNotifications: hasNoti,
+        recieveNotifications: notiResponse,
       }).catch((error) => {
         if (error.response) {
           return error.response.data;
@@ -144,16 +164,18 @@ export default function MainFeed({}){
     });
 
     if (response && response.data && response.data.notificationsEnabled !== undefined) {
-      setHasNoti(response.data.notificationsEnabled);
+      //setHasNoti(response.data.notificationsEnabled);
+       var notiResponse = response.data.notificationsEnabled;
+       console.log("when set", notiResponse)
 
       // Step 3: Update notifications through the API
-      const updateResponse = await updateNotificationsThroughApi(pushToken, hasNoti);
+      const updateResponse = await updateNotificationsThroughApi(pushToken, notiResponse);
       console.log(updateResponse);
     }
   };
 
   fetchData();
-}, [hasNoti]);
+},[]);
 
   
   
@@ -161,7 +183,7 @@ export default function MainFeed({}){
 
   
   useEffect( () => {
-    fetchUsername();
+    console.log("usename", username)
     //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
     notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
       setNotification(notification);
@@ -170,7 +192,7 @@ export default function MainFeed({}){
        await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
        //console.log(response.data.users[0]);
         setSelectedUser(response.data.users[0]);
-        //console.log(response.data);
+        console.log("DJFKLAS;FJKLSAJF;LSJFK;SAJLKJF;ALKJF;SADLKJFKSA;FLDASKJF;ALFJKA;LF", username);
         toggleModal();
         //setIsDropdownVisible(true);
       }).catch((error) => {
@@ -178,12 +200,12 @@ export default function MainFeed({}){
       })
       console.log(response);
     });
-
+    
     return () => {
       Notifications.removeNotificationSubscription(notificationListener.current);
       Notifications.removeNotificationSubscription(responseListener.current);
     };
-  }, []);
+  }, [username]);
   /*
   useEffect(() => {
   const updateNotificationsThroughApi = async() => {
@@ -205,11 +227,13 @@ export default function MainFeed({}){
   updateNotificationsThroughApi();
 },[]);
 */
-
+/*
   const fetchUsername = async () => {
     const userVal = await SecureStore.getItemAsync('username')
-    setUsername(userVal);
+    //setUsername(userVal);
+    return userVal;
   }
+  */
   
   const handleLikePress = async(user) => {
     // Find the feed item with the specified key
