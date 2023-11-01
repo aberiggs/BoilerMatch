@@ -220,7 +220,7 @@ export default function Conversation(props, {navigation}) {
                 </View>
 
             </KeyboardAvoidingView>
-            <ReportBlockModal visible={reportBlockModalVisible} onClose={closeReportBlockModal} onCloseConversation={props.onClose} />
+            <ReportBlockModal visible={reportBlockModalVisible} onClose={closeReportBlockModal} onCloseConversation={props.onClose} otherUsername={otherUser} />
         </SafeAreaView>
     )
 }

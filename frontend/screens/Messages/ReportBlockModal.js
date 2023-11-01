@@ -2,8 +2,10 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Pressable, TextInput} 
 import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import RNPickerSelect from "react-native-picker-select"
+import * as SecureStore from 'expo-secure-store'
+import axios from "axios"
 
-export default function ReportBlockModal({ visible, onClose , onCloseConversation}) {
+export default function ReportBlockModal({ visible, onClose , onCloseConversation, otherUsername}) {
   
   const [report, setReport] = useState('');
   const [reportReasonCategory, setReportReasonCategory] = useState('');
@@ -30,10 +32,33 @@ export default function ReportBlockModal({ visible, onClose , onCloseConversatio
     } else if (block == "yes"){
       // const res = updateInformationThroughApi();
       // TODO: Error checking
+      const res = blockThroughApi();
       setSubmitMsgVisibleBlock(true);
     } else if (report == "yes") {
+      const res = reportThroughApi();
       setSubmitMsgVisibleReport(true);
     }
+  }
+
+  const reportThroughApi = async () => {
+    console.log("REPORTING THROUGH API")
+    const username = await SecureStore.getItemAsync('username')
+    const information = {
+      userReporting: username,
+      userReported: otherUsername,
+      reportReasonCategory: reportReasonCategory,
+      reportReasonWritten: reportReasonWritten,
+    }
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportOtherUser/reportOtherUser', {
+      username: username,
+      report: information
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+    })
+
+    return response
   }
 
   return (
