@@ -123,20 +123,6 @@ export default function Conversation(props, {navigation}) {
         }
     }
 
-    // const messageItem = ({item}) => {
-        
-    //     const messageContainerStyle = (item.from === username) ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg
-    //     const messageBoxStyle = (item.from === username) ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox
-
-    //     return (
-    //         <View style={messageContainerStyle}>
-    //             <View style={messageBoxStyle}>
-    //                 <Text style={conversationStyles.messageText}>{item.message}</Text>
-    //             </View>
-    //         </View>
-    //     )
-    // }
-
     const formatTimestamp = (timestamp) => {
         const date = new Date(timestamp);
         const hours = date.getHours();
@@ -153,18 +139,35 @@ export default function Conversation(props, {navigation}) {
         const month = date.getMonth() + 1; // Months are 0-indexed
         const day = date.getDate();
         const year = date.getFullYear();
+
+        // Get the last two digits of the year
+        const lastTwoYearDigits = String(year).slice(-2);
     
         // Format the date part as MM/DD/YYYY
-        const formattedDate = `${month}/${day}/${year}`;
+        const formattedDate = `${month}/${day}/${lastTwoYearDigits}`;
     
         return `${formattedDate}\n ${formattedHours}:${formattedMinutes} ${ampm}`;
     };
+
+    // Function to find the most recently read message
+    function findMostRecentReadMessage(messages) {
+        let mostRecentReadMessage = null;
+        for (const message of messages) {
+        if (message.read && message.readTime !== 'no') {
+            if (!mostRecentReadMessage || message.readTime > mostRecentReadMessage.readTime) {
+            mostRecentReadMessage = message;
+            }
+        }
+        }
+        return mostRecentReadMessage;
+    }
+
     
     const messageItem = ({ item }) => {
         const messageContainerStyle = item.from === username ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg;
         const messageBoxStyle = item.from === username ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox;
-        const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
         const isCurrentUser = item.from === username;
+        const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
     
         return (
             <View style={messageContainerStyle}>
@@ -176,6 +179,14 @@ export default function Conversation(props, {navigation}) {
                         {formatTimestamp(item.timestamp)}
                     </Text>
                 </View>
+                {item.from === username && item.read && (
+                    <View>
+                        <Text style={conversationStyles.readReceiptText}>
+                            {/* {formatTimestamp(item.readTime)} - R */}
+                            {"R"}
+                        </Text>
+                    </View>
+                )}
             </View>
         );
     };
@@ -309,7 +320,7 @@ const conversationStyles = StyleSheet.create({
         borderRadius: 20,
         paddingHorizontal: 15,
         paddingVertical: 10,
-        margin: 10,
+        margin: 5,
         backgroundColor: 'gold'
     },
     otherUserMessageBox: {
@@ -317,7 +328,7 @@ const conversationStyles = StyleSheet.create({
         borderRadius: 20,
         paddingHorizontal: 15,
         paddingVertical: 10,
-        margin: 10,
+        margin: 5,
         backgroundColor: 'lightgrey',
     },
     messageText: {
@@ -347,8 +358,13 @@ const conversationStyles = StyleSheet.create({
         marginTop: 4, // Adjust the margin to control the space between the message and the timestamp
     },
     timestampText: {
-        fontSize: 12,
+        fontSize: 10,
         color: 'gray',
+    },
+    readReceiptText: {
+        fontSize: 10,
+        color: 'green',
+        margin: 3,
     },
 });
 
