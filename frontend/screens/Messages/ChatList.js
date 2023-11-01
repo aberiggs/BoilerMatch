@@ -7,6 +7,7 @@ import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ChatList({navigation,refreshOnMatch}) {
     const [displayedUsers, setDisplayedUsers] = useState([]);
@@ -73,6 +74,12 @@ export default function ChatList({navigation,refreshOnMatch}) {
     useEffect(() => {
       handleRefreshFeed()
     },[refreshOnMatch]);
+
+    useFocusEffect(
+      React.useCallback(() => {
+        handleRefreshFeed();
+      }, [])
+    );
     
     
     // useEffect(() => {
