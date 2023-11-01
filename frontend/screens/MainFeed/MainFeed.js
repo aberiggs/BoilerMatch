@@ -69,8 +69,17 @@ export default function MainFeed({navigation,handleMatchMade}){
       ).catch(error => {
         console.log("error occurred while liking user:", error)
       })
-      console.log(isUserLiked.data)
+   
       if(isUserLiked.data.liked == true){
+       // console.log(res.data.userLiked)
+       const answer = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/createConversation`, {
+        token: tokenVal,
+        toUser: user
+      }
+      
+      ).catch(error => {
+        console.log("Error creating conversation: ", error)
+      })
         setMatchPopUpUserShown(user)
         
       }
@@ -268,7 +277,7 @@ export default function MainFeed({navigation,handleMatchMade}){
       }
       setIsDropdownVisible(response.data.users.length > 0)
     }).catch(error => {
-      console.log("Error occurred while searching:", error)
+      console.log("Error occurred while searching for users:", error)
     });
   };
 

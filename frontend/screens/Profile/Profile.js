@@ -60,25 +60,15 @@ export default function Profile({navigation}){
 
   const getDiscoverability = async () => {
     const tokenVal = await SecureStore.getItemAsync('token')
-      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getDiscoverability', {
-        token: tokenVal
-      }
-      ).catch(error => {
-        console.log("Error occurred while searching:", error)
-      })
-      setDiscoverability(response.data.discoverability)
-      return response.data.user;
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getDiscoverability', {
+      token: tokenVal
+    }
+    ).catch(error => {
+      console.log("Error occurred while searching:", error)
+    })
+    setDiscoverability(response.data.discoverability)
+    return response.data.user;
   }
-
-
-  const navigateToManagePreferences = () => {
-    navigation.navigate('ManagePreferences');
-  };
-
-  const navigateToManagePreferenceRankings = () => {
-    navigation.navigate('ManagePreferenceRankings');
-  };
-
   
   const sendImage = async (imageToUpload) => {
     if (!imageToUpload) {
@@ -116,6 +106,14 @@ export default function Profile({navigation}){
     const navigateToManageHousingInformation = () => {
       navigation.navigate('ManageHousingInformation')
     }
+
+    const navigateToManagePreferences = () => {
+      navigation.navigate('ManagePreferences');
+    };
+  
+    const navigateToManagePreferenceRankings = () => {
+      navigation.navigate('ManagePreferenceRankings');
+    };
   
    const handleLogout = async () => {
         await SecureStore.deleteItemAsync('token')

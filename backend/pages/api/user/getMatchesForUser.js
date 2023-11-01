@@ -9,6 +9,8 @@ export default async function handler(req, res) {
   const { database } = await connectToDatabase();
   const users = database.collection("users")
   const interactions = database.collection("interactions")
+  const messages = database.collection("messages")
+
 
   const token = req.body.token;
 
@@ -55,10 +57,42 @@ export default async function handler(req, res) {
     }
        
     ]).toArray()
-   
+
+    const userConversations = [];
+
+    for (const user of matchedUsers) {
+      const conversationQuery = {
+        $or: [
+          {
+            userOne: currentUser,
+            userTwo: user.username,
+          },
+          {
+            userOne: user.username,
+            userTwo: currentUser,
+          },
+        ],
+      };
+
+      const lastMessage = await messages.findOne(conversationQuery)
+      console.log(lastMessage)
+
+
+      if (lastMessage) {
+        userConversations.push({
+          otherUser: user,
+          lastUpdated: lastMessage.last_updated,
+        });
+      }   
+      
+    }
+
+    console.log("Size of userConversations array:", userConversations.length);
+    // console.log(userConversations)
+    
     return res.status(200).json({
       success: true,
-      users: matchedUsers,
+      users: userConversations,
       message: "Matches found",
     });
   } catch (error) {
