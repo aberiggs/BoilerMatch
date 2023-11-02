@@ -26,8 +26,9 @@ import MainFeed from './screens/MainFeed/MainFeed';
 const Stack = createStackNavigator();
 
 export default function App() {
+const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  // TODO: Move/organize all these stack screens to individual navigation containers within other screens of the app
   return (
     <NotificationProvider>
     <NavigationContainer>
