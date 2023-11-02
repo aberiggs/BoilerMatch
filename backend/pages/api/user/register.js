@@ -1,4 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
+
+
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 
@@ -25,9 +27,8 @@ export default async function handler(req, res) {
             message: "An account with that email already exists."
         })
     }
-    
     /* Create user/add to database */
-    const newUser = {email: req.body.email, username: req.body.email, password: req.body.password, verified: false}
+    const newUser = {email: req.body.email, username: req.body.email, password: req.body.password, verified: false, notificationToken: null}
     
     const emailDomainIndex = newUser.email.lastIndexOf("@")
     if (emailDomainIndex !== -1) {
@@ -76,6 +77,7 @@ const transporter = nodemailer.createTransport({
         pass: "hfql cohy mzku fmym"
     }
 });
+  
   
 // TODO: Token generation should probably be encapsulated somewhere else
 const token = (tokenData) => { 

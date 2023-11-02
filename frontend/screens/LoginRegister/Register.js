@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
-import axios from "axios"
+import axios from "axios";
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 
 export default function Register({navigation}){
 
@@ -190,6 +192,7 @@ export default function Register({navigation}){
     )
 
 }
+
 
 const TOS = () => {
 
