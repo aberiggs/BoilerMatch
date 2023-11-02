@@ -7,6 +7,7 @@ import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ChatList({navigation,refreshOnMatch}) {
     const [displayedUsers, setDisplayedUsers] = useState([]);
@@ -40,7 +41,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
         if (response.status === 200) {
           // Check if there are messages in the response
           if (response.data.messages.length > 0) {
-            setSearchResults(response.data.messages.map((message) => message));
+            setSearchResults(response.data.messages);
             // Set your dropdown visibility state here if needed.
           } else {
             // Show a pop-up message saying that no messages match.
@@ -56,16 +57,36 @@ export default function ChatList({navigation,refreshOnMatch}) {
       }
     };
 
+    const dataFromSearch = searchResults.map(result => ({
+      userOne: result.userOne,
+      userTwo: result.userTwo,
+      message: result.messages,
+    }));
+    
+    console.log(dataFromSearch);
+    
+
+    // console.log("SEARCHHHH")
+    // console.log(searchResults)
+    // console.log("NEWDATA")
+    // console.log(dataFromSearch)
+
     useEffect(() => {
       handleRefreshFeed()
     },[refreshOnMatch]);
+
+    useFocusEffect(
+      React.useCallback(() => {
+        handleRefreshFeed();
+      }, [])
+    );
     
     
-    /* edit this function to open chat */
-    const handleUserItemClick = (user) => {
-    //   setSelectedUser(user);
-    //   setIsUserModalVisible(true);
-    };
+    // useEffect(() => {
+    //   setDisplayedUsers([...displayedUsers].sort((a, b) => a.lastUpdated - b.lastUpdated));
+    // }, [displayedUsers])
+
+   
   
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
@@ -76,8 +97,12 @@ export default function ChatList({navigation,refreshOnMatch}) {
       ).catch(error => {
         console.log("Error occurred while pulling users", error)
       })
-      console.log(response.data)
-      setDisplayedUsers(response.data.users)
+      // console.log(response.data)
+      if (response.data.users.length > 0) {
+        const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+        console.log("SORTED USERS: ", sortedUsers)
+        setDisplayedUsers(sortedUsers);
+      }
     }
 
     const ConversationModal = () => {
@@ -95,6 +120,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
       //open chat
       setSelectedUser(user.username)
       setChatOpened(true)
+      console.log("CHAT PRESSED")
     };
     
   
@@ -106,6 +132,28 @@ export default function ChatList({navigation,refreshOnMatch}) {
       setRefreshing(false);
     };
   
+    {/* RENDER FOR BLUE DOT AND UNREAD MESSAGES */}
+
+    // const ChatItem = ({ item, hasUnreadMessages }) => (
+    //   <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
+    //     <View style={styles.chatItem}>
+          
+          
+    //       <View style={{flexDirection: 'row', alignItems: 'center', }}>
+    //         <Avatar
+    //             size={100}
+    //             rounded
+    //             source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + item.otherUser.username + '.jpg'}}
+    //             containerStyle={{backgroundColor: 'grey', margin: 10}}
+    //             activeOpacity={0.8}
+                
+    //           />
+    //         { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
+    //         {hasUnreadMessages && <View style={styles.unreadDot} />} 
+    //       </View>    
+    //     </View>
+    //   </TouchableOpacity>
+    // );
     const ChatItem = ({ item }) => (
       <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
         <View style={styles.chatItem}>
@@ -121,7 +169,6 @@ export default function ChatList({navigation,refreshOnMatch}) {
                 
               />
             { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
-
           </View>    
         </View>
       </TouchableOpacity>
@@ -153,6 +200,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
           {displayedUsers.length > 0 ? (
             <FlatList
               data={displayedUsers} // Replace with your data array
+              
               renderItem={({ item }) => ChatItem({item}) }
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
               horizontal={false}
@@ -294,6 +342,13 @@ export default function ChatList({navigation,refreshOnMatch}) {
       fontSize: 15,
       textAlign: 'left',
       marginVertical: 1,
+    },
+    unreadDot: {
+      width: 10,
+      height: 10,
+      backgroundColor: 'blue',
+      borderRadius: 5,
+      marginRight: 5, // Adjust the margin as needed
     },
     });
     

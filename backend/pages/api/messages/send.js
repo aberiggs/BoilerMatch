@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
     const currentDateTime = new Date()
 
-    const newMessage = {from: username, message: req.body.messageToSend, timestamp: currentDateTime, opened: "no", readTime: "no"}
+    const newMessage = {from: username, message: req.body.messageToSend, timestamp: currentDateTime, read: false, readTime: "no"}
 
     /* Look for a conversation between the two users */
     const query = {$or: [{userOne: req.body.toUser, userTwo: username},{userOne: username, userTwo: req.body.toUser}]}
