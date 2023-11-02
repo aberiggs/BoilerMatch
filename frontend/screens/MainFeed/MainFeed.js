@@ -89,7 +89,7 @@ export default function MainFeed({navigation,handleMatchMade}){
       try {
         const userVal = await SecureStore.getItemAsync('username');
         setUsername(userVal);
-        console.log("username in init", userVal); // Log the username here if needed
+        //console.log("username in init", userVal); // Log the username here if needed
       } catch (error) {
         console.error("Error fetching username", error);
       }
@@ -293,23 +293,22 @@ export default function MainFeed({navigation,handleMatchMade}){
         [user.username]: liked,
       })
       )
-      if (liked && notificationsEnabled) {
-        schedulePushNotification(username)
-      }
-      /*
+      
+      console.log("user", user.username);
       const ans = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNotiToken', {
-        name: user,
+        name: user.username,
       }).catch((error) => {
         if (error.response) {
           console.log("error")
         }
-        token = ans.data;
-        console.log(token);
       });
-      */
       
+      token = ans.data.notificationToken;
+      console.log("other user", token);
+        //await schedulePushNotification(username)
+         sendLikeNotification(token, username);
       //commented out but this is how you send notifications to others
-      //await sendLikeNotification(token, username);
+      console.log("likenotifcation", token);
 
       
       if(liked && usersDisliked[user.username]){
@@ -371,7 +370,7 @@ export default function MainFeed({navigation,handleMatchMade}){
         console.log("Error occurred while bookmarking users:", error)
       })
       let bookmarked = true
-      console.log(response)
+      //console.log(response)
       if(response.data.user_added == null){
         bookmarked = true
       }
@@ -690,13 +689,14 @@ export default function MainFeed({navigation,handleMatchMade}){
       });
     }
     async function sendLikeNotification(recipientNotificationToken, senderUsername) {
+      console.log("recipiant", recipientNotificationToken)
+      console.log("username", senderUsername)
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "You have a new like!",
           body: `${senderUsername} liked you.`,
-          data: { type: 'like' },
         },
-        trigger: null, // Send the notification immediately
+        trigger: { seconds: 2 }, // Send the notification immediately
         to: recipientNotificationToken,
       });
     }
