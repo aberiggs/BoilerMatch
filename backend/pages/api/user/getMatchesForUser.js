@@ -47,7 +47,10 @@ export default async function handler(req, res) {
         $and: [
           {InteractionsWithUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
           {InteractionsByUser: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}},
-          {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, blocked: true}}} },
+          {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
+          {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
+          //{InteractionsByUser: {$not: {$elemMatch: {userInteractedWith:currentUser, blocked: true}}} },
+          //{"username": { $nin: db.blockedUsers.find({ blockedBy: currentUser }).map(u => u.blockedUser) } },
           {"username" : { $not: { $eq: currentUser} }}]
       } },
     {
