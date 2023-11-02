@@ -5,6 +5,11 @@ import { StyleSheet, Text, View, Switch,TouchableOpacity, ScrollView, Modal, Pre
 import { NavigationContainer } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { useNotification } from '../../NotificationContext';
+import { EventRegister } from 'react-native-event-listeners';
+import themeContext from '../../theme/themeContext';
+import theme from '../../theme/theme';
+import  AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 
@@ -14,6 +19,8 @@ export default function NotificationSettings({navigation}) {
     const { notificationsEnabled, setNotificationsEnabled } = useNotification();
     const [isAlertDisplayed, setIsAlertDisplayed] = useState(false);
     const [temporaryNotificationsEnabled, setTemporaryNotificationsEnabled] = useState(notificationsEnabled);
+    const [darkMode, setDarkMode] = useState(false);
+    const theme = useContext(themeContext)
     useEffect(() => {
         console.log("isAlert", isAlertDisplayed);
         async function fetchNotificationSetting() {
@@ -47,6 +54,24 @@ export default function NotificationSettings({navigation}) {
     
         fetchNotificationSetting();
       }, []);
+
+      useEffect(() => {
+        console.log("inside useEffect darkmode")
+        // Retrieve the Dark Mode state from AsyncStorage
+        AsyncStorage.getItem('darkModeEnabled')
+          .then((darkModeStatus) => {
+            if (darkModeStatus === 'true') {
+              console.log("dark mode true")
+              setDarkMode(true);
+            } else {
+              console.log("dark mode false")
+              setDarkMode(false);
+            }
+          })
+          .catch((error) => {
+            console.error('Error retrieving Dark Mode status:', error);
+          });
+      }, [darkMode]);
     
     const toggleNotificationSwitch = async () => {
         //console.log(notificationsEnabled)
@@ -112,13 +137,23 @@ export default function NotificationSettings({navigation}) {
       }
   
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, {backgroundColor: theme.backgroundColor}]}>
         <View style={styles.switchContainer}>
-        <Text style={styles.subtitle}>Allow Notifications?</Text>
+        <Text style={[styles.subtitle,{color:theme.color}]}>Allow Notifications?</Text>
         <Switch
           value={notificationsEnabled}
           onValueChange={toggleNotificationSwitch}
           disabled={isAlertDisplayed}
+        />
+        </View>
+        <View style={styles.switchContainer}>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Switch Color Themes?</Text>
+        <Switch
+          value={darkMode}
+          onValueChange={(value) => {
+            setDarkMode(value);
+            EventRegister.emit('ChangeTheme', value)
+          }}
         />
         </View>
         <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
@@ -142,7 +177,7 @@ const styles = StyleSheet.create({
   switchContainer: {
     justifyContent: 'flex-start',
     alignItems: 'center',
-    marginBottom: 600,
+    marginBottom: 0,
   },
   button: {
     width: "40%",

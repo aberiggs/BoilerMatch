@@ -11,6 +11,7 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { AppState } from 'react-native';
 import { useNotification } from '../../NotificationContext';
+import themeContext from '../../theme/themeContext';
 
 //import { NotificationSettings } from "../Profile/ManageNotifications"
 
@@ -68,6 +69,7 @@ export default function MainFeed({}){
   const [appState, setAppState] = useState(AppState.currentState);
   const { notificationsEnabled, setNotificationsEnabled } = useNotification();
   const [hasNoti,setHasNoti] = useState(false);
+  const theme = useContext(themeContext);
 
   
 
