@@ -71,18 +71,11 @@ export default function Profile({navigation}){
     return response.data.user;
   }
 
-  const navigateToManagePreferences = () => {
-    navigation.navigate('ManagePreferences');
-  };
 
   const navigateToManageNotifications = () => {
     navigation.navigate('ManageNotifications');
   };
-  
 
-  const navigateToManagePreferenceRankings = () => {
-    navigation.navigate('ManagePreferenceRankings');
-  };
 
 
   const sendImage = async (imageToUpload) => {
