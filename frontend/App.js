@@ -42,6 +42,9 @@ export default function App() {
       EventRegister.removeAllListeners(listener)
     }
   }, [darkMode])
+
+  // TODO: Move/organize all these stack screens to individual navigation containers within other screens of the app
+
   return (
     <themeContext.Provider value={darkMode === true ? theme.dark : theme.light}>
     <NotificationProvider>

@@ -55,37 +55,29 @@ export default function Profile({navigation}){
       ).catch(error => {
         console.log("Error occurred while searching:", error)
       })
-      
+      console.log("discoverable: " + !response.data.userUpdated.discoverable)
       setDiscoverability(!response.data.userUpdated.discoverable)
   }
 
   const getDiscoverability = async () => {
     const tokenVal = await SecureStore.getItemAsync('token')
-      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getDiscoverability', {
-        token: tokenVal
-      }
-      ).catch(error => {
-        console.log("Error occurred while searching:", error)
-      })
-      setDiscoverability(response.data.discoverability)
-      return response.data.user;
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getDiscoverability', {
+      token: tokenVal
+    }
+    ).catch(error => {
+      console.log("Error occurred while searching:", error)
+    })
+    setDiscoverability(response.data.discoverability)
+    return response.data.user;
   }
 
-
-  const navigateToManagePreferences = () => {
-    navigation.navigate('ManagePreferences');
-  };
 
   const navigateToManageNotifications = () => {
     navigation.navigate('ManageNotifications');
   };
-  
 
-  const navigateToManagePreferenceRankings = () => {
-    navigation.navigate('ManagePreferenceRankings');
-  };
 
-  
+
   const sendImage = async (imageToUpload) => {
     if (!imageToUpload) {
       // Image is null for some reason
@@ -111,7 +103,6 @@ export default function Profile({navigation}){
         }
     });
     setProfilePic(imageToUpload)
-    setProfilePicExists(true)
   }
 
 
@@ -123,6 +114,14 @@ export default function Profile({navigation}){
     const navigateToManageHousingInformation = () => {
       navigation.navigate('ManageHousingInformation')
     }
+
+    const navigateToManagePreferences = () => {
+      navigation.navigate('ManagePreferences');
+    };
+  
+    const navigateToManagePreferenceRankings = () => {
+      navigation.navigate('ManagePreferenceRankings');
+    };
   
    const handleLogout = async () => {
         await SecureStore.deleteItemAsync('token')

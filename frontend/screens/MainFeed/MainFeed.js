@@ -1,7 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
+
 import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList } from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons,FontAwesome} from '@expo/vector-icons';
+
 import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
@@ -18,6 +20,7 @@ import themeContext from '../../theme/themeContext';
 
 
 import UserProfile from './UserProfile'
+import MatchPopUp from '../../screenComponents/MatchPopUp';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => {
@@ -42,9 +45,10 @@ Notifications.setNotificationHandler({
 
 
 
-
-export default function MainFeed({}){
+export default function MainFeed({navigation,handleMatchMade}){
   const [usersLiked, setUsersLiked] = useState({});
+  const [usersDisliked, setUsersDisliked] = useState({});
+  const [usersBookmarked, setUsersBookmarked]= useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
@@ -61,6 +65,7 @@ export default function MainFeed({}){
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isNewSearch, setIsNewSearch] = useState(false);
   const [newSearch, setNewSearch] = useState([]);
+
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
@@ -71,9 +76,8 @@ export default function MainFeed({}){
   const [hasNoti,setHasNoti] = useState(false);
   const theme = useContext(themeContext);
 
-  
-
-
+  //variables for match pop up
+  const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
   
   useEffect(() => {
     handleRefreshFeed()
@@ -194,7 +198,6 @@ export default function MainFeed({}){
        await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
        //console.log(response.data.users[0]);
         setSelectedUser(response.data.users[0]);
-        console.log("DJFKLAS;FJKLSAJF;LSJFK;SAJLKJF;ALKJF;SADLKJFKSA;FLDASKJF;ALFJKA;LF", username);
         toggleModal();
         //setIsDropdownVisible(true);
       }).catch((error) => {
@@ -237,13 +240,14 @@ export default function MainFeed({}){
   }
   */
   
+  
   const handleLikePress = async(user) => {
     // Find the feed item with the specified key
     //console.log(user)
     const tokenVal = await SecureStore.getItemAsync('token')
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/likeuser', {
         token: tokenVal,
-        userShown: user,
+        userShown: user.username,
       }
       ).catch(error => {
         console.log("Error occurred while searching:", error)
@@ -252,16 +256,41 @@ export default function MainFeed({}){
       //Update returns what the data previously look like so if there was no interaction
       //we set to true and if there was an interaction we said liked to the reciprocal
       let liked = true
+      
       if(response.data.user_added == null){
         liked = true
       }
       else{
-        liked = !response.data.user_added.liked
+        liked = !(response.data.user_added.liked_or_disliked == "liked")
       }
+      if(liked == true){
+
+      const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("error occurred while liking user:", error)
+      })
+   
+      if(isUserLiked.data.liked == true){
+       // console.log(res.data.userLiked)
+       const answer = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/createConversation`, {
+        token: tokenVal,
+        toUser: user
+      }
+      
+      ).catch(error => {
+        console.log("Error creating conversation: ", error)
+      })
+        setMatchPopUpUserShown(user)
+        
+      }
+    }
 
       setUsersLiked((usersLiked) => ({
         ...usersLiked,
-        [user]: liked,
+        [user.username]: liked,
       })
       )
       if (liked && notificationsEnabled) {
@@ -282,7 +311,81 @@ export default function MainFeed({}){
       //commented out but this is how you send notifications to others
       //await sendLikeNotification(token, username);
 
+      
+      if(liked && usersDisliked[user.username]){
+        setUsersDisliked((usersDisliked) => ({
+          ...usersDisliked,
+          [user.username]: false,
+        })
+        )
+      }
+    
+  handleMatchMade()
   };
+
+  const handleDislikePress = async(user) => {
+    // Find the feed item with the specified key
+    const tokenVal = await SecureStore.getItemAsync('token')
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/dislikeuser', {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("Error occurred while disliked users:", error)
+      })
+
+      //Update returns what the data previously look like so if there was no interaction
+      //we set to true and if there was an interaction we said liked to the reciprocal
+      let disliked = true
+      
+      if(response.data.user_added == null){
+        disliked = true
+      }
+      else{
+        disliked = !(response.data.user_added.liked_or_disliked == "disliked")
+      }
+
+      setUsersDisliked((usersDisliked) => ({
+        ...usersDisliked,
+        [user.username]: disliked,
+      })
+      )
+      
+      if(disliked && usersLiked[user.username]){
+        setUsersLiked((usersLiked) => ({
+          ...usersLiked,
+          [user.username]: false,
+        })
+        )
+      }
+    handleMatchMade()
+  };
+
+  const handleBookmarkPressed = async(user) => {
+      const tokenVal = await SecureStore.getItemAsync('token')
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/bookmarkuser', {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("Error occurred while bookmarking users:", error)
+      })
+      let bookmarked = true
+      console.log(response)
+      if(response.data.user_added == null){
+        bookmarked = true
+      }
+      else{
+        bookmarked = !(response.data.user_added.bookmarked)
+      }
+
+      setUsersBookmarked((usersBookmarked) => ({
+        ...usersBookmarked,
+        [user.username]: bookmarked,
+      })
+      )
+
+  }
   
   const handleUserItemClick = (user) => {
     setSelectedUser(user);
@@ -295,13 +398,12 @@ export default function MainFeed({}){
 
   const onRefresh = async() => {
     setRefreshing(true);
-    setUsersLiked({})
     handleRefreshFeed();
     // ... Fetch data ...
     setRefreshing(false);
   };
 
-  const FeedItem = ({ user, onLikePress }) => (
+  const FeedItem = ({ user }) => (
     <View style={styles.feedItem}>
       <Avatar
           size={250}
@@ -311,8 +413,8 @@ export default function MainFeed({}){
           activeOpacity={0.8}
         />
       
-      <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user.username)}>
+      <View style={styles.iconRow}>
+        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user)}>
           <Ionicons
             name={usersLiked[user.username] ? 'heart' : 'heart-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
             color={usersLiked[user.username] ? 'red' : 'gray'}
@@ -320,10 +422,28 @@ export default function MainFeed({}){
           />
         </TouchableOpacity>
 
+        
+        <View style={{flexDirection:"row"}}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleUserItemClick(user)}>
           <Ionicons
             name={'information-circle-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
             color={'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleBookmarkPressed(user)}>
+          <Ionicons
+            name={usersBookmarked[user.username] ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            color={usersBookmarked[user.username] ? 'gold' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleDislikePress(user)}>
+          <Ionicons
+            name={usersDisliked[user.username] ? 'heart-dislike' : 'heart-dislike-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            color={usersDisliked[user.username] ? 'red' : 'gray'}
             size={40}
           />
         </TouchableOpacity>
@@ -353,6 +473,10 @@ export default function MainFeed({}){
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
+  
+  const hideMatchPopUp = () =>{
+    setMatchPopUpUserShown(null)
+  }
 
   const toggleNewSearch = () => {
     setIsNewSearch(!isNewSearch);
@@ -400,28 +524,32 @@ export default function MainFeed({}){
 
   const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
+      let response = null
       if(!showOnlyUsersLikedBy){
-        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/refreshfeed', {
+        response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMainFeedUsers', {
         token: tokenVal
       }
       ).catch(error => {
-        console.log("Error occured while searching:", error)
+        console.log("Error occured while getting main feed users:", error)
       })
         setDisplayedUsers(response.data.users)
     }
     else{
-      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/userslikedby', {
+      response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getUsersLikedBy', {
         token: tokenVal
       }
       ).catch(error => {
-        console.log("Error occurred while searching:", error)
+        console.log("Error occurred while getting liked users:", error)
       })
         setDisplayedUsers(response.data.users)
     }
+    setUsersLiked({})
+    setUsersDisliked({})
+    setUsersBookmarked(response.data.users.map(user=>user.interaction.bookmarked != null?user.interaction.bookmarked:false))
     }
 
   const renderModal = () => {
-    if (isModalVisible && searchResult) {
+    if (searchResult) {
       return (
         <Modal
           animationType="slide"
@@ -456,13 +584,7 @@ export default function MainFeed({}){
     return(
       <View style={styles.container}>
         <View style={styles.topBar}>
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={handleLikedMeButtonPress}>
-            <Text style={styles.searchButtonText}>{showOnlyUsersLikedBy ? 'All' : 'Liked Me'} </Text>
-          </TouchableOpacity>
-
-          <View style ={styles.inputContainer}>
+        <View style ={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="Search for a user"
@@ -498,6 +620,20 @@ export default function MainFeed({}){
               </View>
             )}
           </View>
+          <TouchableOpacity
+            style={[styles.filterButton, showOnlyUsersLikedBy?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={handleLikedMeButtonPress}>
+            <Text style={styles.searchButtonText}>Liked Me </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterButton, showOnlyUsersLikedBy?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={handleLikedMeButtonPress}>
+             <Ionicons
+            name={showOnlyUsersLikedBy ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            color={"gray"}
+            size={15}
+          />
+          </TouchableOpacity>
         </View>
 
         
@@ -510,8 +646,11 @@ export default function MainFeed({}){
             <UserProfile user={selectedUser} closeModal={handleCloseUserModal}/>
           </Modal>
         )}
+
     
-        {renderModal()}
+       {renderModal()}
+        
+        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp}/>
 
         <View style={styles.flatListContainer}>
           {displayedUsers.length > 0 ? (
@@ -624,7 +763,6 @@ const styles = StyleSheet.create({
    // Take up the entire available space
     backgroundColor: 'white',
     alignContent: 'center',
-    alignItems: 'center',
     padding: 15,
     marginBottom: 10,
     shadowColor: 'black',
@@ -641,7 +779,6 @@ const styles = StyleSheet.create({
     borderWidth: .5,      // Border width
     borderRadius: .5,     // Border radius
      // Padding around the text
-    marginRight: 30,   // Margin between items
   },
   dropdownContainer: {
     backgroundColor: 'white',
@@ -661,32 +798,31 @@ const styles = StyleSheet.create({
     minHeight: 0,
   }
   ,
-  input: { // Adjust the width as needed to make it smaller
-    height: 40, // Adjust the height as needed
+  input: { 
+    height: 40, 
     flex: 1,
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-    marginRight: 30,
+    marginRight: 0,
   },
   hyperlink: {
     textDecorationLine: 'underline',
     color: 'blue',
   },
   searchButton: {
-    backgroundColor: 'gold', // Change the background color as desired
+    backgroundColor: 'gold', 
     padding: 10,
     borderRadius: 5,
   },
   filterButton: {
-    margin: 5,
-    backgroundColor: 'gold', // Change the background color as desired
+   
     padding: 10,
     borderRadius: 5,
   },
   searchButtonText: {
-    color: 'gray', // Change the text color as desired
+    color: 'gray', 
     fontSize: 13,
   },
   topBar: {
@@ -696,6 +832,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
     zIndex: 1,
+    gap: 10
   },
   flatListContainer: {
     flex: 1, // Take up the remaining available space
@@ -726,12 +863,16 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginVertical: 1,
   },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between"
+  }
   });
   
 
 const feedStyles = StyleSheet.create({
   iconContainer: {
-    paddingHorizontal: 10
+    paddingHorizontal: 5
   },
   infoContainer: {
     width: '100%',
@@ -750,5 +891,6 @@ const feedStyles = StyleSheet.create({
   infoLabel: {
     fontWeight: '600',
   },  
+  
   
 })
