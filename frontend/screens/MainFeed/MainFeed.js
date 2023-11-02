@@ -303,10 +303,12 @@ export default function MainFeed({navigation,handleMatchMade}){
         }
       });
       
-      token = ans.data.notificationToken;
-      console.log("other user", token);
-        //await schedulePushNotification(username)
-         sendLikeNotification(token, username);
+      if (ans && ans.data && ans.data.notificationToken) {
+        token = ans.data.notificationToken;
+        console.log("other user", token);
+        sendLikeNotification(token, username);
+      }
+      //await schedulePushNotification(username)
       //commented out but this is how you send notifications to others
       console.log("likenotifcation", token);
 
@@ -689,8 +691,26 @@ export default function MainFeed({navigation,handleMatchMade}){
       });
     }
     async function sendLikeNotification(recipientNotificationToken, senderUsername) {
-      console.log("recipiant", recipientNotificationToken)
-      console.log("username", senderUsername)
+      console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
+
+      const notifData = {
+        to: recipientNotificationToken,
+        title: 'You have a new like!',
+        body: senderUsername + ' liked you.',
+      }
+      const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
+        headers: {
+          'host': 'exp.host',
+          'accept': 'application/json',
+          'accept-encoding': 'gzip, deflate',
+          'content-type': 'application/json'
+        }
+      }).catch((err) => {
+        console.log("Sending message failed: ", err)
+      })
+
+      console.log(res.data)
+      /*
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "You have a new like!",
@@ -699,6 +719,7 @@ export default function MainFeed({navigation,handleMatchMade}){
         trigger: { seconds: 2 }, // Send the notification immediately
         to: recipientNotificationToken,
       });
+      */
     }
 
       async function registerForPushNotificationsAsync() {
