@@ -18,39 +18,54 @@ export default async function handler(req, res) {
   //     message: "Missing user",
   //   });
   // }
-  const token = req.body.token;
+  // const token = req.body.token;
 
-    const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
-        if (err) {
-            return res.status(400).json({
-                success: false,
-            })
-        } else {
-            return payload.username
-        }
-    });
+  //   const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+  //       if (err) {
+  //           return res.status(400).json({
+  //               success: false,
+  //           })
+  //       } else {
+  //           return payload.username
+  //       }
+  //   });
 
   try {
-    const bookmarkedUsers = await interactions.aggregate([
-        { $match: {
-            $and: [
-              {"userInteracting":currentUser},
-              {"liked_or_disliked": "liked"},
-              {"userInteractedWith" : { $not: { $eq: currentUser} }}
-            ]
-          } },
-        {
-      $lookup: {
-        from: "users",
-        localField: "userInteractedWith",
-        foreignField: "username",
-        as: "userInfo"
-  },
+    const bookmarkedUsers = await users.aggregate([
+      {
+        $match: {
+            "discoverable": true,
+            "username": { $ne: "jslutzky" }
+        }
+    },
+    {
+        $lookup: {
+            from: "interactions",
+            let: { username: "$username" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$userInteracting", "jslutzky"] },
+                                { $eq: ["$userInteractedWith", "$$username"] },
+                                {  $eq: ["$bookmarked", true ]}
+                            ]
+                        }
+                    }
+                }
+            ],
+            as: "interaction"
+        }
+    },
+    {
+        $match: {
+          interaction: { $size: 1}
+        }
+    },
 
-},
-       
     ]).toArray()
-    console.log(bookmarkedUsers)
+    //console.log(bookmarkedUsers)
    
     return res.status(200).json({
       success: true,

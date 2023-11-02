@@ -30,60 +30,65 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
         return payload.username
     }
 });
-
+const oneWeekAgo = new Date();
+oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   try {
     const potentialUsers = await users.aggregate([
+      {
+        $match: {
+            "discoverable": true,
+            "username": { $ne: "jslutzky" }
+        }
+    },
         { 
-            $lookup: {
-                from: "interactions",
-                localField: "username",
-                foreignField: "userInteractedWith",
-                as: "InteractionsWithUser"
-            },
+          $lookup: {
+            from: "interactions",
+            let: { username: "$username" },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$userInteracting", "jslutzky"] },
+                                { $eq: ["$userInteractedWith", "$$username"] },
+                                { $ne: ["$liked_or_disliked", "liked" ]},
+                                {
+                                  $or: [
+                                    { $ne: ["$liked_or_disliked", "disliked" ]}, 
+                                    {$lte: ["$date_liked_or_disliked_changed",oneWeekAgo]}
+                                  ],
+                                }
+                            ]
+                        }
+                    },     
+                },
+                {
+                  $set: {
+                    "liked_or_disliked": "neither"
+                  }
+                }
+            ],
+            as: "interaction"
+        }
         },
-        {
-            $match: {
-            $and:[ 
-              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}} },
-              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "disliked"}}} },
-            {"username" : { $not: { $eq: currentUser} }},
-            {"discoverable": true}
-          ]
-    }},
-    
-    {
-      $project: {
-        user: "$$ROOT",
-          Interactions: {
-              $filter: {
-                  input: "$InteractionsWithUser",
-                  as: "interaction",
-                  cond: { $eq: ["$$interaction.userInteracting",  currentUser] }
-              }
-              }
+      {
+          $match: {
+            interaction: { $size: 1}
           }
       },
-      
+      {
+        $set: {
+          "interaction.liked_or_disliked": "neither"
+        }
+      },
     {$sample: {
       size: 5
     }},
-    {
-      $replaceRoot: {
-          newRoot: "$user"  
-      }
-    },
-    {
-      $addFields: {
-        "interaction": "$InteractionsWithUser",
-    }
-    },
-    {
-        $project: {
-            "InteractionsWithUser": 0,
-        }
-    }
+  
     ]).toArray()
-    console.log(potentialUsers)
+
+    
+    
     return res.status(200).json({
       success: true,
       users: potentialUsers,

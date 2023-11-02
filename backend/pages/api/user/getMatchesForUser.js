@@ -29,7 +29,7 @@ export default async function handler(req, res) {
             from: "interactions",
             localField: "username",
             foreignField: "userInteracting",
-            as: "InteractionsWithUser"
+            as: "InteractionsByUser"
       },
     },
     {
@@ -37,14 +37,14 @@ export default async function handler(req, res) {
         from: "interactions",
         localField: "username",
         foreignField: "userInteractedWith",
-        as: "InteractionsByUser"
+        as: "InteractionsWithUser"
   },
 
 },
       { $match: {
         $and: [
-          {InteractionsWithUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
-          {InteractionsByUser: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsByUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsWithUser: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}},
           {"username" : { $not: { $eq: currentUser} }}]
       } },
     {

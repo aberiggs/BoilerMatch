@@ -49,34 +49,20 @@ const usersLikedBy = await users.aggregate([
           {"username" : { $not: { $eq: currentUser} }},
           {"discoverable": true}]
       } },
+      
       {
-        $project: {
-            user: "$$ROOT",
-            Interaction: {
+        $addFields: {
+          interaction: {
                 $filter: {
                     input: "$InteractionsWithUser",
                     as: "interaction",
                     cond: { $eq: ["$$interaction.userInteracting",  currentUser] }
                 }
                 }
-            }
         },
-        {
-        $replaceRoot: {
-          newRoot: "$user"  
-      }
-    },
-    {
-      $addFields: {
-        "interaction": "$InteractionsWithUser",
-    }
-    },
-    {
-        $project: {
-            "InteractionsWithUser": 0,
-        }
-    }
+      },
     ]).toArray()
+    
   // if (!user) {
   //   return res.status(400).json({
   //     success: false,
