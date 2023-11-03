@@ -7,27 +7,6 @@ import themeContext from '../../theme/themeContext';
 
 import axios from "axios"
 
-
-// const messagesEx = [
-//         {
-//             from: "A",
-//             message: "Yo what's up"
-//         },
-//         {
-//             from: "B",
-//             message: "Test text one"
-//         },
-//         {
-//             from: "A",
-//             message: "This is a bunch of of test text to see what happens when you create a larger message"
-//         },
-//         {
-//             from: "B",
-//             message: "💥💥💥"
-//         },
-
-//     ]
-
 export default function Conversation(props, {navigation}) {
     const [currentMessages, setCurrentMessages] = useState(null)
     const [newMessage, setNewMessage] = useState('')
@@ -97,7 +76,6 @@ export default function Conversation(props, {navigation}) {
         const updatedMessages = (currentMessages ? currentMessages : [])
         updatedMessages.push(messageObj)
         setCurrentMessages(updatedMessages)
-        setNewMessage('')
 
         const tokenVal = await SecureStore.getItemAsync('token')
         const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/send', {
@@ -113,21 +91,9 @@ export default function Conversation(props, {navigation}) {
             console.log("No response for sending message")
             return false
         }
+        await sendMessageNotification()
+        setNewMessage('')
     }
-
-    // const messageItem = ({item}) => {
-        
-    //     const messageContainerStyle = (item.from === username) ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg
-    //     const messageBoxStyle = (item.from === username) ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox
-
-    //     return (
-    //         <View style={messageContainerStyle}>
-    //             <View style={messageBoxStyle}>
-    //                 <Text style={conversationStyles.messageText}>{item.message}</Text>
-    //             </View>
-    //         </View>
-    //     )
-    // }
 
     const formatTimestamp = (timestamp) => {
         const date = new Date(timestamp);
@@ -145,18 +111,72 @@ export default function Conversation(props, {navigation}) {
         const month = date.getMonth() + 1; // Months are 0-indexed
         const day = date.getDate();
         const year = date.getFullYear();
+
+        // Get the last two digits of the year
+        const lastTwoYearDigits = String(year).slice(-2);
     
         // Format the date part as MM/DD/YYYY
-        const formattedDate = `${month}/${day}/${year}`;
+        const formattedDate = `${month}/${day}/${lastTwoYearDigits}`;
     
         return `${formattedDate}\n ${formattedHours}:${formattedMinutes} ${ampm}`;
     };
+
+    // Function to find the most recently read message
+    function findMostRecentReadMessage(messages) {
+        let mostRecentReadMessage = null;
+        for (const message of messages) {
+        if (message.read && message.readTime !== 'no') {
+            if (!mostRecentReadMessage || message.readTime > mostRecentReadMessage.readTime) {
+            mostRecentReadMessage = message;
+            }
+        }
+        }
+        return mostRecentReadMessage;
+    }
+
+    async function sendMessageNotification() {
+        // console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
+
+        const pushTokenRes = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNotiToken', {
+            name: otherUser,
+          }).catch((error) => {
+            if (error.response) {
+              console.log("error")
+            }
+          });
+          
+        if (!pushTokenRes || !pushTokenRes.data || !pushTokenRes.data.notificationToken) {
+        return
+        }
+
+        const notifData = {
+            to: pushTokenRes.data.notificationToken,
+            title: username + " sent a message",
+            body: newMessage,
+          }
+
+        console.log(notifData)
+
+        const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
+          headers: {
+            'host': 'exp.host',
+            'accept': 'application/json',
+            'accept-encoding': 'gzip, deflate',
+            'content-type': 'application/json'
+          }
+        }).catch((err) => {
+          console.log("Sending message failed: ", err)
+        })
+  
+        console.log(res.data)
+      }
+
     
     const messageItem = ({ item }) => {
         const messageContainerStyle = item.from === username ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg;
         const messageBoxStyle = item.from === username ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox;
-        const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
         const isCurrentUser = item.from === username;
+        const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
     
         return (
             <View style={[messageContainerStyle]}>
@@ -168,6 +188,14 @@ export default function Conversation(props, {navigation}) {
                         {formatTimestamp(item.timestamp)}
                     </Text>
                 </View>
+                {item.from === username && item.read && (
+                    <View>
+                        <Text style={conversationStyles.readReceiptText}>
+                            {/* {formatTimestamp(item.readTime)} - R */}
+                            {"R"}
+                        </Text>
+                    </View>
+                )}
             </View>
         );
     };
@@ -302,7 +330,7 @@ const conversationStyles = StyleSheet.create({
         borderRadius: 20,
         paddingHorizontal: 15,
         paddingVertical: 10,
-        margin: 10,
+        margin: 5,
         backgroundColor: 'gold'
     },
     otherUserMessageBox: {
@@ -310,7 +338,7 @@ const conversationStyles = StyleSheet.create({
         borderRadius: 20,
         paddingHorizontal: 15,
         paddingVertical: 10,
-        margin: 10,
+        margin: 5,
         backgroundColor: 'lightgrey',
     },
     messageText: {
@@ -340,8 +368,13 @@ const conversationStyles = StyleSheet.create({
         marginTop: 4, // Adjust the margin to control the space between the message and the timestamp
     },
     timestampText: {
-        fontSize: 12,
+        fontSize: 10,
         color: 'gray',
+    },
+    readReceiptText: {
+        fontSize: 10,
+        color: 'green',
+        margin: 3,
     },
 });
 

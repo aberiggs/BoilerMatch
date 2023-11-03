@@ -29,6 +29,10 @@ export default function ReportBlockModal({ visible, onClose , onCloseConversatio
       setInvalidEntriesMsgVisible(true);
     } else if ( report == "no" && block == "yes" && reportReasonCategory != "na"){
       setInvalidEntriesMsgVisible(true)
+    } else if (block == "yes" && report == "yes") {
+      const res = reportThroughApi();
+      const res2 = blockThroughApi();
+      setSubmitMsgVisibleBlock(true)
     } else if (block == "yes"){
       // const res = updateInformationThroughApi();
       // TODO: Error checking
@@ -57,9 +61,59 @@ export default function ReportBlockModal({ visible, onClose , onCloseConversatio
         return error.response.data
       }
     })
-
     return response
   }
+
+  const blockThroughApi = async(user) => {
+    console.log("BLOCKING THROUGH API")
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportOtherUser/blockOtherUser', {
+      token: tokenVal,
+      userBlocked: otherUsername,
+    }
+    ).catch(error => {
+      console.log("Error occurred while blocking users:", error)
+    })
+    console.log(response)
+    const response2 = await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
+      params: {
+        token: tokenVal,
+        userBlocked: otherUsername,
+      }
+    }).catch(error => {
+      console.log("Error occurred while blocking users - deleting messages:", error);
+    });
+    
+    console.log(response2)
+
+    
+
+    //   //Update returns what the data previously look like so if there was no interaction
+    //   //we set to true and if there was an interaction we said liked to the reciprocal
+    //   let disliked = true
+      
+    //   if(response.data.user_added == null){
+    //     disliked = true
+    //   }
+    //   else{
+    //     disliked = !(response.data.user_added.liked_or_disliked == "disliked")
+    //   }
+
+    //   setUsersDisliked((usersDisliked) => ({
+    //     ...usersDisliked,
+    //     [user.username]: disliked,
+    //   })
+    //   )
+      
+    //   if(disliked && usersLiked[user.username]){
+    //     setUsersLiked((usersLiked) => ({
+    //       ...usersLiked,
+    //       [user.username]: false,
+    //     })
+    //     )
+    //   }
+    // handleMatchMade()
+  };
 
   return (
     <Modal

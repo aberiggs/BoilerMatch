@@ -5,7 +5,7 @@ const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
 const pollingRate = 2 // Seconds
 
 export default async function handler(req, res) {
-    console.log("Attempting to get a conversation")
+    console.log("Attempting to get a conversation -- unreadMessagesFromConversation")
 
     /* Setup */
     const { database } = await connectToDatabase();
@@ -51,36 +51,23 @@ export default async function handler(req, res) {
         })
     }
 
+    let unreadMessagesCount = 0;
+    conversation.messages.forEach(message => {
+        if (!message.read && message.from == req.body.otherUser) {
+            unreadMessagesCount++;
+        }
+        });
+
     if (!req.body.previousMessages) {
-        console.log("No previousMessages")
+        console.log("frontend doesn't have anything")
         res.status(200).json({
             success: true,
-            messages: conversation.messages
+            messages: conversation.messages,
+            unreadMessagesCount: unreadMessagesCount
         })
         console.log(conversation.messages)
         return
     }
-
-    // Mark the messages as "read"
-    const updatedMessages = conversation.messages.map(message => {
-        // Check if the message is from the other user and has not been read
-        if (message.from === req.body.otherUser && message.read === false) {
-            message.read = true;
-            message.readTime = new Date(); // Set the read time to the current time
-        }
-        console.log(message)
-        return message;
-    });
-  
-    // Update the conversation with the modified messages
-    await messageCollection.updateOne(
-    { _id: conversation._id },
-    {
-      $set: {
-        messages: updatedMessages
-      }
-    }
-    );
   
     /* Check to see if the user already has the most updated chat history */
     let lastMessageOnClient = req.body.previousMessages[req.body.previousMessages.length - 1]
@@ -95,16 +82,17 @@ export default async function handler(req, res) {
         
         res.status(200).json({
             success: true,
-            messages: conversation.messages
+            messages: conversation.messages,
+            unreadMessagesCount: unreadMessagesCount
         })
 
         return
     }
 
-    
     res.status(400).json({
         success: false,
-        message: "An unexpected error occurred"
+        message: "An unexpected error occurred",
+        unreadMessagesCount: 0,
     })
 }
 
