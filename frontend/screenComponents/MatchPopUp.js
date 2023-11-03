@@ -5,7 +5,7 @@ import { Avatar } from '@rneui/themed';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
 
-const MatchPopUp = ({navigation,matchedUser, hideMatchPopUp,handleChatOpened}) => { 
+const MatchPopUp = ({navigation,matchedUser, hideMatchPopUp}) => { 
   const [username, setUsername] = useState("")
   
 
@@ -58,7 +58,7 @@ const MatchPopUp = ({navigation,matchedUser, hideMatchPopUp,handleChatOpened}) =
           <Text style={styles.modalText}>You Matched With {matchedUser.information.firstName} {matchedUser.information.lastName}!</Text>
           <Pressable
             style={[styles.button]}
-            onPress={() => {hideMatchPopUp(); navigation.navigate("ChatList"); handleChatOpened(matchedUser.username)}}>
+            onPress={() => {hideMatchPopUp(); navigation.navigate("ChatList");}}>
             <Text style={styles.textStyle}>Start Chatting</Text>
           </Pressable>
         </View>

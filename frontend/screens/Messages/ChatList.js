@@ -9,7 +9,7 @@ import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function ChatList({navigation,refreshOnMatch, selectedUser,chatOpened, handleChatOpened,handleChatClosed}) {
+export default function ChatList({navigation,checkForMatch}) {
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
@@ -18,9 +18,9 @@ export default function ChatList({navigation,refreshOnMatch, selectedUser,chatOp
     //variables for dropdown
     const [searchResults, setSearchResults] = useState([])
 
-    // const [chatOpened, setChatOpened] = useState(false) 
+    const [chatOpened, setChatOpened] = useState(false) 
 
-    // const [selectedUser, setSelectedUser] = useState('')
+    const [selectedUser, setSelectedUser] = useState('')
     
     const fetchSearchMessages = async (text) => {
       try {
@@ -73,7 +73,7 @@ export default function ChatList({navigation,refreshOnMatch, selectedUser,chatOp
 
     useEffect(() => {
       handleRefreshFeed()
-    },[refreshOnMatch]);
+    },[checkForMatch]);
 
     useFocusEffect(
       React.useCallback(() => {
@@ -112,7 +112,7 @@ export default function ChatList({navigation,refreshOnMatch, selectedUser,chatOp
          animationType="slide"
           transparent={false}
           visible={chatOpened}>
-            <Conversation otherUser={selectedUser} onClose={handleChatClosed}/>
+            <Conversation otherUser={selectedUser} onClose={()=>setChatOpened(false)}/>
         </Modal>
         </View>
       )
@@ -120,7 +120,8 @@ export default function ChatList({navigation,refreshOnMatch, selectedUser,chatOp
   
     const handleChatPress = async(user) => {
       //open chat
-      handleChatOpened(user.username)
+      setChatOpened(true)
+      setSelectedUser(user.username)
       console.log("CHAT PRESSED")
     };
     

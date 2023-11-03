@@ -31,7 +31,10 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
     }
 });
 
+
   try {
+  const userInfo = await users.findOne({username: currentUser})
+  console.log(userInfo.information)
     const potentialUsers = await users.aggregate([
         { 
             $lookup: {
@@ -49,6 +52,8 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
               {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
               {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
             {"username" : { $not: { $eq: currentUser} }},
+           {"information.gender": userInfo.information.gender},
+           {"information.yearForRoommate": userInfo.information.yearForRoommate},
             {"discoverable": true}
           ]
     }},
@@ -67,7 +72,7 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
       size: 5
     }},
     ]).toArray()
-    console.log(potentialUsers)
+   console.log(potentialUsers)
 
     return res.status(200).json({
       success: true,

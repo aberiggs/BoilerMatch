@@ -45,7 +45,7 @@ Notifications.setNotificationHandler({
 
 
 
-export default function MainFeed({navigation,checkForMatches,handleChatOpened}){
+export default function MainFeed({navigation,checkForMatches}){
   const [usersLiked, setUsersLiked] = useState({});
   const [usersDisliked, setUsersDisliked] = useState({});
   const [usersBookmarked, setUsersBookmarked]= useState({});
@@ -360,7 +360,6 @@ export default function MainFeed({navigation,checkForMatches,handleChatOpened}){
         })
         )
       }
-      console.log(usersDisliked)
       checkForMatches()
   };
 
@@ -690,7 +689,7 @@ export default function MainFeed({navigation,checkForMatches,handleChatOpened}){
     
        {renderModal()}
         
-        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp} handleChatOpened={handleChatOpened} navigation={navigation}/>
+        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp} navigation={navigation}/>
 
         <View style={styles.flatListContainer}>
           {displayedUsers.length > 0 ? (
