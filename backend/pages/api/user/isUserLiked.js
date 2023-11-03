@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const interactions = database.collection("interactions");
   
 
-    console.log(req.body.user)
+    console.log(req.body.userShown)
     // if (!req.body.user || !req.body.userShown || !req.body.liked) {
     //    return res.status(400).json({
     //         success: false,
@@ -17,6 +17,7 @@ export default async function handler(req, res) {
     //     })
     // }
     const token = req.body.token;
+    console.log("token", token)
 
     const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
         if (err) {

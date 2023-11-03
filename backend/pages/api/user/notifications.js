@@ -37,11 +37,13 @@ export default async function handler(req, res) {
     const user = await userCollection.findOne(filter);
 
     updatedData.$set.notificationToken = req.body.pushToken;
-    if (user.recieveNotifications === undefined) {
+    if (user.recieveNotifications === null || user.recieveNotifications === undefined) {
         updatedData.$set.recieveNotifications = true;
     }
     else {
-        updatedData.$set.recieveNotifications = req.body.recieveNotifications;
+        console.log("in else");
+        console.log("userREcieve", user.recieveNotifications);
+        updatedData.$set.recieveNotifications = user.recieveNotifications;
     }
     
     
