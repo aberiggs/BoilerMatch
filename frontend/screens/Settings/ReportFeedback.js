@@ -4,6 +4,8 @@ import * as SecureStore from 'expo-secure-store';
 import axios from "axios"
 
 export default function ReportFeedback({navigation}){
+    const [errorMessage, setErrorMessage] = useState('')
+
     const reportThroughApi = async () => {
       const username = await SecureStore.getItemAsync('username')
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportfeedback', {
@@ -50,6 +52,7 @@ export default function ReportFeedback({navigation}){
                   style={styles.inputFieldBox}>
                 </TextInput>
 
+                <Text style={styles.errorMes}>{errorMessage}</Text>
                 <Pressable style={styles.button} onPress={handleReport}>
 
                 <Text style={styles.buttonText}> Submit </Text>
@@ -123,7 +126,6 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       textAlign: 'center',
       paddingHorizontal: 10,
-      marginBottom: 8,
       color: 'red',
       marginHorizontal: 'auto'
     }
