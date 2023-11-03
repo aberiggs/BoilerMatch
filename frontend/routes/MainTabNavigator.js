@@ -8,12 +8,16 @@ import { useState } from 'react';
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
-    const [refreshOnMatch, SetRefreshOnMatch] = useState(false)
-    const handleMatchMade = () => {
+    const [checkForMatch, setCheckForMatch] = useState(false)
+
+
+    const checkForMatches = () => {
       // Update the externalChange state when an event occurs in this component
-      SetRefreshOnMatch(!refreshOnMatch);
+      setCheckForMatch(!checkForMatch);
+      
     };
-  
+
+   
     return (
     <Tab.Navigator screenOptions={({ route }) => ({
         
@@ -38,15 +42,15 @@ export default function MainTabNavigator() {
     >
       <Tab.Screen
         name="Main Feed"
-        options={{ tabBarBadge: refreshOnMatch ? 1 : null }} // Example of using the state for a badge
+        options={{ tabBarBadge: checkForMatch ? 1 : null }} // Example of using the state for a badge
       >
-        {(props) => <MainFeed {...props} handleMatchMade={handleMatchMade} />}
+        {(props) => <MainFeed {...props} checkForMatches={checkForMatches} />}
       </Tab.Screen>
       <Tab.Screen
         name="ChatList"
-        options={{ tabBarBadge: refreshOnMatch ? 1 : null }}
+        options={{ tabBarBadge: checkForMatch ? 1 : null }}
       >
-        {(props) => <ChatList {...props} refreshOnMatch={refreshOnMatch} />}
+        {(props) => <ChatList {...props} checkForMatch={checkForMatch} />}
       </Tab.Screen>
       <Tab.Screen name="Profile" component={Profile} />
       
