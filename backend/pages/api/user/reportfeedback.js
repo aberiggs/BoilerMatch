@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     if (!req.body || !req.body.report || !req.body.username) {
         return res.status(400).json({
             success: false,
-            message: "Error happened."
+            message: "Please type something."
         })
     }
 
