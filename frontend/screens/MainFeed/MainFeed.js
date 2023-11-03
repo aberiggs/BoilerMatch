@@ -1,17 +1,51 @@
 import { StatusBar } from 'expo-status-bar';
-import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Pressable, ScrollView, FlatList } from 'react-native';
-import React, { useState, useEffect } from 'react';
+
+import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList } from 'react-native';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Ionicons,FontAwesome} from '@expo/vector-icons';
+
 import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { AppState } from 'react-native';
+import { useNotification } from '../../NotificationContext';
+import themeContext from '../../theme/themeContext';
+
+//import { NotificationSettings } from "../Profile/ManageNotifications"
+
+
 
 import UserProfile from './UserProfile'
 import MatchPopUp from '../../screenComponents/MatchPopUp';
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => {
+    if (AppState === 'background') {
+      // Display the alert when the app is in the background
+      return {
+        shouldShowAlert: true,
+        shouldPlaySound: false, // You can control other notification behaviors here
+        shouldSetBadge: false,
+      };
+    } else {
+      // App is in the foreground, don't display the alert
+      return {
+        shouldShowAlert: false,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      };
+    }
+  },
+});
 
-export default function MainFeed({navigation,handleMatchMade}){
+
+
+
+export default function MainFeed({navigation,checkForMatches,handleChatOpened}){
   const [usersLiked, setUsersLiked] = useState({});
   const [usersDisliked, setUsersDisliked] = useState({});
   const [usersBookmarked, setUsersBookmarked]= useState({});
@@ -31,16 +65,187 @@ export default function MainFeed({navigation,handleMatchMade}){
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isNewSearch, setIsNewSearch] = useState(false);
   const [newSearch, setNewSearch] = useState([]);
+
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+  const [username,setUsername] = useState("");
+  const [appState, setAppState] = useState(AppState.currentState);
+  const { notificationsEnabled, setNotificationsEnabled } = useNotification();
+  const [hasNoti,setHasNoti] = useState(false);
+  const theme = useContext(themeContext);
+
   //variables for match pop up
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
 
   useEffect(() => {
     handleRefreshFeed()
   },[currentFeed]);
+
+
+  useEffect(() => {
+    // Define a separate async function to fetch the username
+    const fetchUsername = async () => {
+      try {
+        const userVal = await SecureStore.getItemAsync('username');
+        setUsername(userVal);
+        //console.log("username in init", userVal); // Log the username here if needed
+      } catch (error) {
+        console.error("Error fetching username", error);
+      }
+    };
+  
+    // Call the function to fetch the username
+    fetchUsername();
+  
+    // Add a dependency on username to trigger the Axios call when username changes
+  }, [username]);
+  
+
+    //  console.log("notiSettings: ", notificationsEnabled)
+
+  //NotificationSettings()
+
+  useEffect(() => {
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      if (notificationsEnabled) {
+        setNotification(notification);
+      }
+    });
+  
+    // Other notification handling code
+  }, [notificationsEnabled]);
+
+  //console.log("notification Listener", notificationsEnabled);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState) => {
+      setAppState(nextAppState);
+    };
+  
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+  
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  
+
+  useEffect(() => {
+  const fetchData = async () => {
+
+    const updateNotificationsThroughApi = async (pushToken, notiResponse) => {
+      console.log("inside", pushToken);
+      console.log(notiResponse)
+      const tokenVal = await SecureStore.getItemAsync('token');
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
+        token: tokenVal,
+        pushToken: pushToken,
+        recieveNotifications: notiResponse,
+      }).catch((error) => {
+        if (error.response) {
+          return error.response.data;
+        }
+        return;
+      });
+
+      return response;
+    };
+
+    // Step 1: Get the push token
+    const pushToken = await registerForPushNotificationsAsync();
+    setExpoPushToken(pushToken);
+
+    // Step 2: Get the 'hasNoti' value
+    const tokenVal = await SecureStore.getItemAsync('token');
+    const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNoti', {
+      params: {
+        token: tokenVal,
+      }
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data;
+      }
+    });
+
+    if (response && response.data && response.data.notificationsEnabled !== undefined) {
+      //setHasNoti(response.data.notificationsEnabled);
+       var notiResponse = response.data.notificationsEnabled;
+       console.log("when set", notiResponse)
+
+      // Step 3: Update notifications through the API
+      const updateResponse = await updateNotificationsThroughApi(pushToken, notiResponse);
+      console.log(updateResponse);
+    }
+  };
+
+  fetchData();
+},[]);
+
+  
+  
+
+
+  
+  useEffect( () => {
+    console.log("usename", username)
+    //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
+      setNotification(notification);
+    });
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
+       await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
+       //console.log(response.data.users[0]);
+        setSelectedUser(response.data.users[0]);
+        toggleModal();
+        //setIsDropdownVisible(true);
+      }).catch((error) => {
+          console.log(error.response.data)
+      })
+      console.log(response);
+    });
+    
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, [username]);
+  /*
+  useEffect(() => {
+  const updateNotificationsThroughApi = async() => {
+    console.log("inside", expoPushToken);
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
+      token: tokenVal,
+      pushToken: expoPushToken,
+      recieveNotifications: true,
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
+    })
+
+    return response
+  };
+  updateNotificationsThroughApi();
+},[]);
+*/
+/*
+  const fetchUsername = async () => {
+    const userVal = await SecureStore.getItemAsync('username')
+    //setUsername(userVal);
+    return userVal;
+  }
+  */
+
   
   
   const handleLikePress = async(user) => {
     // Find the feed item with the specified key
+    //console.log(user)
     const tokenVal = await SecureStore.getItemAsync('token')
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/likeuser', {
         token: tokenVal,
@@ -69,8 +274,16 @@ export default function MainFeed({navigation,handleMatchMade}){
       ).catch(error => {
         console.log("error occurred while liking user:", error)
       })
-      
       if(isUserLiked.data.liked == true){
+       // console.log(res.data.userLiked)
+       const answer = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/createConversation`, {
+        token: tokenVal,
+        toUser: user
+      }
+      
+      ).catch(error => {
+        console.log("Error creating conversation: ", error)
+      })
         setMatchPopUpUserShown(user)
         
       }
@@ -81,6 +294,24 @@ export default function MainFeed({navigation,handleMatchMade}){
         [user.username]: liked,
       })
       )
+      
+      console.log("user", user.username);
+      const ans = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNotiToken', {
+        name: user.username,
+      }).catch((error) => {
+        if (error.response) {
+          console.log("error")
+        }
+      });
+      
+      if (ans && ans.data && ans.data.notificationToken) {
+        token = ans.data.notificationToken;
+        console.log("other user", token);
+        sendLikeNotification(token, username);
+      }
+      //await schedulePushNotification(username)
+      //commented out but this is how you send notifications to others
+      console.log("likenotifcation", token);
 
       
       if(liked && usersDisliked[user.username]){
@@ -91,7 +322,7 @@ export default function MainFeed({navigation,handleMatchMade}){
         )
       }
     
-  handleMatchMade()
+      checkForMatches()
   };
 
   const handleDislikePress = async(user) => {
@@ -130,7 +361,7 @@ export default function MainFeed({navigation,handleMatchMade}){
         )
       }
       console.log(usersDisliked)
-    handleMatchMade()
+      checkForMatches()
   };
 
   const handleBookmarkPressed = async(user) => {
@@ -143,7 +374,7 @@ export default function MainFeed({navigation,handleMatchMade}){
         console.log("Error occurred while bookmarking users:", error)
       })
       let bookmarked = true
-      console.log(response)
+      //console.log(response)
       if(response.data.user_added == null){
         bookmarked = true
       }
@@ -260,16 +491,18 @@ export default function MainFeed({navigation,handleMatchMade}){
   };
 
   const fetchUsers = async (text) => {
+  
     
     // Make an API request to your database to search for users with similar names
     axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${text}`).then((response) => {
       
       if (response.data.users.length > 0) {
         setSearchResults(response.data.users.map(user => user));
+        setIsDropdownVisible(response.data.users.length > 0)
       }
-      setIsDropdownVisible(response.data.users.length > 0)
+      
     }).catch(error => {
-      console.log("Error occurred while searching:", error)
+      setIsDropdownVisible(false);
     });
   };
 
@@ -400,7 +633,7 @@ export default function MainFeed({navigation,handleMatchMade}){
             onChangeText={(text) => {
               setSearchTerm(text); // Update the search term state
               fetchUsers(text);
-              setIsDropdownVisible(!!text); // Fetch data from the database based on the search term
+              setIsDropdownVisible(!!text);
             }}
               //value={searchTerm}
               autoCapitalize="none"
@@ -457,7 +690,7 @@ export default function MainFeed({navigation,handleMatchMade}){
     
        {renderModal()}
         
-        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp}/>
+        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp} handleChatOpened={handleChatOpened} navigation={navigation}/>
 
         <View style={styles.flatListContainer}>
           {displayedUsers.length > 0 ? (
@@ -486,6 +719,84 @@ export default function MainFeed({navigation,handleMatchMade}){
       </View>
   );
     }
+    async function schedulePushNotification(user) {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Someone liked you",
+          body: user + ' likes you',
+        },
+        trigger: { seconds: 2 },
+        to: user.notificationToken,
+      });
+    }
+    async function sendLikeNotification(recipientNotificationToken, senderUsername) {
+      console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
+
+      const notifData = {
+        to: recipientNotificationToken,
+        title: 'You have a new like!',
+        body: senderUsername + ' liked you.',
+      }
+      const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
+        headers: {
+          'host': 'exp.host',
+          'accept': 'application/json',
+          'accept-encoding': 'gzip, deflate',
+          'content-type': 'application/json'
+        }
+      }).catch((err) => {
+        console.log("Sending message failed: ", err)
+      })
+
+      console.log(res.data)
+      /*
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "You have a new like!",
+          body: `${senderUsername} liked you.`,
+        },
+        trigger: { seconds: 2 }, // Send the notification immediately
+        to: recipientNotificationToken,
+      });
+      */
+    }
+
+      async function registerForPushNotificationsAsync() {
+        let token;
+      
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
+        }
+        //await updateNotificationsThroughApi();
+        if (Device.isDevice) {
+          const { status: existingStatus } = await Notifications.getPermissionsAsync();
+          let finalStatus = existingStatus;
+          if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+          }
+          if (finalStatus !== 'granted') {
+            alert('Failed to get push token for push notification!');
+            return;
+          }
+          // Learn more about projectId:
+          // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
+          token = (await Notifications.getExpoPushTokenAsync("181661f8-d406-4a71-a48f-08829cc0ec4a")).data;
+          //await updateNotificationsThroughApi();
+          console.log("token", token);
+        } else {
+          alert('Must use physical device for Push Notifications');
+        }
+      
+        return token;
+      }
+    
+    
 
     
 

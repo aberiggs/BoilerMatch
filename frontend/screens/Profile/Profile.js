@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Icon } from 'react-native-vector-icons/Feather';
 import { Avatar } from '@rneui/themed';
 import axios from 'axios'
+import NotificationSettings from './ManageNotifications'
 
 import * as SecureStore from 'expo-secure-store';
 
@@ -60,26 +61,23 @@ export default function Profile({navigation}){
 
   const getDiscoverability = async () => {
     const tokenVal = await SecureStore.getItemAsync('token')
-      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getDiscoverability', {
-        token: tokenVal
-      }
-      ).catch(error => {
-        console.log("Error occurred while searching:", error)
-      })
-      setDiscoverability(response.data.discoverability)
-      return response.data.user;
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getDiscoverability', {
+      token: tokenVal
+    }
+    ).catch(error => {
+      console.log("Error occurred while searching:", error)
+    })
+    setDiscoverability(response.data.discoverability)
+    return response.data.user;
   }
 
 
-  const navigateToManagePreferences = () => {
-    navigation.navigate('ManagePreferences');
+  const navigateToManageNotifications = () => {
+    navigation.navigate('ManageNotifications');
   };
 
-  const navigateToManagePreferenceRankings = () => {
-    navigation.navigate('ManagePreferenceRankings');
-  };
 
-  
+
   const sendImage = async (imageToUpload) => {
     if (!imageToUpload) {
       // Image is null for some reason
@@ -116,6 +114,14 @@ export default function Profile({navigation}){
     const navigateToManageHousingInformation = () => {
       navigation.navigate('ManageHousingInformation')
     }
+
+    const navigateToManagePreferences = () => {
+      navigation.navigate('ManagePreferences');
+    };
+  
+    const navigateToManagePreferenceRankings = () => {
+      navigation.navigate('ManagePreferenceRankings');
+    };
   
    const handleLogout = async () => {
         await SecureStore.deleteItemAsync('token')
@@ -164,6 +170,10 @@ export default function Profile({navigation}){
 
           <TouchableOpacity style={styles.button} onPress={toggleDiscoverability}>
           <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToManageNotifications}>
+          <Text style={styles.buttonText}>Notifications/Other</Text>
           </TouchableOpacity>
 
           <Pressable style={styles.button} onPress={handleLogout}>

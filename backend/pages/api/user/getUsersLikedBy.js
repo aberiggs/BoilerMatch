@@ -46,6 +46,8 @@ const usersLikedBy = await users.aggregate([
           {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}}},
           {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "disliked"}}} },
           {InteractionsByUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
+          {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
           {"username" : { $not: { $eq: currentUser} }},
           {"discoverable": true}]
       } },

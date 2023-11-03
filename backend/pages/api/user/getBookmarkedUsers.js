@@ -18,24 +18,24 @@ export default async function handler(req, res) {
   //     message: "Missing user",
   //   });
   // }
-  // const token = req.body.token;
+  const token = req.body.token;
 
-  //   const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
-  //       if (err) {
-  //           return res.status(400).json({
-  //               success: false,
-  //           })
-  //       } else {
-  //           return payload.username
-  //       }
-  //   });
+    const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+            })
+        } else {
+            return payload.username
+        }
+    });
 
   try {
     const bookmarkedUsers = await users.aggregate([
       {
         $match: {
             "discoverable": true,
-            "username": { $ne: "jslutzky" }
+            "username": { $ne: currentUser }
         }
     },
     {
@@ -47,9 +47,11 @@ export default async function handler(req, res) {
                     $match: {
                         $expr: {
                             $and: [
-                                { $eq: ["$userInteracting", "jslutzky"] },
+                                { $eq: ["$userInteracting", currentUser] },
                                 { $eq: ["$userInteractedWith", "$$username"] },
-                                {  $eq: ["$bookmarked", true ]}
+                                {  $eq: ["$bookmarked", true ]},
+                                {$ne: ["$didBlocking", true]},
+                                {$ne: ["$gotBlocked", true]},
                             ]
                         }
                     }
