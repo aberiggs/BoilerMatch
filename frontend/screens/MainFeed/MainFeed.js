@@ -13,6 +13,8 @@ import Constants from 'expo-constants';
 import { AppState } from 'react-native';
 import { useNotification } from '../../NotificationContext';
 import themeContext from '../../theme/themeContext';
+import { useNavigation } from '@react-navigation/native';
+
 
 //import { NotificationSettings } from "../Profile/ManageNotifications"
 
@@ -44,7 +46,7 @@ Notifications.setNotificationHandler({
 
 
 
-export default function MainFeed({navigation,handleMatchMade}){
+export default function MainFeed({handleMatchMade}){
   const [usersLiked, setUsersLiked] = useState({});
   const [usersDisliked, setUsersDisliked] = useState({});
   const [usersBookmarked, setUsersBookmarked]= useState({});
@@ -74,6 +76,7 @@ export default function MainFeed({navigation,handleMatchMade}){
   const { notificationsEnabled, setNotificationsEnabled } = useNotification();
   const [hasNoti,setHasNoti] = useState(false);
   const theme = useContext(themeContext);
+  const navigation = useNavigation();
 
   //variables for match pop up
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
@@ -205,6 +208,9 @@ export default function MainFeed({navigation,handleMatchMade}){
       }).catch((error) => {
           console.log(error.response.data)
       })
+    } else {
+      navigation.navigate('YourDestinationScreen');
+
     }
       console.log(response);
     });
@@ -421,7 +427,7 @@ export default function MainFeed({navigation,handleMatchMade}){
   };
 
   const FeedItem = ({ user }) => (
-    <View style={[styles.feedItem, {backgroundColor:theme.backgroundColor}]}>
+    <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
       <Avatar
           size={250}
           rounded
