@@ -113,6 +113,10 @@ export default function Profile({navigation}){
       navigation.navigate('ManageHousingInformation')
     }
 
+    const navigateToSettings = () => {
+      navigation.navigate('Settings')
+    }
+
     const navigateToManagePhotos = () => {
       navigation.navigate('ManagePhotos')
     }
@@ -196,6 +200,11 @@ export default function Profile({navigation}){
           <Text style={styles.buttonText}>Notifications/Other</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.button} onPress={navigateToSettings}>
+          <Text style={styles.buttonText}>Settings</Text>
+          </TouchableOpacity>
+
+          <Pressable style={styles.button} onPress={handleLogout}>
           <TouchableOpacity style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>

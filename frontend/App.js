@@ -26,6 +26,16 @@ import { EventRegister } from 'react-native-event-listeners';
 import theme from './theme/theme';
 import themeContext from './theme/themeContext';
 
+import Settings from './screens/Settings/Settings'
+import UpdateCredentials from './screens/Settings/UpdateCredentials'
+import ReportFeedback from './screens/Settings/ReportFeedback'
+import VerifyForUsername from './screens/Settings/VerifyForUsername'
+import VerifyForPassword from './screens/Settings/VerifyForPassword'
+import UpdateUsername from './screens/Settings/UpdateUsername'
+import UpdatePassword from './screens/Settings/UpdatePassword'
+import DeleteAccount from './screens/Settings/DeleteAccount'
+import Confirmation from './screens/Settings/Confirmation'
+
 
 const Stack = createStackNavigator();
 
@@ -58,10 +68,16 @@ export default function App() {
         <Stack.Screen name = "Login" component={Login} options={{
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
         }}/>
-        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-        <Stack.Screen name="PinVerify" component={PinVerify} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="PinVerify" component={PinVerify} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="ResetPassword" component={ResetPassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
         <Stack.Screen name="MainFeed" component={MainFeed} />
-        <Stack.Screen name="ResetPassword" component={ResetPassword} />
         <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} options={{gestureEnabled: false}}/>
         <Stack.Screen name="ManageInformation" component={ManageInformation} />
         <Stack.Screen name="ManageHousingInformation" component={ManageHousingInformation} />
@@ -69,6 +85,33 @@ export default function App() {
         <Stack.Screen name="ManagePreferences" component={ManagePreferences} />
         <Stack.Screen name="ManageNotifications" component={ManageNotifications}/>
         <Stack.Screen name="ManagePreferenceRankings" component={ManagePreferenceRankings} />
+        <Stack.Screen name="Settings" component={Settings} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="UpdateCredentials" component={UpdateCredentials} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="ReportFeedback" component={ReportFeedback} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="VerifyForUsername" component={VerifyForUsername} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="VerifyForPassword" component={VerifyForPassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="UpdateUsername" component={UpdateUsername} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="UpdatePassword" component={UpdatePassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="DeleteAccount" component={DeleteAccount} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="Confirmation" component={Confirmation} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
         <Stack.Screen name="ManagePhotos" component={ManagePhotos} />
       </Stack.Navigator>
     </NavigationContainer>
