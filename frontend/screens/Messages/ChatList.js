@@ -24,7 +24,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
 
     const [unreadMessagesList, setUnreadMessagesList] = useState([]);
 
-    const [otherUsersAndUpdates, setOtherUsersAndUpdates] = useState([])
+    const [otherUsers, setOtherUsers] = useState([])
     
     const [currentMessages, setCurrentMessages] = useState(null)
 
@@ -39,9 +39,24 @@ export default function ChatList({navigation,refreshOnMatch}) {
     const initialize = async () => {
       const userVal = await SecureStore.getItemAsync('username')
       setUsername(userVal)
-    }
 
-    console.log("USERNAMEEEEEEEEE", username)
+      // get matches to go through conversations for unread messages
+      const tokenVal = await SecureStore.getItemAsync('token')
+  
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMatchesForUser', {
+        token: tokenVal
+      }
+      ).catch(error => {
+        console.log("Error occurred while pulling users", error)
+      })
+      // console.log(response.data)
+      if (response.data.users.length > 0) {
+        const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+        console.log("INITIALIZED SORTED USERS", sortedUsers)
+        const usernames = sortedUsers.map(user => user.otherUser.username);
+        fetchUnreadMessages(usernames);
+      }
+    }
     
     const fetchSearchMessages = async (text) => {
       try {
@@ -90,19 +105,8 @@ export default function ChatList({navigation,refreshOnMatch}) {
       message: item.messages.message,
       timestamp: item.messages.timestamp,
     }));
-
-    console.log("DATAAAA FROM SEARCH", dataFromSearch)
-    
-    
     const sortedDataFromSearch = dataFromSearch.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    console.log(sortedDataFromSearch)
-
-
-    // console.log("SEARCHHHH")
-    // console.log(searchResults)
-    // console.log("NEWDATA")
-    // console.log(dataFromSearch)
 
     useEffect(() => {
       handleRefreshFeed()
@@ -113,14 +117,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
         handleRefreshFeed();
       }, [])
     );
-    
-    
-    // useEffect(() => {
-    //   setDisplayedUsers([...displayedUsers].sort((a, b) => a.lastUpdated - b.lastUpdated));
-    // }, [displayedUsers])
-
    
-    
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
   
@@ -135,16 +132,6 @@ export default function ChatList({navigation,refreshOnMatch}) {
         const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
         console.log("SORTED USERS: ", sortedUsers)
         setDisplayedUsers(sortedUsers);
-        
-        //added
-        // // Extract usernames and lastUpdated times and store them in an array
-        // const usersAndUpdates = sortedUsers.map(user => ({
-        //   username: user.otherUser.username,
-        //   lastUpdated: user.lastUpdated
-        // }));
-        
-        // // Set the array in state
-        // setOtherUsersAndUpdates(usersAndUpdates);
       }
     }
 
@@ -179,9 +166,6 @@ export default function ChatList({navigation,refreshOnMatch}) {
         console.log("User is undefined");
       }
     };
-    
-    
-    
   
     const onRefresh = async() => {
       setRefreshing(true);
@@ -238,47 +222,50 @@ export default function ChatList({navigation,refreshOnMatch}) {
   //     }
   // }
     
-  //iter 1
-    // const fetchUnreadMessages = async (usernamesAndUpdates, previousMessages) => {
-    //   console.log("Fetching - unread message from conversation")
+    //iter 1
+    const fetchUnreadMessages = async (otherUsernames) => {
+      console.log("Fetching - unread message from conversation")
       
-    //   const tokenVal = await SecureStore.getItemAsync('token');
+      const tokenVal = await SecureStore.getItemAsync('token');
     
-    //   const unreadMessagesListTemp = [];
-    //   // Remove duplicates and get unique usernames.
-    //   const uniqueUsernames = Array.from(new Set(usernamesAndUpdates.map(usernameData => usernameData.username)));
-    //   console.log("UNIQUE USERNAMES", uniqueUsernames)
+      const unreadMessagesListTemp = [];
+      // Remove duplicates and get unique usernames.
+      //const uniqueUsernames = Array.from(new Set(otherUsernames.map(usernameData => usernameData.username)));
+      //console.log("UNIQUE USERNAMES", uniqueUsernames)
+
+      console.log(otherUsernames)
     
-    //   for (const username of uniqueUsernames) {
-    //     let matchingEntry = unreadMessagesList.find(entry => entry.username === username);
-    //     if (!matchingEntry) {
-    //       matchingEntry = { unreadMessagescount: 0 }; // Default value when no matching entry is found
-    //     }
-    //     console.log("it reaches here")
-    //     const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/unreadMessagesFromConversation', {
-    //       token: tokenVal,
-    //       otherUser: username,
-    //       previousMessages: previousMessages,
-    //       unreadMessagesCount: matchingEntry.unreadMessagescount
-    //     }).catch(error => {
-    //       console.log("Couldn't fetch message - fetch unread messages")
-    //       //return null
-    //     })
-    //     console.log()
-    //     console.log("does it get here?")
-    //     console.log()
-    //     if (!response) {
-    //       console.log("No response for messages - fetchunread messages")
-    //       return null
-    //     }
-    //     unreadMessagesListTemp.push({
-    //     username: username,
-    //     unreadMessagesCount: response.data.unreadMessagesCount
-    //     });
-    //     setUnreadMessagesList(unreadMessagesList)
-    //     return response.data.messages
-    //   }
-    // };
+      for (const username of otherUsernames) {
+        console.log("UNIQUE USERNAME", username)
+        let matchingEntry = unreadMessagesList.find(entry => entry.username === username);
+        if (!matchingEntry) {
+          matchingEntry = { unreadMessagescount: 0 }; // Default value when no matching entry is found
+        }
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/unreadMessagesFromConversation', {
+          token: tokenVal,
+          otherUser: username,
+          unreadMessagesCount: matchingEntry.unreadMessagescount
+        }).catch(error => {
+          console.log("Couldn't fetch message - fetch unread messages")
+          //return null
+        })
+        if (!response) {
+          console.log("No response for messages - fetchunread messages")
+          //return null
+        }
+        unreadMessagesListTemp.push({
+        username: username,
+        unreadMessagesCount: response.data.unreadMessagesCount
+        });
+        console.log("UNREAD TEMP     ", unreadMessagesListTemp)
+        //return response.data
+      }
+      setUnreadMessagesList(unreadMessagesListTemp)
+    };
+
+    console.log()
+    console.log("UNREAD MESSAGES LIST", unreadMessagesList)
+    console.log()
 
     // console.log("UNREAD MESSAGES COUNT", unreadMessagesList)
 
@@ -362,11 +349,22 @@ export default function ChatList({navigation,refreshOnMatch}) {
               />
             { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
             { <Text style={feedStyles.time}>{formatTimestamp(item.lastUpdated)} </Text> }
+            {unreadMessagesList.map((user) => {
+            if (user.username === item.otherUser.username && user.unreadMessagesCount !== 0) {
+              return (
+                <View key={user.username} style={{ marginLeft: 5 }}>
+                  <Text style={{ color: 'blue' }}>● {user.unreadMessagesCount}</Text>
+                </View>
+              );
+            }
+            return null;
+            })}
           </View>    
         </View>
       </TouchableOpacity>
     );
 
+    // MODAL FOR DISPLAYING USERS FANCY... DOESN'T WORK THO
     // //console.log(displayedUsers)
     // const SearchMessagesDropdown = ({ data }) => {
     //   return (
@@ -615,11 +613,11 @@ export default function ChatList({navigation,refreshOnMatch}) {
       lineHeight: 40
     },
     name: {
-      padding: 10,
+      padding: 1,
       fontSize: 20
     },
     time: {
-      padding: 10,
+      paddingLeft: 10,
       fontSize: 10,
       alignItems: "flex-end",
     },
