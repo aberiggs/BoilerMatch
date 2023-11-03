@@ -1,8 +1,8 @@
 import { connectToDatabase } from "@/lib/mongodb";
 const jwt = require('jsonwebtoken');
 
-const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
-const pollingRate = 2 // Seconds
+// const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+// const pollingRate = 2 // Seconds
 
 export default async function handler(req, res) {
     console.log("Attempting to get a conversation -- unreadMessagesFromConversation")
@@ -47,6 +47,7 @@ export default async function handler(req, res) {
     if (!conversation) {
         return res.status(404).json({
             success: false,
+            unreadMessagesCount: 0,
             message: "No such conversation"
         })
     }
@@ -62,44 +63,44 @@ export default async function handler(req, res) {
         console.log("frontend doesn't have anything")
         res.status(200).json({
             success: true,
-            messages: conversation.messages,
             unreadMessagesCount: unreadMessagesCount
         })
         console.log(conversation.messages)
         return
     }
+}
   
-    /* Check to see if the user already has the most updated chat history */
-    let lastMessageOnClient = req.body.previousMessages[req.body.previousMessages.length - 1]
-    let lastMessageInDb = conversation.messages[conversation.messages.length - 1]
+//     /* Check to see if the user already has the most updated chat history */
+//     let lastMessageOnClient = req.body.previousMessages[req.body.previousMessages.length - 1]
+//     let lastMessageInDb = conversation.messages[conversation.messages.length - 1]
     
-    if (lastMessageOnClient && lastMessageInDb) {
-        while (messagesEqual(lastMessageOnClient, lastMessageInDb)) {
-            await sleep(pollingRate * 1000)
-            conversation = await messageCollection.findOne(query)
-            lastMessageInDb = conversation.messages[conversation.messages.length - 1]
-        } 
+//     if (lastMessageOnClient && lastMessageInDb) {
+//         while (messagesEqual(lastMessageOnClient, lastMessageInDb)) {
+//             await sleep(pollingRate * 1000)
+//             conversation = await messageCollection.findOne(query)
+//             lastMessageInDb = conversation.messages[conversation.messages.length - 1]
+//         } 
         
-        res.status(200).json({
-            success: true,
-            messages: conversation.messages,
-            unreadMessagesCount: unreadMessagesCount
-        })
+//         res.status(200).json({
+//             success: true,
+//             messages: conversation.messages,
+//             unreadMessagesCount: unreadMessagesCount
+//         })
 
-        return
-    }
+//         return
+//     }
 
-    res.status(400).json({
-        success: false,
-        message: "An unexpected error occurred",
-        unreadMessagesCount: 0,
-    })
-}
+//     res.status(400).json({
+//         success: false,
+//         message: "An unexpected error occurred",
+//         unreadMessagesCount: 0,
+//     })
+// }
 
-const messagesEqual = (messageOne, messageTwo) => {
-    if (!messageOne || !messageOne.from || !messageOne.message || !messageTwo || !messageTwo.from || !messageTwo.message) return false
+// const messagesEqual = (messageOne, messageTwo) => {
+//     if (!messageOne || !messageOne.from || !messageOne.message || !messageTwo || !messageTwo.from || !messageTwo.message) return false
 
-    if (messageOne.from === messageTwo.from && messageOne.message === messageTwo.message) return true
+//     if (messageOne.from === messageTwo.from && messageOne.message === messageTwo.message) return true
 
-    return false
-}
+//     return false
+// }
