@@ -203,9 +203,11 @@ export default function MainFeed({navigation,checkForMatches}){
       console.log("response", response);
       console.log("response.requestn: ", response.notification.request.content.data.type);
       var ans = response.notification.request.content.data.type;
+      var user = response.notification.request.content.data.otherUser;
+      console.log("user request data", user);
       //navigation.navigate("ChatList");
       if (ans === "like") {
-       await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
+       await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${user}`).then((response) => {
        //console.log(response.data.users[0]);
         setSelectedUser(response.data.users[0]);
         toggleModal();
@@ -760,7 +762,8 @@ export default function MainFeed({navigation,checkForMatches}){
         title: 'You have a new like!',
         body: senderUsername + ' liked you.',
         data: {
-          type: "like"
+          type: "like",
+          otherUser: senderUsername
         }
         
         
@@ -796,7 +799,7 @@ export default function MainFeed({navigation,checkForMatches}){
       const notifData = {
         to: recipientNotificationToken,
         title: 'You have a new Match!',
-        body: 'You matched with' + senderUsername + '.',
+        body: 'You matched with ' + senderUsername + '.',
         data: {
           type: "match",
           otherUser: senderUsername
