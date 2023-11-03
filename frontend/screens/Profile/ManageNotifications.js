@@ -20,6 +20,7 @@ export default function NotificationSettings({navigation}) {
     const [isAlertDisplayed, setIsAlertDisplayed] = useState(false);
     const [temporaryNotificationsEnabled, setTemporaryNotificationsEnabled] = useState(notificationsEnabled);
     const [darkMode, setDarkMode] = useState(false);
+    const [showDarkModePopup, setShowDarkModePopup] = useState(false);
     const theme = useContext(themeContext)
     useEffect(() => {
         console.log("isAlert", isAlertDisplayed);
@@ -152,13 +153,27 @@ export default function NotificationSettings({navigation}) {
           value={darkMode}
           onValueChange={(value) => {
             setDarkMode(value);
+            AsyncStorage.setItem('darkModeEnabled', value.toString())
             EventRegister.emit('ChangeTheme', value)
-          }}
+            //setShowDarkModePopup(AsyncStorage.getItem('darkModeEnabled'))
+
+            Alert.alert(`You are now in ${(darkMode) ? 'light' : 'dark'} mode`, null, [
+              {
+                text: 'OK',
+                onPress: () => {
+                  setShowDarkModePopup(false);
+                  // Reset the temporary state to the previous value
+                },
+              },
+              ]);
+          }
+          }
         />
         </View>
         <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
         <Text style={styles.buttonText}>Go Back to Profile</Text>
         </TouchableOpacity>
+        
       </View>
     );
   }

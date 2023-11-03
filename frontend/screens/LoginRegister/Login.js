@@ -1,10 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import Checkbox from 'expo-checkbox';
 import axios from "axios"
+import themeContext from '../../theme/themeContext';
 
 export default function Login({navigation}){
 
@@ -13,6 +14,7 @@ export default function Login({navigation}){
     const [errorMessage, setErrorMessage] = useState('')
     const [stayLoggedIn, setStayLoggedIn] = useState(false)
     const [showPass, setShowPass] = useState(false)
+    const theme = useContext(themeContext)
 
     async function save(key, value) {
       await SecureStore.setItemAsync(key, value);
@@ -52,11 +54,11 @@ export default function Login({navigation}){
     }
 
     return(
-        <View style={styles.container}>
+        <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
           <View style={{flex: 'column', width: "45%"}}>
-            <Text style={styles.title}>Log In</Text>
+            <Text style={[styles.title, {color:theme.color}]}>Log In</Text>
 
-            <Text style={styles.subtitle}>Username</Text>
+            <Text style={[styles.subtitle, {color:theme.color}]}>Username</Text>
 
             <TextInput
             autoCapitalize = "none"
@@ -66,13 +68,13 @@ export default function Login({navigation}){
 
             onChangeText={username => setUsername(username)}
 
-            style={styles.inputFieldBox}
+            style={[styles.inputFieldBox, {color:theme.color}]}
             />
 
-            <Text style={styles.subtitle}>Password</Text>
+            <Text style={[styles.subtitle, {color:theme.color}]}>Password</Text>
 
 
-          <View style={styles.inputFieldBox}>
+          <View style={[styles.inputFieldBox]}>
             <TextInput
               autoCapitalize = "none"
               autoCorrect={false}
@@ -82,7 +84,7 @@ export default function Login({navigation}){
               onChangeText={password => setPassword(password)}
               secureTextEntry={!showPass}
 
-              style={styles.inputField}
+              style={[styles.inputField, {color:theme.color}]}
             />
 
             <Pressable style={{position: 'absolute', paddingRight: 10}} onPress={() => setShowPass(!showPass)}>
@@ -116,7 +118,7 @@ export default function Login({navigation}){
               onValueChange={(newValue) => setStayLoggedIn(newValue)}
             />
 
-            <Text style={{paddingLeft: 5, paddingBottom: 10, color: 'black', fontSize: 16}}>
+            <Text style={{paddingLeft: 5, paddingBottom: 10, color: 'black', fontSize: 16, color:theme.color}}>
               Stay Logged In?
             </Text>
           </View>
@@ -156,7 +158,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       padding: 10,
       marginBottom: 10,
-      borderColor: 'black',
+      borderColor: 'gold',
       borderWidth: 1,
       borderRadius: 5,        
     },

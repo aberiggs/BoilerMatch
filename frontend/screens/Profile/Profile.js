@@ -1,11 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Icon } from 'react-native-vector-icons/Feather';
 import { Avatar } from '@rneui/themed';
 import axios from 'axios'
 import NotificationSettings from './ManageNotifications'
+import themeContext from '../../theme/themeContext';
 
 import * as SecureStore from 'expo-secure-store';
 
@@ -14,6 +15,7 @@ export default function Profile({navigation}){
   const [username, setUsername] = useState("")
   const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/')
   const [discoverability, setDiscoverability] = useState(false)
+  const theme = useContext(themeContext)
   
   const iconProps = () => {
       return (
@@ -165,12 +167,12 @@ export default function Profile({navigation}){
     }
   
   return(
-      <View style={styles.container}>
+      <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
         <ScrollView style={{width: '100%'}} contentContainerStyle={styles.scrollView}>
-        <View style={{flex: 'column', width: "70%", alignItems: 'center'}}>
-          <ProfilePic />
+        <View style={{flex: 'column', width: "70%", alignItems:'center'}}>
+              <ProfilePic />
+          <Text style={[styles.title, {color:theme.color}]}>{username}</Text>
 
-          <Text style={styles.title}>{username}</Text>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
             <Text style={styles.buttonText}>Manage Information</Text>

@@ -1,15 +1,18 @@
+
 import { StyleSheet, Text, View, Pressable, ScrollView, Image} from 'react-native';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 import { Avatar } from '@rneui/themed';
 import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
+import themeContext from '../../theme/themeContext';
 
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
   const carouselRef = useRef(null);
 
   const selectedUser = props.user
+  const theme = useContext(themeContext)
 
   const goForward = () => {
     carouselRef.current.snapToNext();
@@ -57,9 +60,10 @@ export default function userProfile(props) {
 }
 
   return (
-    <View style={modalStyles.modalContainer}>
-      <View style={modalStyles.modalContent}>
-        <ScrollView style={{width: '90%'}}>
+
+    <View style={[modalStyles.modalContainer, {backgroundColor:theme.backgroundColor}]}>
+      <View style={[modalStyles.modalContent, {backgroundColor:theme.backgroundColor}]}>
+        <ScrollView style={[{width: '70%'}, {backgroundColor:theme.backgroundColor}]}>
           <Avatar
             size='xlarge'
             rounded
@@ -124,6 +128,7 @@ const modalStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 10
+    
   },
   modalContent: {
     flex: 'column', 

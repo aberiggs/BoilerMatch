@@ -1,9 +1,10 @@
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'
+import themeContext from '../../theme/themeContext';
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -17,6 +18,7 @@ export default function ManageHousingInformation({navigation}) {
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [invalidEntriesMsgVisibile, setInvalidEntriesMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
+  const theme = useContext(themeContext)
 
   useEffect(() => {
     setupInitialHousingInfo()
@@ -90,13 +92,13 @@ export default function ManageHousingInformation({navigation}) {
   
   return (
     
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
 
       <ScrollView style={styles.scrollView}>
 
-        <Text style={styles.title}>Please fill out your housing information in the following fields</Text>
+        <Text style={[styles.title, {color:theme.color}]}>Please fill out your housing information in the following fields</Text>
 
-        <Text style={styles.subtitle}>Do you already have housing and are only looking for a roommmate?</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Do you already have housing and are only looking for a roommmate?</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select yes/no", value: null}}
@@ -106,10 +108,16 @@ export default function ManageHousingInformation({navigation}) {
               { label: "Yes", value: "yes" },
               { label: "No", value: "no" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
 
-        <Text style={styles.subtitle}>If you have housing, what is your housing situation?</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>If you have housing, what is your housing situation?</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select housing situation", value: null}}
@@ -126,10 +134,16 @@ export default function ManageHousingInformation({navigation}) {
               { label: "Other", value: "other"},
               { label: "N/A: Don't have housing yet", value: "na"},
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
 
-        <Text style={styles.subtitle}>If you have housing, how many roommmates are you looking for?</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>If you have housing, how many roommmates are you looking for?</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select number of roommates", value: null}}
@@ -143,10 +157,16 @@ export default function ManageHousingInformation({navigation}) {
               { label: "5", value: "5" },
               { label: "N/A: Don't have housing yet", value: "na"}
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
 
-        <Text style={styles.subtitle}>If you don't have housing, what housing situation are you looking for?</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>If you don't have housing, what housing situation are you looking for?</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select preference for housing situation", value: null}}
@@ -165,7 +185,13 @@ export default function ManageHousingInformation({navigation}) {
               { label: "Other", value: "other"},
               { label: "N/A: Already have housing", value: "na"}
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>

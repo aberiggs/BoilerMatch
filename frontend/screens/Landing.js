@@ -2,9 +2,11 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View,TouchableOpacity } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
+import themeContext from '../theme/themeContext';
 
 export default function Landing({navigation}){
+  const theme = useContext(themeContext)
 
     useEffect(() => {
         handleRemember()
@@ -13,6 +15,7 @@ export default function Landing({navigation}){
     const handleRemember = async () => {
       const tokenVal = await SecureStore.getItemAsync('token')
       const usernameVal = await SecureStore.getItemAsync('username')
+      
 
       if (!tokenVal || !usernameVal) {
           return
@@ -40,7 +43,7 @@ export default function Landing({navigation}){
       }
 
     return(
-        <View style={styles.container}>
+        <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>
