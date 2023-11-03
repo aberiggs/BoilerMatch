@@ -229,7 +229,7 @@ export default function Conversation(props, {navigation}) {
                 
                 
                 <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color}}>
-                    <Text style={{fontSize: 24}}>{otherUser}</Text>
+                    <Text style={{fontSize: 24, color:theme.color}}>{otherUser}</Text>
                 </View>
                 
                 <View style={conversationStyles.buttonContainer}>
