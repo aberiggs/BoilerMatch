@@ -107,21 +107,19 @@ export default function ChatList({navigation,checkForMatch}) {
 
     const ConversationModal = () => {
       return (
-        <View>
         <Modal
-         animationType="slide"
+          animationType="slide"
           transparent={false}
           visible={chatOpened}>
-            <Conversation otherUser={selectedUser} onClose={()=>setChatOpened(false)}/>
+            <Conversation otherUser={selectedUser} onClose={() => setChatOpened(false)}/>
         </Modal>
-        </View>
       )
     }
   
     const handleChatPress = async(user) => {
       //open chat
-      setChatOpened(true)
       setSelectedUser(user.username)
+      setChatOpened(true)
       console.log("CHAT PRESSED")
     };
     

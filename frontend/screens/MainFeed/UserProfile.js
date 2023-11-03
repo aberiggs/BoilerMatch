@@ -1,15 +1,65 @@
-import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
-import React from 'react';
+import { StyleSheet, Text, View, Pressable, ScrollView, Image} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
 import { Avatar } from '@rneui/themed';
+import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
+import axios from 'axios'
+import * as SecureStore from 'expo-secure-store';
 
 export default function userProfile(props) {
-  
+  const [userPhotos, setUserPhotos] = useState([]);
+  const carouselRef = useRef(null);
+
   const selectedUser = props.user
+
+  const goForward = () => {
+    carouselRef.current.snapToNext();
+  };
+
+  useEffect(() => {
+    getUserPhotos()
+  }, []);
+
+  /* Gets the URI's for all user photos */
+  const getUserPhotos = async () => {
+    console.log(selectedUser)
+    //setIsLoading(true)
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/otherphotos', {
+      username: selectedUser.username,
+    }
+    ).catch(error => {
+      console.log("Error occurred while fetching other photos", error)
+      console.log(error.data)
+    })
+
+    if (!response || !response.data || !response.data.photos) {
+      console.log("No response data")
+      return;
+    }
+
+    const photos = response.data.photos
+    setUserPhotos(photos)
+    //setIsLoading(false)
+  }
+
+  _renderItem = ({item, index}, parallaxProps) => {
+    const photoUri = 'https://boilermatch.blob.core.windows.net/otherphotos/' + item
+    return (
+      <View style={sliderStyle.item}>
+        <ParallaxImage
+            source={{ uri: photoUri}}
+            containerStyle={sliderStyle.imageContainer}
+            style={sliderStyle.image}
+            parallaxFactor={0}
+            {...parallaxProps}
+        />
+      </View>
+    );
+}
 
   return (
     <View style={modalStyles.modalContainer}>
       <View style={modalStyles.modalContent}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={{width: '90%'}}>
           <Avatar
             size='xlarge'
             rounded
@@ -17,11 +67,24 @@ export default function userProfile(props) {
             containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
             activeOpacity={0.8}
           />
+
           <Text style={styles.subtitle}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
           <Text style={styles.subtitle}>Gender: {selectedUser.information.gender}</Text>
           <Text style={styles.subtitle}>Grad Year: {selectedUser.information.graduation}</Text>
           <Text style={styles.subtitle}>Major: {selectedUser.information.major}</Text>
-          {/* Add more user information as needed */}
+
+
+          <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+            <Carousel
+              ref={carouselRef}
+              data={userPhotos}
+              sliderWidth={400}
+              itemWidth={270}
+              hasParallaxImages={true}
+              renderItem={this._renderItem}
+            />
+          </View>
+
           <Text style={styles.title}>{'\n'}Information</Text>
           <Text style={styles.subtitle}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
           <Text style={styles.subtitle}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
@@ -64,7 +127,7 @@ const modalStyles = StyleSheet.create({
   },
   modalContent: {
     flex: 'column', 
-    width: '90%',
+    width: '100%',
     height: '90%', 
     alignItems: 'center',
   },
@@ -115,3 +178,19 @@ const styles = StyleSheet.create({
   },
   });
   
+  const sliderStyle = StyleSheet.create({
+    item: {
+      width: '100%',
+      height: 360,
+    },
+    imageContainer: {
+      flex: 1,
+      marginBottom: Platform.select({ ios: 0, android: 1 }), // Prevent a random Android rendering issue
+      backgroundColor: 'white',
+      borderRadius: 8,
+    },
+    image: {
+      ...StyleSheet.absoluteFillObject,
+      resizeMode: 'cover',
+    },
+  })

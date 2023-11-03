@@ -26,7 +26,7 @@ export default function ForgotPassword({navigation}){
             setErrorMessage("An unexpected error occurred")
           }
         } else {
-          navigation.push('pinVerify', {
+          navigation.push('PinVerify', {
             email: email,
           });
         }

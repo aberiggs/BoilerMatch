@@ -59,7 +59,6 @@ export default async function handler(req, res) {
     }
        
     ]).toArray()
-    console.log(matchedUsers)
     const userConversations = [];
 
     for (const user of matchedUsers) {

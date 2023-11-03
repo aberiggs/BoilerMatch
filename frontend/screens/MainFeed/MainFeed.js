@@ -240,7 +240,6 @@ export default function MainFeed({navigation,checkForMatches}){
     return userVal;
   }
   */
-
   
   
   const handleLikePress = async(user) => {
@@ -274,6 +273,7 @@ export default function MainFeed({navigation,checkForMatches}){
       ).catch(error => {
         console.log("error occurred while liking user:", error)
       })
+   
       if(isUserLiked.data.liked == true){
        // console.log(res.data.userLiked)
        const answer = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/createConversation`, {
