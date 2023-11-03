@@ -164,8 +164,8 @@ export default function Profile({navigation}){
 
   return(
       <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
-        <ScrollView style={{width: '100%'}}>
-        <View style={{flex: 'column', width: "70%", alignItems: 'center'}}>
+        <ScrollView style={{width: '100%'}} contentContainerStyle={styles.scrollView}>
+        <View style={{flex: 'column', width: "70%", alignItems:'center'}}>
               <ProfilePic />
           <Text style={[styles.title, {color:theme.color}]}>{username}</Text>
 

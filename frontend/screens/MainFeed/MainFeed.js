@@ -934,7 +934,7 @@ const feedStyles = StyleSheet.create({
     width: '100%',
     padding: 10,
     fontSize: 16,
-    lineHeight: 40
+    lineHeight: 40,
   },
   name: {
     fontSize: 25

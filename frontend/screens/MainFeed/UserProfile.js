@@ -63,7 +63,7 @@ export default function userProfile(props) {
 
     <View style={[modalStyles.modalContainer, {backgroundColor:theme.backgroundColor}]}>
       <View style={[modalStyles.modalContent, {backgroundColor:theme.backgroundColor}]}>
-        <ScrollView style={[{width: '90%'}, {backgroundColor:theme.backgroundColor}]}>
+        <ScrollView style={[{width: '70%'}, {backgroundColor:theme.backgroundColor}]}>
           <Avatar
             size='xlarge'
             rounded
