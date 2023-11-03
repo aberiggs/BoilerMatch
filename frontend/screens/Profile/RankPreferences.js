@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext} from 'react';
 import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store'
+import themeContext from '../../theme/themeContext';
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -21,6 +22,8 @@ export default function ManagePreferenceRankings({navigation}) {
 
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
+
+  const theme = useContext(themeContext)
 
   useEffect(() => {
     setupInitialRanks()
@@ -93,9 +96,9 @@ export default function ManagePreferenceRankings({navigation}) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
       <ScrollView style={styles.scrollView}>
-      <Text style={styles.subtitle}>Rank your preferences in order of importance to you! Do not select the same preference for different ranks.</Text>
+      <Text style={[styles.subtitle, {color:theme.color}]}>Rank your preferences in order of importance to you! Do not select the same preference for different ranks.</Text>
        <RNPickerSelect
           placeholder={ {label: "#1 Most important:", value: "Test"}}
           onValueChange={(value) => setRank1(value)}
@@ -107,7 +110,13 @@ export default function ManagePreferenceRankings({navigation}) {
               { label: "Cleanliness", value: "clean" },
               { label: "Noise level", value: "noise" }
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
         <RNPickerSelect
           placeholder={ {label: "#2:", value: null}}
@@ -120,7 +129,13 @@ export default function ManagePreferenceRankings({navigation}) {
               { label: "Cleanliness", value: "clean" },
               { label: "Noise level", value: "noise" }
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
         <RNPickerSelect
           placeholder={ {label: "#3:", value: null}}
@@ -133,7 +148,13 @@ export default function ManagePreferenceRankings({navigation}) {
               { label: "Cleanliness", value: "clean" },
               { label: "Noise level", value: "noise" }
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
         <RNPickerSelect
           placeholder={ {label: "#4:", value: null}}
@@ -146,7 +167,13 @@ export default function ManagePreferenceRankings({navigation}) {
               { label: "Cleanliness", value: "clean" },
               { label: "Noise level", value: "noise" }
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
         <RNPickerSelect
           placeholder={ {label: "#5:", value: null}}
@@ -159,7 +186,13 @@ export default function ManagePreferenceRankings({navigation}) {
               { label: "Cleanliness", value: "clean" },
               { label: "Noise level", value: "noise" }
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
         
 

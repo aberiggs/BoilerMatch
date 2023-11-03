@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList } from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Ionicons,FontAwesome} from '@expo/vector-icons';
-
 import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
@@ -134,10 +133,9 @@ export default function MainFeed({navigation,handleMatchMade}){
 
   useEffect(() => {
   const fetchData = async () => {
-
     const updateNotificationsThroughApi = async (pushToken, notiResponse) => {
       console.log("inside", pushToken);
-      console.log(notiResponse)
+      //.log(notiResponse)
       const tokenVal = await SecureStore.getItemAsync('token');
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
         token: tokenVal,
@@ -156,7 +154,6 @@ export default function MainFeed({navigation,handleMatchMade}){
     // Step 1: Get the push token
     const pushToken = await registerForPushNotificationsAsync();
     setExpoPushToken(pushToken);
-
     // Step 2: Get the 'hasNoti' value
     const tokenVal = await SecureStore.getItemAsync('token');
     const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNoti', {
@@ -168,11 +165,11 @@ export default function MainFeed({navigation,handleMatchMade}){
         return error.response.data;
       }
     });
-
-    if (response && response.data && response.data.notificationsEnabled !== undefined) {
+    console.log("response.data.notifications", response.data.notificationsEnabled)
+    if (response && response.data) {
       //setHasNoti(response.data.notificationsEnabled);
        var notiResponse = response.data.notificationsEnabled;
-       console.log("when set", notiResponse)
+      // console.log("when set", notiResponse)
 
       // Step 3: Update notifications through the API
       const updateResponse = await updateNotificationsThroughApi(pushToken, notiResponse);
@@ -181,7 +178,7 @@ export default function MainFeed({navigation,handleMatchMade}){
   };
 
   fetchData();
-},[]);
+},[expoPushToken]);
 
   
   
@@ -189,12 +186,17 @@ export default function MainFeed({navigation,handleMatchMade}){
 
   
   useEffect( () => {
-    console.log("usename", username)
+    //console.log("usename", username)
     //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
     notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
       setNotification(notification);
     });
+    //console.log("abakk")
     responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
+      console.log("response", response);
+      console.log("response.requestn: ", response.notification.request.content.data.type);
+      var ans = response.notification.request.content.data.type;
+      if (ans === "like") {
        await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
        //console.log(response.data.users[0]);
         setSelectedUser(response.data.users[0]);
@@ -203,6 +205,7 @@ export default function MainFeed({navigation,handleMatchMade}){
       }).catch((error) => {
           console.log(error.response.data)
       })
+    }
       console.log(response);
     });
     
@@ -284,7 +287,9 @@ export default function MainFeed({navigation,handleMatchMade}){
         console.log("Error creating conversation: ", error)
       })
         setMatchPopUpUserShown(user)
-        
+        if(user.recieveNotifications) {
+        sendMatchNotification(user.notificationToken,username)
+        }
       }
     }
 
@@ -295,6 +300,7 @@ export default function MainFeed({navigation,handleMatchMade}){
       )
       
       console.log("user", user.username);
+      console.log("user noties", user.recieveNotifications)
       const ans = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNotiToken', {
         name: user.username,
       }).catch((error) => {
@@ -302,11 +308,21 @@ export default function MainFeed({navigation,handleMatchMade}){
           console.log("error")
         }
       });
-      
+      console.log("like", liked);
+      const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("error occurred while liking user:", error)
+      })
       if (ans && ans.data && ans.data.notificationToken) {
         token = ans.data.notificationToken;
         console.log("other user", token);
+       
+        if (user.recieveNotifications && liked && !isUserLiked.data.liked) {
         sendLikeNotification(token, username);
+        }
       }
       //await schedulePushNotification(username)
       //commented out but this is how you send notifications to others
@@ -405,7 +421,7 @@ export default function MainFeed({navigation,handleMatchMade}){
   };
 
   const FeedItem = ({ user }) => (
-    <View style={styles.feedItem}>
+    <View style={[styles.feedItem, {backgroundColor:theme.backgroundColor}]}>
       <Avatar
           size={250}
           rounded
@@ -451,16 +467,16 @@ export default function MainFeed({navigation,handleMatchMade}){
         
       </View>
 
-      <View style={feedStyles.infoContainer}>
-        <Text style={feedStyles.name}>{user.information.firstName} {user.information.lastName}</Text>
+      <View style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]}>
+        <Text style={[feedStyles.name, {color:theme.color}]}>{user.information.firstName} {user.information.lastName}</Text>
         <Text style={feedStyles.username}>@{user.username}</Text>
         
-        <Text>
-          <Text style={feedStyles.infoLabel}>Major: </Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>
+          <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Major: </Text>
           {user.information.major}
         </Text>
-        <Text style={styles.subtitle}>
-          <Text style={feedStyles.infoLabel}>Graduation Year:  </Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>
+          <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Graduation Year:  </Text>
           {user.information.graduation}
         </Text>
         
@@ -583,12 +599,13 @@ export default function MainFeed({navigation,handleMatchMade}){
     }
 };  
     return(
-      <View style={styles.container}>
-        <View style={styles.topBar}>
+      <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
+        <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
         <View style ={styles.inputContainer}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, {color:theme.color}]}
               placeholder="Search for a user"
+              placeholderTextColor='gray'
             
               //onChangeText={(text) => setSearchTerm(text)}
             onChangeText={(text) => {
@@ -601,7 +618,7 @@ export default function MainFeed({navigation,handleMatchMade}){
             />
           
             {isDropdownVisible && (
-              <View style={styles.dropdownContainer}>
+              <View style={[styles.dropdownContainer, {backgroundColor:theme.backgroundColor}]}>
                 <FlatList
                 data={searchResults}
                 keyExtractor={(item) => item._id}
@@ -611,8 +628,8 @@ export default function MainFeed({navigation,handleMatchMade}){
                     onPress={() => handleSearchListButtonPress(item,index)}
                     //activeOpacity={0.7} // You can adjust this value
                     underlayColor="gray">
-                      <View style={styles.dropdownItemContainer}>
-                      <Text style={styles.dropdownItem}>{item.username}</Text>
+                      <View style={[styles.dropdownItemContainer, {backgroundColor:theme.backgroundColor}]}>
+                      <Text style={[styles.dropdownItem, {color:theme.color}]}>{item.username}</Text>
                       </View>
                   </TouchableOpacity>
                   
@@ -653,14 +670,14 @@ export default function MainFeed({navigation,handleMatchMade}){
         
         <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp}/>
 
-        <View style={styles.flatListContainer}>
+        <View style={[styles.flatListContainer, {backgroundColor:theme.backgroundColor}]}>
           {displayedUsers.length > 0 ? (
             <FlatList
               data={displayedUsers} // Replace with your data array
               renderItem={({ item }) => <FeedItem user={item} onLikePress={handleLikePress}/>}
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
               horizontal={false}
-              contentContainerStyle={styles.flatListContent}
+              contentContainerStyle={[styles.flatListContent, {backgroundColor:theme.backgroundColor}]}
               refreshControl={
                 <RefreshControl
                   refreshing={refreshing}
@@ -671,7 +688,7 @@ export default function MainFeed({navigation,handleMatchMade}){
           ) : (
             <ScrollView
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-              <Text style={styles.noMatchesText}>
+              <Text style={[styles.noMatchesText, {color:theme.color}]}>
                 You have no potential matches. Consider adjusting your preferences to gain a broader suggestion of users
               </Text>
             </ScrollView>
@@ -680,24 +697,21 @@ export default function MainFeed({navigation,handleMatchMade}){
       </View>
   );
     }
-    async function schedulePushNotification(user) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Someone liked you",
-          body: user + ' likes you',
-        },
-        trigger: { seconds: 2 },
-        to: user.notificationToken,
-      });
-    }
     async function sendLikeNotification(recipientNotificationToken, senderUsername) {
       console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
 
       const notifData = {
+        
         to: recipientNotificationToken,
         title: 'You have a new like!',
         body: senderUsername + ' liked you.',
+        data: {
+          type: "like"
+        }
+        
+        
       }
+  
       const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
         headers: {
           'host': 'exp.host',
@@ -705,11 +719,12 @@ export default function MainFeed({navigation,handleMatchMade}){
           'accept-encoding': 'gzip, deflate',
           'content-type': 'application/json'
         }
+       
       }).catch((err) => {
         console.log("Sending message failed: ", err)
       })
 
-      console.log(res.data)
+     // console.log(res.data)
       /*
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -720,6 +735,31 @@ export default function MainFeed({navigation,handleMatchMade}){
         to: recipientNotificationToken,
       });
       */
+    }
+    async function sendMatchNotification(recipientNotificationToken, senderUsername) {
+      console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
+
+      const notifData = {
+        to: recipientNotificationToken,
+        title: 'You have a new Match!',
+        body: 'You matched with' + senderUsername + '.',
+        data: {
+          type: "match",
+          otherUser: senderUsername
+        }
+      }
+  
+      const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
+        headers: {
+          'host': 'exp.host',
+          'accept': 'application/json',
+          'accept-encoding': 'gzip, deflate',
+          'content-type': 'application/json'
+        }
+       
+      }).catch((err) => {
+        console.log("Sending match failed: ", err)
+      })
     }
 
       async function registerForPushNotificationsAsync() {
@@ -757,11 +797,6 @@ export default function MainFeed({navigation,handleMatchMade}){
         return token;
       }
     
-    
-
-    
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

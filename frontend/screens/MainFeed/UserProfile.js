@@ -1,15 +1,19 @@
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
-import React from 'react';
+import {React, useContext} from 'react';
 import { Avatar } from '@rneui/themed';
+import themeContext from '../../theme/themeContext';
+
+
 
 export default function userProfile(props) {
   
   const selectedUser = props.user
+  const theme = useContext(themeContext)
 
   return (
-    <View style={modalStyles.modalContainer}>
-      <View style={modalStyles.modalContent}>
-        <ScrollView style={styles.scrollView}>
+    <View style={[modalStyles.modalContainer, {backgroundColor:theme.backgroundColor}]}>
+      <View style={[modalStyles.modalContent, {backgroundColor:theme.backgroundColor}]}>
+        <ScrollView style={[styles.scrollView, {backgroundColor:theme.backgroundColor}]}>
           <Avatar
             size='xlarge'
             rounded
@@ -61,6 +65,7 @@ const modalStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 10
+    
   },
   modalContent: {
     flex: 'column', 

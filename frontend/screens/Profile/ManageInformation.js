@@ -1,9 +1,10 @@
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import * as SecureStore from 'expo-secure-store'
 import axios from 'axios';
+import themeContext from '../../theme/themeContext';
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -23,6 +24,7 @@ export default function ManageInformation({navigation}) {
   const [drinkingHabits, setDrinkingHabits] = useState('');
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
+  const theme = useContext(themeContext)
 
   useEffect(() => {
     setupInitialInfo()
@@ -120,31 +122,31 @@ export default function ManageInformation({navigation}) {
   
   return (
     
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
 
       <ScrollView style={styles.scrollView}>
 
-        <Text style={styles.title}>Please fill out your information in the following fields</Text>
+        <Text style={[styles.title,{color:theme.color}]}>Please fill out your information in the following fields</Text>
 
-        <Text style={styles.subtitle}>First Name</Text> 
+        <Text style={[styles.subtitle, {color:theme.color}]}>First Name</Text> 
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, {color:theme.color}]}
           placeholder="First Name"
           value={firstName}
           onChangeText={handleFirstNameChange}
         />
 
-        <Text style={styles.subtitle}>Last Name</Text> 
+        <Text style={[styles.subtitle, {color:theme.color}]}>Last Name</Text> 
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, {color:theme.color}]}
           placeholder="Last Name"
           value={lastName}
           onChangeText={handleLastNameChange}
         />
 
-        <Text style={styles.subtitle}>For what year are you looking for a roommate?</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>For what year are you looking for a roommate?</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select a semester", value: null}}
@@ -161,10 +163,16 @@ export default function ManageInformation({navigation}) {
               { label: "Spring 2028", value: "spring28" },
               { label: "Fall 2028", value: "fall28" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
 
-        <Text style={styles.subtitle}>Gender</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Gender</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select your gender", value: null}}
@@ -175,10 +183,16 @@ export default function ManageInformation({navigation}) {
               { label: "Female", value: "female" },
               { label: "Other", value: "other" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         /> 
 
-        <Text style={styles.subtitle}>Select Date of Graduation</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Select Date of Graduation</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select your date of graduation", value: null}}
@@ -195,19 +209,25 @@ export default function ManageInformation({navigation}) {
               { label: "Spring 2028", value: "spring28" },
               { label: "Fall 2028", value: "fall28" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         /> 
 
-        <Text style={styles.subtitle}>Major</Text> 
+        <Text style={[styles.subtitle, {color:theme.color}]}>Major</Text> 
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, {color:theme.color}]}
           placeholder="Major"
           value={major}
           onChangeText={handleMajorChange}
         />
 
-        <Text style={styles.subtitle}>Select Race</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Select Race</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select your race", value: null}}
@@ -224,10 +244,16 @@ export default function ManageInformation({navigation}) {
               { label: "Prefer not to say", value: "preferNotToSay" },
               { label: "Two or more races", value: "twoOrMore" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         /> 
 
-        <Text style={styles.subtitle}>Select Pets</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Select Pets</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select your pets", value: null}}
@@ -246,10 +272,16 @@ export default function ManageInformation({navigation}) {
               { label: "Pet-free", value: "pet-free" },
               { label: "Allergic to pets", value: "allergic" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         /> 
 
-        <Text style={styles.subtitle}>Select Religion</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Select Religion</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select your religion", value: null}}
@@ -268,10 +300,16 @@ export default function ManageInformation({navigation}) {
               { label: "Spiritual", value: "spiritual" },
               { label: "Other", value: "other" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         /> 
 
-        <Text style={styles.subtitle}>Select Political Views</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Select Political Views</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select your political views", value: null}}
@@ -285,10 +323,16 @@ export default function ManageInformation({navigation}) {
               { label: "Other", value: "other" },
               { label: "Prefer not to say", value: "preferNotToSay" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         /> 
 
-        <Text style={styles.subtitle}>Select Sleeping Habits</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Select Sleeping Habits</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Selects your sleeping habits", value: null}}
@@ -299,10 +343,16 @@ export default function ManageInformation({navigation}) {
               { label: "Night owl", value: "nightOwl" },
               { label: "In a spectrum", value: "inSpectrum" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
 
-        <Text style={styles.subtitle}>Select Drinking Habits</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Select Drinking Habits</Text>
 
         <RNPickerSelect
           placeholder={ {label: "Select your drinking habits", value: null}}
@@ -315,7 +365,13 @@ export default function ManageInformation({navigation}) {
               { label: "Socially on weekends", value: "sociallyWeekends" },
               { label: "Most nights", value: "mostNights" },
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         /> 
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>

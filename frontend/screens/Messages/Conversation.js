@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModal component
+import themeContext from '../../theme/themeContext';
 
 import axios from "axios"
 
@@ -31,6 +32,7 @@ export default function Conversation(props, {navigation}) {
     const [currentMessages, setCurrentMessages] = useState(null)
     const [newMessage, setNewMessage] = useState('')
     const [username, setUsername] = useState(null)
+    const theme = useContext(themeContext)
 
     const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
 
@@ -157,12 +159,12 @@ export default function Conversation(props, {navigation}) {
         const isCurrentUser = item.from === username;
     
         return (
-            <View style={messageContainerStyle}>
+            <View style={[messageContainerStyle]}>
                 <View style={messageBoxStyle}>
                     <Text style={conversationStyles.messageText}>{item.message}</Text>
                 </View>
                 <View style={conversationStyles.timestampContainer}>
-                    <Text style={conversationStyles.timestampText}>
+                    <Text style={[conversationStyles.timestampText, {color:theme.color}]}>
                         {formatTimestamp(item.timestamp)}
                     </Text>
                 </View>
@@ -173,19 +175,19 @@ export default function Conversation(props, {navigation}) {
       
 
     return(
-        <SafeAreaView style={{height: '100%', width: '100%'}}>
-            <View style={conversationStyles.headingContainer}>
-                <View style={{width: '30%', alignItems: 'left'}}>
+        <SafeAreaView style={{height: '100%', width: '100%', backgroundColor:theme.background}}>
+            <View style={[conversationStyles.headingContainer, {backgroundColor:theme.background}]}>
+                <View style={{width: '30%', alignItems: 'left', backgroundColor:theme.backgroundColor}}>
                     <Pressable style={{padding: 6}} onPress={() => props.onClose()}>
                         <Ionicons name="chevron-back" size={30} color="gold" />
                     </Pressable>
                 </View>
                 
-                <View style={{width: '30%', alignItems: 'center'}}>
-                    <Text style={{}}>{otherUser}</Text>
+                <View style={{width: '30%', alignItems: 'center', color:theme.color}}>
+                    <Text style={{color:theme.color}}>{otherUser}</Text>
                 </View>
                 {/* <View style={{width: '30%'}} /> */}
-                <View style={{width: '30%', alignItems: 'right'}}>
+                <View style={{width: '30%', alignItems: 'right', backgroundColor:theme.backgroundColor}}>
                     <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
                         <Text style={conversationStyles.buttonText}>Block or Report</Text>
                     </TouchableOpacity>
@@ -196,9 +198,9 @@ export default function Conversation(props, {navigation}) {
                 </View>
             </View>
 
-            <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={conversationStyles.convoContainer}>
+            <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={[conversationStyles.convoContainer, {backgroundColor:theme.background}]}>
                 <FlatList
-                    style={conversationStyles.chatScrollView}
+                    style={[conversationStyles.chatScrollView, {backgroundColor:theme.backgroundColor}]}
                     data={currentMessages}
                     renderItem={({item}) => messageItem({item})}
                 />
@@ -211,7 +213,7 @@ export default function Conversation(props, {navigation}) {
 
                         onChangeText={message => setNewMessage(message)}
 
-                        style={conversationStyles.messageField}
+                        style={[conversationStyles.messageField, {color:theme.color}]}
                     />
 
                     <Pressable onPress={() => sendMessage()}>
@@ -243,7 +245,7 @@ const conversationStyles = StyleSheet.create({
     },
     container: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor: 'gold',
       alignItems: 'center',
       width: '100%'
     },
@@ -260,7 +262,8 @@ const conversationStyles = StyleSheet.create({
         height: '8%',
         alignItems: 'center',
         borderBottomWidth: 1,
-        borderColor: 'darkgrey',
+        borderColor: 'gold',
+        backgroundColor: "gold"
     },
     chatScrollView: {
         width: '95%',
