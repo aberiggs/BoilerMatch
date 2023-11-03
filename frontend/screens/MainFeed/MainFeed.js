@@ -76,7 +76,6 @@ export default function MainFeed({navigation,checkForMatches}){
   const { notificationsEnabled, setNotificationsEnabled } = useNotification();
   const [hasNoti,setHasNoti] = useState(false);
   const theme = useContext(themeContext);
-  const navigation = useNavigation();
 
   //variables for match pop up
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)

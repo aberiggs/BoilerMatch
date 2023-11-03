@@ -166,6 +166,9 @@ export default function Conversation(props, {navigation}) {
             to: pushTokenRes.data.notificationToken,
             title: username + " sent a message",
             body: newMessage,
+            data: {
+                type: "message"
+            }
           }
 
         console.log(notifData)
