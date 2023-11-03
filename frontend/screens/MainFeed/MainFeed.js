@@ -46,7 +46,7 @@ Notifications.setNotificationHandler({
 
 
 
-export default function MainFeed({handleMatchMade}){
+export default function MainFeed({navigation,checkForMatches}){
   const [usersLiked, setUsersLiked] = useState({});
   const [usersDisliked, setUsersDisliked] = useState({});
   const [usersBookmarked, setUsersBookmarked]= useState({});
@@ -56,9 +56,9 @@ export default function MainFeed({handleMatchMade}){
   //for dropdown
   const [searchResults, setSearchResults] = useState([]);
   const [displayedUsers, setDisplayedUsers] = useState([]);
-  const [liked, setLiked] = useState(false);
-  const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
   //variables for onClick on the mainFeed
+  const [currentFeed, setCurrentFeed] = useState("All")
+ // const [buttonNotShown, setButtonNotShown] = useState()
   const [selectedUser, setSelectedUser] = useState(null);
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
@@ -80,10 +80,11 @@ export default function MainFeed({handleMatchMade}){
 
   //variables for match pop up
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
-  
+
   useEffect(() => {
     handleRefreshFeed()
-  },[showOnlyUsersLikedBy]);
+  },[currentFeed]);
+
 
   useEffect(() => {
     // Define a separate async function to fetch the username
@@ -343,7 +344,7 @@ export default function MainFeed({handleMatchMade}){
         )
       }
     
-  handleMatchMade()
+      checkForMatches()
   };
 
   const handleDislikePress = async(user) => {
@@ -381,7 +382,7 @@ export default function MainFeed({handleMatchMade}){
         })
         )
       }
-    handleMatchMade()
+      checkForMatches()
   };
 
   const handleBookmarkPressed = async(user) => {
@@ -401,7 +402,7 @@ export default function MainFeed({handleMatchMade}){
       else{
         bookmarked = !(response.data.user_added.bookmarked)
       }
-
+      console.log(usersBookmarked)
       setUsersBookmarked((usersBookmarked) => ({
         ...usersBookmarked,
         [user.username]: bookmarked,
@@ -540,35 +541,72 @@ export default function MainFeed({handleMatchMade}){
   };
       
   
-  const handleLikedMeButtonPress = () => {
-    setShowOnlyUsersLikedBy(!showOnlyUsersLikedBy)
+  const handleLikedByFeedPress = () => {
+    setCurrentFeed(currentFeed=="LikedBy"?"All":"LikedBy")
+   }
+   const handleBookmarkFeedPress = () => {
+    setCurrentFeed(currentFeed=="Bookmarked"?"All":"Bookmarked")
    }
 
 
   const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
       let response = null
-      if(!showOnlyUsersLikedBy){
+
+      response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/undislikeUsersOnExpiration', {
+        token: tokenVal
+      }
+      ).catch(error => {
+        console.log("Error occured while undisliking users:", error)
+      })
+
+      print(response)
+      if(currentFeed=="All"){
         response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMainFeedUsers', {
         token: tokenVal
       }
       ).catch(error => {
         console.log("Error occured while getting main feed users:", error)
       })
-        setDisplayedUsers(response.data.users)
+        
     }
-    else{
+    else if(currentFeed=="LikedBy"){
       response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getUsersLikedBy', {
         token: tokenVal
+        
       }
       ).catch(error => {
         console.log("Error occurred while getting liked users:", error)
       })
-        setDisplayedUsers(response.data.users)
     }
-    setUsersLiked({})
-    setUsersDisliked({})
-    setUsersBookmarked(response.data.users.map(user=>user.interaction.bookmarked != null?user.interaction.bookmarked:false))
+    else{
+      response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getBookmarkedUsers', {
+        token: tokenVal
+        
+      }
+      ).catch(error => {
+        console.log("Error occurred while getting liked users:", error)
+      })
+    }
+    const bookmarkedUsers = response.data.users.reduce((result, user) => {
+      result[user.username] = user.interaction.length > 0 && "bookmarked" in user.interaction[0] ? user.interaction[0].bookmarked : false;
+      return result;
+    }, {});
+    const likedUsers = response.data.users.reduce((result, user) => {
+      result[user.username] = user.interaction.length > 0 && "liked_or_disliked" in user.interaction[0] ? user.interaction[0].liked_or_disliked== "liked": false;
+      return result;
+    }, {});
+    const dislikedUsers = response.data.users.reduce((result, user) => {
+      result[user.username] = user.interaction.length > 0 && "liked_or_disliked" in user.interaction[0] ? user.interaction[0].liked_or_disliked== "disliked": false;
+      return result;
+    }, {});
+   // setUsersBookmarked({})
+    setUsersBookmarked(bookmarkedUsers)
+    setUsersLiked(likedUsers)
+    setUsersDisliked(dislikedUsers)
+    setDisplayedUsers(response.data.users)
+
+   
     }
 
   const renderModal = () => {
@@ -645,15 +683,15 @@ export default function MainFeed({handleMatchMade}){
             )}
           </View>
           <TouchableOpacity
-            style={[styles.filterButton, showOnlyUsersLikedBy?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
-            onPress={handleLikedMeButtonPress}>
+            style={[styles.filterButton, currentFeed=="LikedBy"?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={handleLikedByFeedPress}>
             <Text style={styles.searchButtonText}>Liked Me </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, showOnlyUsersLikedBy?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
-            onPress={handleLikedMeButtonPress}>
+            style={[styles.filterButton, currentFeed=="Bookmarked"?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={handleBookmarkFeedPress}>
              <Ionicons
-            name={showOnlyUsersLikedBy ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={currentFeed=="Bookmarked" ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
             color={"gray"}
             size={15}
           />
@@ -674,7 +712,7 @@ export default function MainFeed({handleMatchMade}){
     
        {renderModal()}
         
-        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp}/>
+        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp} navigation={navigation}/>
 
         <View style={[styles.flatListContainer, {backgroundColor:theme.backgroundColor}]}>
           {displayedUsers.length > 0 ? (

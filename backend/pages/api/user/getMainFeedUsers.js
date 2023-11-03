@@ -31,7 +31,10 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
     }
 });
 
+
   try {
+  const userInfo = await users.findOne({username: currentUser})
+  console.log(userInfo.information)
     const potentialUsers = await users.aggregate([
         { 
             $lookup: {
@@ -46,46 +49,31 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
             $and:[ 
               {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}} },
               {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "disliked"}}} },
-              {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
-              {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
+              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
+              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
             {"username" : { $not: { $eq: currentUser} }},
+           {"information.gender": userInfo.information.gender},
+           {"information.yearForRoommate": userInfo.information.yearForRoommate},
             {"discoverable": true}
           ]
     }},
-    
     {
-      $project: {
-        user: "$$ROOT",
-          Interactions: {
-              $filter: {
-                  input: "$InteractionsWithUser",
-                  as: "interaction",
-                  cond: { $eq: ["$$interaction.userInteracting",  currentUser] }
-              }
-              }
+      $addFields: {
+        "interaction":  {
+          $filter: {
+              input: "$InteractionsWithUser",
+              as: "interaction",
+              cond: { $eq: ["$$interaction.userInteracting",  currentUser] }
           }
-      },
-      
+          }
+    },
+  },
     {$sample: {
       size: 5
     }},
-    {
-      $replaceRoot: {
-          newRoot: "$user"  
-      }
-    },
-    {
-      $addFields: {
-        "interaction": "$InteractionsWithUser",
-    }
-    },
-    {
-        $project: {
-            "InteractionsWithUser": 0,
-        }
-    }
     ]).toArray()
-    console.log(potentialUsers)
+   console.log(potentialUsers)
+
     return res.status(200).json({
       success: true,
       users: potentialUsers,
@@ -99,4 +87,3 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
     });
   }
 }
-

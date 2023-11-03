@@ -31,7 +31,7 @@ export default async function handler(req, res) {
             from: "interactions",
             localField: "username",
             foreignField: "userInteracting",
-            as: "InteractionsWithUser"
+            as: "InteractionsByUser"
       },
     },
     {
@@ -39,18 +39,16 @@ export default async function handler(req, res) {
         from: "interactions",
         localField: "username",
         foreignField: "userInteractedWith",
-        as: "InteractionsByUser"
+        as: "InteractionsWithUser"
   },
 
 },
       { $match: {
         $and: [
-          {InteractionsWithUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
-          {InteractionsByUser: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}},
-          {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
-          {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
-          //{InteractionsByUser: {$not: {$elemMatch: {userInteractedWith:currentUser, blocked: true}}} },
-          //{"username": { $nin: db.blockedUsers.find({ blockedBy: currentUser }).map(u => u.blockedUser) } },
+          {InteractionsByUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsWithUser: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}},
+          {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
+          {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
           {"username" : { $not: { $eq: currentUser} }}]
       } },
     {
@@ -61,7 +59,6 @@ export default async function handler(req, res) {
     }
        
     ]).toArray()
-
     const userConversations = [];
 
     for (const user of matchedUsers) {

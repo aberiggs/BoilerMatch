@@ -12,8 +12,8 @@ import themeContext from '../../theme/themeContext';
 
 import { useFocusEffect } from '@react-navigation/native';
 
+export default function ChatList({navigation,checkForMatch}) {
 
-export default function ChatList({navigation,refreshOnMatch}) {
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
@@ -78,7 +78,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
 
     useEffect(() => {
       handleRefreshFeed()
-    },[refreshOnMatch]);
+    },[checkForMatch]);
 
     useFocusEffect(
       React.useCallback(() => {
