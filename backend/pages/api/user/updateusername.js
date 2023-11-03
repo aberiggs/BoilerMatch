@@ -18,6 +18,11 @@ export default async function handler(req, res) {
     if (emailDomainIndex !== -1) {
         const newUsername = req.body.email.substring(0, emailDomainIndex)
         await userCollection.findOneAndUpdate({username: req.body.username}, {$set:{email: req.body.email, username: newUsername}})
+    } else {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid Email."
+        })
     }
 
     return res.status(201).json({

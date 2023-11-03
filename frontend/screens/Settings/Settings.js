@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import axios from "axios"
@@ -14,6 +15,10 @@ export default function Settings({navigation}){
     navigation.navigate('ReportFeedback')
   }
 
+  const navigateToConfirmation = async () => {
+    navigation.navigate('Confirmation')
+  }
+
     return(
         <View style={styles.container}>
             <ScrollView style={styles.scrollView}>
@@ -25,6 +30,10 @@ export default function Settings({navigation}){
 
                     <TouchableOpacity style={styles.button} onPress={navigateToReportFeedback}>
                     <Text style={styles.buttonText}>Submit Request</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.button} onPress={navigateToConfirmation}>
+                    <Text style={styles.buttonText}>Delete Account</Text>
                     </TouchableOpacity>
 
                 </View>

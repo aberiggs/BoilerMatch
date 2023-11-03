@@ -26,6 +26,8 @@ import VerifyForUsername from './screens/Settings/VerifyForUsername'
 import VerifyForPassword from './screens/Settings/VerifyForPassword'
 import UpdateUsername from './screens/Settings/UpdateUsername'
 import UpdatePassword from './screens/Settings/UpdatePassword'
+import DeleteAccount from './screens/Settings/DeleteAccount'
+import Confirmation from './screens/Settings/Confirmation'
 
 
 const Stack = createStackNavigator();
@@ -75,6 +77,12 @@ export default function App() {
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
         }}/>
         <Stack.Screen name="UpdatePassword" component={UpdatePassword} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="DeleteAccount" component={DeleteAccount} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name="Confirmation" component={Confirmation} options={{
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
         }}/>
       </Stack.Navigator>
