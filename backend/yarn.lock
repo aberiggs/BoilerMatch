@@ -1737,10 +1737,10 @@
   dependencies:
     glob "7.1.7"
 
-"@next/swc-darwin-x64@13.5.3":
+"@next/swc-darwin-arm64@13.5.3":
   version "13.5.3"
-  resolved "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-13.5.3.tgz"
-  integrity sha512-UpBKxu2ob9scbpJyEq/xPgpdrgBgN3aLYlxyGqlYX5/KnwpJpFuIHU2lx8upQQ7L+MEmz+fA1XSgesoK92ppwQ==
+  resolved "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-13.5.3.tgz"
+  integrity sha512-6hiYNJxJmyYvvKGrVThzo4nTcqvqUTA/JvKim7Auaj33NexDqSNwN5YrrQu+QhZJCIpv2tULSHt+lf+rUflLSw==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -5043,10 +5043,10 @@ libnpmversion@^5.0.0:
     proc-log "^3.0.0"
     semver "^7.3.7"
 
-lightningcss-darwin-x64@1.19.0:
+lightningcss-darwin-arm64@1.19.0:
   version "1.19.0"
-  resolved "https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.19.0.tgz"
-  integrity sha512-Lif1wD6P4poaw9c/4Uh2z+gmrWhw/HtXFoeZ3bEsv6Ia4tt8rOJBdkfVaUJ6VXmpKHALve+iTyP2+50xY1wKPw==
+  resolved "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.19.0.tgz"
+  integrity sha512-wIJmFtYX0rXHsXHSr4+sC5clwblEMji7HHQ4Ub1/CznVRxtCFha6JIt5JZaNf8vQrfdZnBxLLC6R8pC818jXqg==
 
 lightningcss@~1.19.0:
   version "1.19.0"
@@ -6852,6 +6852,13 @@ spdx-expression-parse@^3.0.0, spdx-expression-parse@^3.0.1:
 
 spdx-license-ids@^3.0.0:
   version "3.0.13"
+
+spearman-rho@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.npmjs.org/spearman-rho/-/spearman-rho-1.0.6.tgz"
+  integrity sha512-NvWqDMBU38SgVKrcjKvzsRXC9GJ67WoTlATyWuxTdK9xYLNcXZDw689TqAqqK+rIr/jJLT4COH35gVTXxFRJbA==
+  dependencies:
+    lodash "^4.17.4"
 
 split@^1.0.1:
   version "1.0.1"
