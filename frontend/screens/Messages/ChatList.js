@@ -1,18 +1,23 @@
 import { StatusBar } from 'expo-status-bar';
 import Conversation from './Conversation';
 import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Pressable, ScrollView, FlatList } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+
+import themeContext from '../../theme/themeContext';
+
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function ChatList({navigation,refreshOnMatch}) {
+export default function ChatList({navigation,checkForMatch}) {
+
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
+    const theme = useContext(themeContext)
 
     const [searchTerm, setSearchTerm] = useState('');
     //variables for dropdown
@@ -110,7 +115,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
 
     useEffect(() => {
       handleRefreshFeed()
-    },[refreshOnMatch]);
+    },[checkForMatch]);
 
     useFocusEffect(
       React.useCallback(() => {
@@ -333,9 +338,9 @@ export default function ChatList({navigation,refreshOnMatch}) {
 };
     
     const ChatItem = ({ item }) => (
-      
-      <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
-        <View style={styles.chatItem}>
+      <TouchableOpacity style={[feedStyles.iconContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handleChatPress(item.otherUser)}>
+        <View style={[styles.chatItem, {backgroundColor:theme.backgroundColor}]}>
+
           
           
           <View style={{flexDirection: 'row', alignItems: 'center', }}>
@@ -347,7 +352,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
                 activeOpacity={0.8}
                 
               />
-            { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
+            { <Text style={[feedStyles.name, {color:theme.color}]}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
             { <Text style={feedStyles.time}>{formatTimestamp(item.lastUpdated)} </Text> }
             {unreadMessagesList.map((user) => {
             if (user.username === item.otherUser.username && user.unreadMessagesCount !== 0) {
@@ -359,6 +364,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
             }
             return null;
             })}
+            
           </View>    
         </View>
       </TouchableOpacity>
@@ -399,15 +405,16 @@ export default function ChatList({navigation,refreshOnMatch}) {
   
   
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
 
-        <View style={styles.topBar}>
+        <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
 
           <ConversationModal />
-          <View style ={styles.inputContainer}>
+          <View style ={[styles.inputContainer, {backgroundColor:theme.backgroundColor}]}>
             <TextInput
-              style={styles.input}
+              style={[styles.input,{color:theme.color}]}
               placeholder="Search for a message"
+              placeholderTextColor='gray'
               onChangeText={(text) => {
                 setSearchTerm(text);
                 fetchSearchMessages(text);
@@ -453,7 +460,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
             />
           ) : (
           <ScrollView>
-            <Text style={styles.noMatchesText}>
+            <Text style={[styles.noMatchesText, {color:theme.color}]}>
               You have no matches. L
             </Text>
           </ScrollView>

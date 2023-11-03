@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 
 export default async function handler(req, res) {
-    console.log("Resetting User Password")
+    console.log("Updating User Password")
 
     /* Setup */
     const { database } = await connectToDatabase();
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         })
     }
     
-    await userCollection.findOneAndUpdate({email: req.body.email}, {$set:{password: req.body.password}})
+    await userCollection.findOneAndUpdate({username: req.body.username}, {$set:{password: req.body.password}})
 
     return res.status(201).json({
         success: true,

@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList } from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Ionicons,FontAwesome} from '@expo/vector-icons';
-
 import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
@@ -14,6 +13,8 @@ import Constants from 'expo-constants';
 import { AppState } from 'react-native';
 import { useNotification } from '../../NotificationContext';
 import themeContext from '../../theme/themeContext';
+import { useNavigation } from '@react-navigation/native';
+
 
 //import { NotificationSettings } from "../Profile/ManageNotifications"
 
@@ -45,7 +46,7 @@ Notifications.setNotificationHandler({
 
 
 
-export default function MainFeed({navigation,handleMatchMade}){
+export default function MainFeed({navigation,checkForMatches}){
   const [usersLiked, setUsersLiked] = useState({});
   const [usersDisliked, setUsersDisliked] = useState({});
   const [usersBookmarked, setUsersBookmarked]= useState({});
@@ -55,9 +56,9 @@ export default function MainFeed({navigation,handleMatchMade}){
   //for dropdown
   const [searchResults, setSearchResults] = useState([]);
   const [displayedUsers, setDisplayedUsers] = useState([]);
-  const [liked, setLiked] = useState(false);
-  const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
   //variables for onClick on the mainFeed
+  const [currentFeed, setCurrentFeed] = useState("All")
+ // const [buttonNotShown, setButtonNotShown] = useState()
   const [selectedUser, setSelectedUser] = useState(null);
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
@@ -75,13 +76,15 @@ export default function MainFeed({navigation,handleMatchMade}){
   const { notificationsEnabled, setNotificationsEnabled } = useNotification();
   const [hasNoti,setHasNoti] = useState(false);
   const theme = useContext(themeContext);
+  const navigation = useNavigation();
 
   //variables for match pop up
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
-  
+
   useEffect(() => {
     handleRefreshFeed()
-  },[showOnlyUsersLikedBy]);
+  },[currentFeed]);
+
 
   useEffect(() => {
     // Define a separate async function to fetch the username
@@ -134,10 +137,9 @@ export default function MainFeed({navigation,handleMatchMade}){
 
   useEffect(() => {
   const fetchData = async () => {
-
     const updateNotificationsThroughApi = async (pushToken, notiResponse) => {
       console.log("inside", pushToken);
-      console.log(notiResponse)
+      //.log(notiResponse)
       const tokenVal = await SecureStore.getItemAsync('token');
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
         token: tokenVal,
@@ -156,7 +158,6 @@ export default function MainFeed({navigation,handleMatchMade}){
     // Step 1: Get the push token
     const pushToken = await registerForPushNotificationsAsync();
     setExpoPushToken(pushToken);
-
     // Step 2: Get the 'hasNoti' value
     const tokenVal = await SecureStore.getItemAsync('token');
     const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNoti', {
@@ -168,11 +169,11 @@ export default function MainFeed({navigation,handleMatchMade}){
         return error.response.data;
       }
     });
-
-    if (response && response.data && response.data.notificationsEnabled !== undefined) {
+    console.log("response.data.notifications", response.data.notificationsEnabled)
+    if (response && response.data) {
       //setHasNoti(response.data.notificationsEnabled);
        var notiResponse = response.data.notificationsEnabled;
-       console.log("when set", notiResponse)
+      // console.log("when set", notiResponse)
 
       // Step 3: Update notifications through the API
       const updateResponse = await updateNotificationsThroughApi(pushToken, notiResponse);
@@ -181,7 +182,7 @@ export default function MainFeed({navigation,handleMatchMade}){
   };
 
   fetchData();
-},[]);
+},[expoPushToken]);
 
   
   
@@ -189,12 +190,17 @@ export default function MainFeed({navigation,handleMatchMade}){
 
   
   useEffect( () => {
-    console.log("usename", username)
+    //console.log("usename", username)
     //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
     notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
       setNotification(notification);
     });
+    //console.log("abakk")
     responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
+      console.log("response", response);
+      console.log("response.requestn: ", response.notification.request.content.data.type);
+      var ans = response.notification.request.content.data.type;
+      if (ans === "like") {
        await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
        //console.log(response.data.users[0]);
         setSelectedUser(response.data.users[0]);
@@ -203,6 +209,10 @@ export default function MainFeed({navigation,handleMatchMade}){
       }).catch((error) => {
           console.log(error.response.data)
       })
+    } else {
+      navigation.navigate('YourDestinationScreen');
+
+    }
       console.log(response);
     });
     
@@ -284,7 +294,9 @@ export default function MainFeed({navigation,handleMatchMade}){
         console.log("Error creating conversation: ", error)
       })
         setMatchPopUpUserShown(user)
-        
+        if(user.recieveNotifications) {
+        sendMatchNotification(user.notificationToken,username)
+        }
       }
     }
 
@@ -295,6 +307,7 @@ export default function MainFeed({navigation,handleMatchMade}){
       )
       
       console.log("user", user.username);
+      console.log("user noties", user.recieveNotifications)
       const ans = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNotiToken', {
         name: user.username,
       }).catch((error) => {
@@ -302,11 +315,21 @@ export default function MainFeed({navigation,handleMatchMade}){
           console.log("error")
         }
       });
-      
+      console.log("like", liked);
+      const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
+        token: tokenVal,
+        userShown: user.username,
+      }
+      ).catch(error => {
+        console.log("error occurred while liking user:", error)
+      })
       if (ans && ans.data && ans.data.notificationToken) {
         token = ans.data.notificationToken;
         console.log("other user", token);
+       
+        if (user.recieveNotifications && liked && !isUserLiked.data.liked) {
         sendLikeNotification(token, username);
+        }
       }
       //await schedulePushNotification(username)
       //commented out but this is how you send notifications to others
@@ -321,7 +344,7 @@ export default function MainFeed({navigation,handleMatchMade}){
         )
       }
     
-  handleMatchMade()
+      checkForMatches()
   };
 
   const handleDislikePress = async(user) => {
@@ -359,7 +382,7 @@ export default function MainFeed({navigation,handleMatchMade}){
         })
         )
       }
-    handleMatchMade()
+      checkForMatches()
   };
 
   const handleBookmarkPressed = async(user) => {
@@ -379,7 +402,7 @@ export default function MainFeed({navigation,handleMatchMade}){
       else{
         bookmarked = !(response.data.user_added.bookmarked)
       }
-
+      console.log(usersBookmarked)
       setUsersBookmarked((usersBookmarked) => ({
         ...usersBookmarked,
         [user.username]: bookmarked,
@@ -405,7 +428,7 @@ export default function MainFeed({navigation,handleMatchMade}){
   };
 
   const FeedItem = ({ user }) => (
-    <View style={styles.feedItem}>
+    <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
       <Avatar
           size={250}
           rounded
@@ -451,16 +474,16 @@ export default function MainFeed({navigation,handleMatchMade}){
         
       </View>
 
-      <View style={feedStyles.infoContainer}>
-        <Text style={feedStyles.name}>{user.information.firstName} {user.information.lastName}</Text>
+      <View style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]}>
+        <Text style={[feedStyles.name, {color:theme.color}]}>{user.information.firstName} {user.information.lastName}</Text>
         <Text style={feedStyles.username}>@{user.username}</Text>
         
-        <Text>
-          <Text style={feedStyles.infoLabel}>Major: </Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>
+          <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Major: </Text>
           {user.information.major}
         </Text>
-        <Text style={styles.subtitle}>
-          <Text style={feedStyles.infoLabel}>Graduation Year:  </Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>
+          <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Graduation Year:  </Text>
           {user.information.graduation}
         </Text>
         
@@ -518,35 +541,72 @@ export default function MainFeed({navigation,handleMatchMade}){
   };
       
   
-  const handleLikedMeButtonPress = () => {
-    setShowOnlyUsersLikedBy(!showOnlyUsersLikedBy)
+  const handleLikedByFeedPress = () => {
+    setCurrentFeed(currentFeed=="LikedBy"?"All":"LikedBy")
+   }
+   const handleBookmarkFeedPress = () => {
+    setCurrentFeed(currentFeed=="Bookmarked"?"All":"Bookmarked")
    }
 
 
   const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
       let response = null
-      if(!showOnlyUsersLikedBy){
+
+      response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/undislikeUsersOnExpiration', {
+        token: tokenVal
+      }
+      ).catch(error => {
+        console.log("Error occured while undisliking users:", error)
+      })
+
+      print(response)
+      if(currentFeed=="All"){
         response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMainFeedUsers', {
         token: tokenVal
       }
       ).catch(error => {
         console.log("Error occured while getting main feed users:", error)
       })
-        setDisplayedUsers(response.data.users)
+        
     }
-    else{
+    else if(currentFeed=="LikedBy"){
       response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getUsersLikedBy', {
         token: tokenVal
+        
       }
       ).catch(error => {
         console.log("Error occurred while getting liked users:", error)
       })
-        setDisplayedUsers(response.data.users)
     }
-    setUsersLiked({})
-    setUsersDisliked({})
-    setUsersBookmarked(response.data.users.map(user=>user.interaction.bookmarked != null?user.interaction.bookmarked:false))
+    else{
+      response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getBookmarkedUsers', {
+        token: tokenVal
+        
+      }
+      ).catch(error => {
+        console.log("Error occurred while getting liked users:", error)
+      })
+    }
+    const bookmarkedUsers = response.data.users.reduce((result, user) => {
+      result[user.username] = user.interaction.length > 0 && "bookmarked" in user.interaction[0] ? user.interaction[0].bookmarked : false;
+      return result;
+    }, {});
+    const likedUsers = response.data.users.reduce((result, user) => {
+      result[user.username] = user.interaction.length > 0 && "liked_or_disliked" in user.interaction[0] ? user.interaction[0].liked_or_disliked== "liked": false;
+      return result;
+    }, {});
+    const dislikedUsers = response.data.users.reduce((result, user) => {
+      result[user.username] = user.interaction.length > 0 && "liked_or_disliked" in user.interaction[0] ? user.interaction[0].liked_or_disliked== "disliked": false;
+      return result;
+    }, {});
+   // setUsersBookmarked({})
+    setUsersBookmarked(bookmarkedUsers)
+    setUsersLiked(likedUsers)
+    setUsersDisliked(dislikedUsers)
+    setDisplayedUsers(response.data.users)
+
+   
     }
 
   const renderModal = () => {
@@ -583,12 +643,13 @@ export default function MainFeed({navigation,handleMatchMade}){
     }
 };  
     return(
-      <View style={styles.container}>
-        <View style={styles.topBar}>
+      <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
+        <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
         <View style ={styles.inputContainer}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, {color:theme.color}]}
               placeholder="Search for a user"
+              placeholderTextColor='gray'
             
               //onChangeText={(text) => setSearchTerm(text)}
             onChangeText={(text) => {
@@ -601,7 +662,7 @@ export default function MainFeed({navigation,handleMatchMade}){
             />
           
             {isDropdownVisible && (
-              <View style={styles.dropdownContainer}>
+              <View style={[styles.dropdownContainer, {backgroundColor:theme.backgroundColor}]}>
                 <FlatList
                 data={searchResults}
                 keyExtractor={(item) => item._id}
@@ -611,8 +672,8 @@ export default function MainFeed({navigation,handleMatchMade}){
                     onPress={() => handleSearchListButtonPress(item,index)}
                     //activeOpacity={0.7} // You can adjust this value
                     underlayColor="gray">
-                      <View style={styles.dropdownItemContainer}>
-                      <Text style={styles.dropdownItem}>{item.username}</Text>
+                      <View style={[styles.dropdownItemContainer, {backgroundColor:theme.backgroundColor}]}>
+                      <Text style={[styles.dropdownItem, {color:theme.color}]}>{item.username}</Text>
                       </View>
                   </TouchableOpacity>
                   
@@ -622,15 +683,15 @@ export default function MainFeed({navigation,handleMatchMade}){
             )}
           </View>
           <TouchableOpacity
-            style={[styles.filterButton, showOnlyUsersLikedBy?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
-            onPress={handleLikedMeButtonPress}>
+            style={[styles.filterButton, currentFeed=="LikedBy"?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={handleLikedByFeedPress}>
             <Text style={styles.searchButtonText}>Liked Me </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, showOnlyUsersLikedBy?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
-            onPress={handleLikedMeButtonPress}>
+            style={[styles.filterButton, currentFeed=="Bookmarked"?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={handleBookmarkFeedPress}>
              <Ionicons
-            name={showOnlyUsersLikedBy ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={currentFeed=="Bookmarked" ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
             color={"gray"}
             size={15}
           />
@@ -651,16 +712,16 @@ export default function MainFeed({navigation,handleMatchMade}){
     
        {renderModal()}
         
-        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp}/>
+        <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp} navigation={navigation}/>
 
-        <View style={styles.flatListContainer}>
+        <View style={[styles.flatListContainer, {backgroundColor:theme.backgroundColor}]}>
           {displayedUsers.length > 0 ? (
             <FlatList
               data={displayedUsers} // Replace with your data array
               renderItem={({ item }) => <FeedItem user={item} onLikePress={handleLikePress}/>}
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
               horizontal={false}
-              contentContainerStyle={styles.flatListContent}
+              contentContainerStyle={[styles.flatListContent, {backgroundColor:theme.backgroundColor}]}
               refreshControl={
                 <RefreshControl
                   refreshing={refreshing}
@@ -671,7 +732,7 @@ export default function MainFeed({navigation,handleMatchMade}){
           ) : (
             <ScrollView
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-              <Text style={styles.noMatchesText}>
+              <Text style={[styles.noMatchesText, {color:theme.color}]}>
                 You have no potential matches. Consider adjusting your preferences to gain a broader suggestion of users
               </Text>
             </ScrollView>
@@ -680,24 +741,21 @@ export default function MainFeed({navigation,handleMatchMade}){
       </View>
   );
     }
-    async function schedulePushNotification(user) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Someone liked you",
-          body: user + ' likes you',
-        },
-        trigger: { seconds: 2 },
-        to: user.notificationToken,
-      });
-    }
     async function sendLikeNotification(recipientNotificationToken, senderUsername) {
       console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
 
       const notifData = {
+        
         to: recipientNotificationToken,
         title: 'You have a new like!',
         body: senderUsername + ' liked you.',
+        data: {
+          type: "like"
+        }
+        
+        
       }
+  
       const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
         headers: {
           'host': 'exp.host',
@@ -705,11 +763,12 @@ export default function MainFeed({navigation,handleMatchMade}){
           'accept-encoding': 'gzip, deflate',
           'content-type': 'application/json'
         }
+       
       }).catch((err) => {
         console.log("Sending message failed: ", err)
       })
 
-      console.log(res.data)
+     // console.log(res.data)
       /*
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -720,6 +779,31 @@ export default function MainFeed({navigation,handleMatchMade}){
         to: recipientNotificationToken,
       });
       */
+    }
+    async function sendMatchNotification(recipientNotificationToken, senderUsername) {
+      console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
+
+      const notifData = {
+        to: recipientNotificationToken,
+        title: 'You have a new Match!',
+        body: 'You matched with' + senderUsername + '.',
+        data: {
+          type: "match",
+          otherUser: senderUsername
+        }
+      }
+  
+      const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
+        headers: {
+          'host': 'exp.host',
+          'accept': 'application/json',
+          'accept-encoding': 'gzip, deflate',
+          'content-type': 'application/json'
+        }
+       
+      }).catch((err) => {
+        console.log("Sending match failed: ", err)
+      })
     }
 
       async function registerForPushNotificationsAsync() {
@@ -757,11 +841,6 @@ export default function MainFeed({navigation,handleMatchMade}){
         return token;
       }
     
-    
-
-    
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -899,7 +978,7 @@ const feedStyles = StyleSheet.create({
     width: '100%',
     padding: 10,
     fontSize: 16,
-    lineHeight: 40
+    lineHeight: 40,
   },
   name: {
     fontSize: 25

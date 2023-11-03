@@ -1,11 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Icon } from 'react-native-vector-icons/Feather';
 import { Avatar } from '@rneui/themed';
 import axios from 'axios'
 import NotificationSettings from './ManageNotifications'
+import themeContext from '../../theme/themeContext';
 
 import * as SecureStore from 'expo-secure-store';
 
@@ -14,6 +15,7 @@ export default function Profile({navigation}){
   const [username, setUsername] = useState("")
   const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/')
   const [discoverability, setDiscoverability] = useState(false)
+  const theme = useContext(themeContext)
   
   const iconProps = () => {
       return (
@@ -92,7 +94,7 @@ export default function Profile({navigation}){
     const tokenVal = await SecureStore.getItemAsync('token')
     formData.append('token', tokenVal)
     // TODO: Errors need to be caught here (server down/no connection, etc.)
-    const apiAddr = process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/pfp/update/' + tokenVal
+    const apiAddr = process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/otherphotos/update/' + tokenVal
     await axios.post(apiAddr, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -105,14 +107,20 @@ export default function Profile({navigation}){
     setProfilePic(imageToUpload)
   }
 
-
-
     const navigateToManageInformation = () => {
       navigation.navigate('ManageInformation')
     }
     
     const navigateToManageHousingInformation = () => {
       navigation.navigate('ManageHousingInformation')
+    }
+
+    const navigateToSettings = () => {
+      navigation.navigate('Settings')
+    }
+
+    const navigateToManagePhotos = () => {
+      navigation.navigate('ManagePhotos')
     }
 
     const navigateToManagePreferences = () => {
@@ -123,9 +131,22 @@ export default function Profile({navigation}){
       navigation.navigate('ManagePreferenceRankings');
     };
   
-   const handleLogout = async () => {
+   const handleLogout = async () => {     
+        const tokenVal = await SecureStore.getItemAsync('token');
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
+          token: tokenVal,
+          pushToken: "",
+          recieveNotifications: false,
+        }).catch((error) => {
+          if (error.response) {
+            return error.response.data;
+          }
+          return;
+        });
+  
         await SecureStore.deleteItemAsync('token')
         await SecureStore.deleteItemAsync('username')
+
         navigation.navigate("Landing")
     }
 
@@ -143,33 +164,46 @@ export default function Profile({navigation}){
         <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
       </Avatar>
     )
-  }
-
+    }
+  
   return(
-      <View style={styles.container}>
-        <ScrollView style={styles.scrollView}>
-        <View style={{flex: 'column', width: "90%", alignItems: 'center'}}>
+      <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
+        <ScrollView style={{width: '100%'}} contentContainerStyle={styles.scrollView}>
+        <View style={{flex: 'column', width: "70%", alignItems:'center'}}>
               <ProfilePic />
-          <Text style={styles.title}>{username}</Text>
+          <Text style={[styles.title, {color:theme.color}]}>{username}</Text>
+
 
           <TouchableOpacity style={styles.button} onPress={navigateToManageInformation}>
-          <Text style={styles.buttonText}>Manage Information</Text>
+            <Text style={styles.buttonText}>Manage Information</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManageHousingInformation}>
-          <Text style={styles.buttonText}>Manage Housing Info</Text>
+            <Text style={styles.buttonText}>Manage Housing Info</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferences}>
-          <Text style={styles.buttonText}>Manage Preferences</Text>
+            <Text style={styles.buttonText}>Manage Preferences</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManagePreferenceRankings}>
-          <Text style={styles.buttonText}>Manage Preference Rank</Text>
+            <Text style={styles.buttonText}>Manage Preference Rank</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToManagePhotos}>
+            <Text style={styles.buttonText}>Manage Photos</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={toggleDiscoverability}>
-          <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
+            <Text style={styles.buttonText}>{discoverability ? 'Go Private' : 'Go Public!'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToManageNotifications}>
+          <Text style={styles.buttonText}>Notifications/Other</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={navigateToSettings}>
+          <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={navigateToManageNotifications}>
@@ -177,7 +211,9 @@ export default function Profile({navigation}){
           </TouchableOpacity>
 
           <Pressable style={styles.button} onPress={handleLogout}>
+          <TouchableOpacity style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
           </Pressable>
 
         </View>
@@ -187,6 +223,7 @@ export default function Profile({navigation}){
   )
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -195,72 +232,65 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  button: {
-      width: "40%",
-      height: 50,
-      backgroundColor: "gold",
-      borderRadius: 6,
-      justifyContent: 'center',
-      
-    },
-    buttonText: {
-      fontSize: 20,
-      alignSelf: "center"
-    },
-    otherText: {
+  scrollView: {
+    width: '100%',
+    alignContent: 'center',
+    alignItems: 'center'
+  },
+  otherText: {
       fontSize: 16,
       paddingLeft: 5
-    },
-    inputFieldBox: {   
-      flexDirection: 'row',
-      height: 40,
-      width: '100%',
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-      padding: 10,
-      marginBottom: 10,
-      borderColor: 'black',
-      borderWidth: 1,
-      borderRadius: 5,        
-    },
-    inputField: {
-      width: "100%",
-    },
-    title: {
-      fontSize: 25,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      lineHeight: 25,
-      marginVertical: 14,
-    },
-    subtitle: {
-      fontSize: 15,
-      fontWeight: 'bold',
-      textAlign: 'left',
-      marginBottom: 8,
-    },
-    button: {
-      width: "99%",
-      height: 50,
-      backgroundColor: "gold",
-      borderRadius: 6,
-      justifyContent: 'center',
-      margin:10,
-      
-    },
-    buttonText: {
-      fontSize: 15,
-      alignSelf: "center",
-      textAlign:"center",
-    },
-    errorMes: {
-      fontSize: 15,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      paddingHorizontal: 10,
-      marginBottom: 8,
-      color: 'red',
-      marginHorizontal: 'auto'
-    }
-  });
+  },
+  inputFieldBox: {   
+    flexDirection: 'row',
+    height: 40,
+    width: '100%',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    padding: 10,
+    marginBottom: 10,
+    borderColor: 'black',
+    borderWidth: 1,
+    borderRadius: 5,        
+  },
+  inputField: {
+    width: "100%",
+  },
+  title: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 25,
+    marginVertical: 14,
+  },
+  subtitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'left',
+    marginBottom: 8,
+  },
+  button: {
+    width: "80%",
+    height: 50,
+    backgroundColor: "gold",
+    borderRadius: 6,
+    justifyContent: 'center',
+    margin:10,
+    
+  },
+  buttonText: {
+    fontSize: 15,
+    alignSelf: "center",
+    textAlign:"center",
+  },
+  errorMes: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingHorizontal: 10,
+    marginBottom: 8,
+    color: 'red',
+    marginHorizontal: 'auto'
+  }
+});
 

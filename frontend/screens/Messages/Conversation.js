@@ -1,37 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModal component
+
 import UnmatchModal from './UnmatchModal'; // Import the ReportBlockModal component
 
+import themeContext from '../../theme/themeContext';
+
+
 import axios from "axios"
-
-
-// const messagesEx = [
-//         {
-//             from: "A",
-//             message: "Yo what's up"
-//         },
-//         {
-//             from: "B",
-//             message: "Test text one"
-//         },
-//         {
-//             from: "A",
-//             message: "This is a bunch of of test text to see what happens when you create a larger message"
-//         },
-//         {
-//             from: "B",
-//             message: "💥💥💥"
-//         },
-
-//     ]
 
 export default function Conversation(props, {navigation}) {
     const [currentMessages, setCurrentMessages] = useState(null)
     const [newMessage, setNewMessage] = useState('')
     const [username, setUsername] = useState(null)
+    const theme = useContext(themeContext)
 
     const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
     const [UnmatchModalVisible, setUnmatchModalVisible] = useState(false);
@@ -105,7 +89,6 @@ export default function Conversation(props, {navigation}) {
         const updatedMessages = (currentMessages ? currentMessages : [])
         updatedMessages.push(messageObj)
         setCurrentMessages(updatedMessages)
-        setNewMessage('')
 
         const tokenVal = await SecureStore.getItemAsync('token')
         const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/send', {
@@ -121,6 +104,8 @@ export default function Conversation(props, {navigation}) {
             console.log("No response for sending message")
             return false
         }
+        await sendMessageNotification()
+        setNewMessage('')
     }
 
     const formatTimestamp = (timestamp) => {
@@ -162,6 +147,43 @@ export default function Conversation(props, {navigation}) {
         return mostRecentReadMessage;
     }
 
+    async function sendMessageNotification() {
+        // console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
+
+        const pushTokenRes = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNotiToken', {
+            name: otherUser,
+          }).catch((error) => {
+            if (error.response) {
+              console.log("error")
+            }
+          });
+          
+        if (!pushTokenRes || !pushTokenRes.data || !pushTokenRes.data.notificationToken) {
+        return
+        }
+
+        const notifData = {
+            to: pushTokenRes.data.notificationToken,
+            title: username + " sent a message",
+            body: newMessage,
+          }
+
+        console.log(notifData)
+
+        const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
+          headers: {
+            'host': 'exp.host',
+            'accept': 'application/json',
+            'accept-encoding': 'gzip, deflate',
+            'content-type': 'application/json'
+          }
+        }).catch((err) => {
+          console.log("Sending message failed: ", err)
+        })
+  
+        console.log(res.data)
+      }
+
     
     const messageItem = ({ item }) => {
         const messageContainerStyle = item.from === username ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg;
@@ -170,12 +192,12 @@ export default function Conversation(props, {navigation}) {
         const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
     
         return (
-            <View style={messageContainerStyle}>
+            <View style={[messageContainerStyle]}>
                 <View style={messageBoxStyle}>
                     <Text style={conversationStyles.messageText}>{item.message}</Text>
                 </View>
                 <View style={conversationStyles.timestampContainer}>
-                    <Text style={conversationStyles.timestampText}>
+                    <Text style={[conversationStyles.timestampText, {color:theme.color}]}>
                         {formatTimestamp(item.timestamp)}
                     </Text>
                 </View>
@@ -194,36 +216,33 @@ export default function Conversation(props, {navigation}) {
       
 
     return(
-        <SafeAreaView style={{height: '100%', width: '100%'}}>
-            <View style={conversationStyles.headingContainer}>
-                <View style={{width: '30%', alignItems: 'left'}}>
+        <SafeAreaView style={{height: '100%', width: '100%', backgroundColor:theme.background}}>
+            <View style={[conversationStyles.headingContainer, {backgroundColor:theme.background}]}>
+                <View style={{width: '30%', alignItems: 'left', backgroundColor:theme.backgroundColor}}>
                     <Pressable style={{padding: 6}} onPress={() => props.onClose()}>
                         <Ionicons name="chevron-back" size={30} color="gold" />
                     </Pressable>
                 </View>
                 
                 
-                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center'}}>
+                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color}}>
                     <Text style={{fontSize: 24}}>{otherUser}</Text>
                 </View>
                 
                 <View style={conversationStyles.buttonContainer}>
                     <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
-                            <Text style={conversationStyles.buttonText}>Unmatch</Text>
+                            <Text style={[conversationStyles.buttonText,{color:theme.color}]}>Unmatch</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
                         <Text style={conversationStyles.buttonText}>Block</Text>
                     </TouchableOpacity>
-                    {/* do below code for an information button */}
-                    {/* <Pressable style={{paddingLeft:80}}>
-                        <Ionicons name="information-circle-outline" size={30} color="gold" />
-                    </Pressable> */}
+ 
                 </View>
             </View>
 
-            <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={conversationStyles.convoContainer}>
+            <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={[conversationStyles.convoContainer, {backgroundColor:theme.background}]}>
                 <FlatList
-                    style={conversationStyles.chatScrollView}
+                    style={[conversationStyles.chatScrollView, {backgroundColor:theme.backgroundColor}]}
                     data={currentMessages}
                     renderItem={({item}) => messageItem({item})}
                 />
@@ -236,7 +255,7 @@ export default function Conversation(props, {navigation}) {
 
                         onChangeText={message => setNewMessage(message)}
 
-                        style={conversationStyles.messageField}
+                        style={[conversationStyles.messageField, {color:theme.color}]}
                     />
 
                     <Pressable onPress={() => sendMessage()}>
@@ -269,7 +288,7 @@ const conversationStyles = StyleSheet.create({
     },
     container: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor: 'gold',
       alignItems: 'center',
       width: '100%'
     },
@@ -292,7 +311,8 @@ const conversationStyles = StyleSheet.create({
         height: '16%',
         alignItems: 'center',
         borderBottomWidth: 1,
-        borderColor: 'darkgrey',
+        borderColor: 'gold',
+        backgroundColor: "gold"
     },
     chatScrollView: {
         width: '95%',

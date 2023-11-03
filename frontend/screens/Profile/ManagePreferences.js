@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet, Text, View,TextInput,TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store'
+import themeContext from '../../theme/themeContext';
 
 import RNPickerSelect from "react-native-picker-select"
 
@@ -19,6 +20,7 @@ export default function ManagePreferences({navigation}) {
   const [noise, setNoise] = useState('');
   const [errMsgVisible, setErrMsgVisible] = useState(false);
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
+  const theme = useContext(themeContext)
 
   useEffect(() => {
     setupInitialPrefs()
@@ -85,9 +87,9 @@ export default function ManagePreferences({navigation}) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
       <ScrollView style={styles.scrollView}>
-      <Text style={styles.subtitle}>Select the preferred gender of your roommate</Text>
+      <Text style={[styles.subtitle, {color:theme.color}]}>Select the preferred gender of your roommate</Text>
        <RNPickerSelect
           placeholder={ {label: "Select gender.", value: null}}
           onValueChange={(value) => setGender(value)}
@@ -97,9 +99,15 @@ export default function ManagePreferences({navigation}) {
               { label: "Female", value: "female" },
               { label: "Other/No preference", value: "other" }
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
-        <Text style={styles.subtitle}>Select your preferred bedtime:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>Select your preferred bedtime:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select bedtime: ", value: null}}
           onValueChange={(value) => setBedtime(value)}
@@ -112,9 +120,15 @@ export default function ManagePreferences({navigation}) {
               { label: "12PM-1AM", value: "1" },
               { label: "1AM+", value: "2" }
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
-        <Text style={styles.subtitle}>How comfortable are you with guests:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>How comfortable are you with guests:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select:", value: null}}
           onValueChange={(value) => setGuest(value)}
@@ -125,9 +139,15 @@ export default function ManagePreferences({navigation}) {
               { label: "Most of the time (weekends, some weekdays)", value: "sometimes" },
               { label : "Anytime!", value: "anytime"}
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
-        <Text style={styles.subtitle}>On a scale of 1-5, how clean do you prefer your environment:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>On a scale of 1-5, how clean do you prefer your environment:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select cleanliness.", value: null}}
           onValueChange={(value) => setClean(value)}
@@ -139,9 +159,15 @@ export default function ManagePreferences({navigation}) {
               { label: "2: Not so clean", value: "2"},
               { label: "1: Dumpster", value: "1"}
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
-         <Text style={styles.subtitle}>What's your preferred noise level?</Text>
+         <Text style={[styles.subtitle, {color:theme.color}]}>What's your preferred noise level?</Text>
         <RNPickerSelect
           placeholder={ {label: "Select noise level:", value: null}}
           onValueChange={(value) => setNoise(value)}
@@ -153,7 +179,13 @@ export default function ManagePreferences({navigation}) {
               { label: "2: I prefer it to be quiet more often", value: "2"},
               { label: "1: Library, 24/7.", value: "1"}
           ]}
-          style={pickerSelectStyles}
+          style={{
+            ...pickerSelectStyles,
+            inputIOS: {
+              ...pickerSelectStyles.inputIOS,
+              color: theme.color
+            }
+          }}
         />
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>

@@ -43,7 +43,8 @@ export default async function handler(req, res) {
               "then": "disliked",
               "else": "neither"
             }
-          }
+          },
+          date_liked_or_disliked_changed: "$$NOW"
         },
       }],
       {

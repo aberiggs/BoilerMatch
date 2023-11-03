@@ -1,11 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useState , useContext} from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import axios from "axios";
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import themeContext from '../../theme/themeContext';
 
 export default function Register({navigation}){
 
@@ -16,6 +17,7 @@ export default function Register({navigation}){
     const [acceptedTos, setAcceptedTos] = useState(false)
     const [showTos, setShowTos] = useState(false)
     const [showPass, setShowPass] = useState(false)
+    const theme = useContext(themeContext)
 
 
     const handleRegister = async () => {    
@@ -91,7 +93,7 @@ export default function Register({navigation}){
     }
 
     return(
-      <View style={styles.container}>
+      <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
 
         <Modal
           animationType="slide"
@@ -116,9 +118,9 @@ export default function Register({navigation}){
         </Modal>
 
         <View style={{flex: 'column', width: "45%"}}>
-          <Text style={styles.title}>Register</Text>
+          <Text style={[styles.title, {color:theme.color}]}>Register</Text>
 
-          <Text style={styles.subtitle}>Email</Text>
+          <Text style={[styles.subtitle, {color:theme.color}]}>Email</Text>
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
@@ -130,7 +132,7 @@ export default function Register({navigation}){
             style={styles.inputFieldBox}
           />
 
-          <Text style={styles.subtitle}>Password</Text>
+          <Text style={[styles.subtitle, {color:theme.color}]}>Password</Text>
 
           <View style={styles.inputFieldBox}>
 
@@ -154,7 +156,7 @@ export default function Register({navigation}){
             </Pressable>
           </View>
 
-          <Text style={styles.subtitle}>Confirm Password</Text>
+          <Text style={[styles.subtitle, {color:theme.color}]}>Confirm Password</Text>
           <TextInput 
             autoCapitalize="none"
             autoCorrect={false}
@@ -180,7 +182,7 @@ export default function Register({navigation}){
             onValueChange={(newValue) => setAcceptedTos(newValue)}
           />
 
-          <Text style={styles.otherText}>I agree to the <Text style={{color: 'gold', textDecorationLine: 'underline'}} onPress={() => setShowTos(!showTos)}>BoilerMatch Terms</Text></Text>
+          <Text style={[styles.otherText, {color:theme.color}]}>I agree to the <Text style={{color: 'gold', textDecorationLine: 'underline'}} onPress={() => setShowTos(!showTos)}>BoilerMatch Terms</Text></Text>
         
         </View>
       
@@ -370,7 +372,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 10,
         marginBottom: 10,
-        borderColor: 'black',
+        borderColor: 'gold',
         borderWidth: 1,
         borderRadius: 5,        
       },
