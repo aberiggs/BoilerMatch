@@ -196,7 +196,7 @@ export default function Profile({navigation}){
           <Text style={styles.buttonText}>Notifications/Other</Text>
           </TouchableOpacity>
 
-          <Pressable style={styles.button} onPress={handleLogout}>
+          <TouchableOpacity style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
 
