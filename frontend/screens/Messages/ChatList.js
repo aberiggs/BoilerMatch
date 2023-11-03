@@ -26,6 +26,42 @@ export default function ChatList({navigation,checkForMatch}) {
     const [chatOpened, setChatOpened] = useState(false) 
 
     const [selectedUser, setSelectedUser] = useState('')
+
+    const [unreadMessagesList, setUnreadMessagesList] = useState([]);
+
+    const [otherUsers, setOtherUsers] = useState([])
+    
+    const [currentMessages, setCurrentMessages] = useState(null)
+
+    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+
+    const [username, setUsername] = useState(null);
+
+    useEffect(() => {
+      initialize()
+    },[])
+
+    const initialize = async () => {
+      const userVal = await SecureStore.getItemAsync('username')
+      setUsername(userVal)
+
+      // get matches to go through conversations for unread messages
+      const tokenVal = await SecureStore.getItemAsync('token')
+  
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMatchesForUser', {
+        token: tokenVal
+      }
+      ).catch(error => {
+        console.log("Error occurred while pulling users", error)
+      })
+      // console.log(response.data)
+      if (response.data.users.length > 0) {
+        const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+        console.log("INITIALIZED SORTED USERS", sortedUsers)
+        const usernames = sortedUsers.map(user => user.otherUser.username);
+        fetchUnreadMessages(usernames);
+      }
+    }
     
     const fetchSearchMessages = async (text) => {
       try {
@@ -46,10 +82,13 @@ export default function ChatList({navigation,checkForMatch}) {
         if (response.status === 200) {
           // Check if there are messages in the response
           if (response.data.messages.length > 0) {
+            console.log("RESPONSE", response.data.messages)
             setSearchResults(response.data.messages);
             // Set your dropdown visibility state here if needed.
+            setIsDropdownVisible(response.data.messages.length > 0)
           } else {
             // Show a pop-up message saying that no messages match.
+            setIsDropdownVisible(false);
             console.log("No messages match")
           }
         } else {
@@ -58,23 +97,21 @@ export default function ChatList({navigation,checkForMatch}) {
         }
       } catch (error) {
         console.log("Error occurred while searching for messages:", error);
+        setIsDropdownVisible(false);
         // Handle the error as needed.
       }
     };
 
-    const dataFromSearch = searchResults.map(result => ({
-      userOne: result.userOne,
-      userTwo: result.userTwo,
-      message: result.messages,
-    }));
-    
-    console.log(dataFromSearch);
-    
+    console.log("SEARCH RESULTS", searchResults)
 
-    // console.log("SEARCHHHH")
-    // console.log(searchResults)
-    // console.log("NEWDATA")
-    // console.log(dataFromSearch)
+    const dataFromSearch = searchResults.map(item => ({
+      users: [item.userOne, item.userTwo],
+      sender: item.messages.from,
+      message: item.messages.message,
+      timestamp: item.messages.timestamp,
+    }));
+    const sortedDataFromSearch = dataFromSearch.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
 
     useEffect(() => {
       handleRefreshFeed()
@@ -85,14 +122,7 @@ export default function ChatList({navigation,checkForMatch}) {
         handleRefreshFeed();
       }, [])
     );
-    
-    
-    // useEffect(() => {
-    //   setDisplayedUsers([...displayedUsers].sort((a, b) => a.lastUpdated - b.lastUpdated));
-    // }, [displayedUsers])
-
    
-  
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
   
@@ -121,13 +151,26 @@ export default function ChatList({navigation,checkForMatch}) {
       )
     }
   
-    const handleChatPress = async(user) => {
-      //open chat
-      setSelectedUser(user.username)
-      setChatOpened(true)
-      console.log("CHAT PRESSED")
+    const handleChatPress = async (user) => {
+      console.log("INPUT", user)
+      if (user) {
+        setSelectedUser(user.username);
+        setChatOpened(true);
+        console.log("CHAT PRESSED");
+        console.log("OTHER USER", user.username)
+      } else {
+        console.log("User is undefined");
+      }
     };
-    
+
+    const handleChatPressSearch = async (user) => {
+      if (user) {
+        setSelectedUser(user);
+        setChatOpened(true);
+      } else {
+        console.log("User is undefined");
+      }
+    };
   
     const onRefresh = async() => {
       setRefreshing(true);
@@ -136,32 +179,168 @@ export default function ChatList({navigation,checkForMatch}) {
       // ... Fetch data ...
       setRefreshing(false);
     };
-  
-    {/* RENDER FOR BLUE DOT AND UNREAD MESSAGES */}
 
-    // const ChatItem = ({ item, hasUnreadMessages }) => (
-    //   <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
-    //     <View style={styles.chatItem}>
-          
-          
-    //       <View style={{flexDirection: 'row', alignItems: 'center', }}>
-    //         <Avatar
-    //             size={100}
-    //             rounded
-    //             source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + item.otherUser.username + '.jpg'}}
-    //             containerStyle={{backgroundColor: 'grey', margin: 10}}
-    //             activeOpacity={0.8}
-                
-    //           />
-    //         { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
-    //         {hasUnreadMessages && <View style={styles.unreadDot} />} 
-    //       </View>    
-    //     </View>
-    //   </TouchableOpacity>
-    // );
+  //   useEffect(() => {
+  //     console.log(" ")
+  //     console.log("TEST INITIALIZEEEEEE -------------------")
+  //     console.log(" ")
+  //     initialize()
+  //   },[])
+
+  //   const initialize = async () => {
+  //     const tokenVal = await SecureStore.getItemAsync('token')
+  
+  //     const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMatchesForUser', {
+  //       token: tokenVal
+  //     }
+  //     ).catch(error => {
+  //       console.log("Error occurred while pulling users", error)
+  //     })
+  //     // console.log(response.data)
+  //     if (response.data.users.length > 0) {
+  //       const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+  //       console.log("SORTED USERS: ", sortedUsers)
+  //       setDisplayedUsers(sortedUsers);
+        
+  //       // Extract usernames and lastUpdated times and store them in an array
+  //       const usersAndUpdates = sortedUsers.map(user => ({
+  //         username: user.otherUser.username,
+  //         lastUpdated: user.lastUpdated
+  //       }));
+
+  //       console.log("USERS AND UPDATES", usersAndUpdates)
+        
+  //       // Set the array in state
+  //       setOtherUsersAndUpdates(usersAndUpdates);
+  //     }
+      
+  //     let continueFetching = true
+  //     let messageList = currentMessages
+  //     console.log("CONTINUE FETCHING")
+  //     while (continueFetching) {
+  //         messageList = await fetchUnreadMessages(otherUsersAndUpdates, messageList)
+  //         setCurrentMessages(messageList)
+  //         if (!messageList) {
+  //             console.log("No message list")
+  //             continueFetching = false
+  //         }
+  //     }
+  // }
+    
+    //iter 1
+    const fetchUnreadMessages = async (otherUsernames) => {
+      console.log("Fetching - unread message from conversation")
+      
+      const tokenVal = await SecureStore.getItemAsync('token');
+    
+      const unreadMessagesListTemp = [];
+      // Remove duplicates and get unique usernames.
+      //const uniqueUsernames = Array.from(new Set(otherUsernames.map(usernameData => usernameData.username)));
+      //console.log("UNIQUE USERNAMES", uniqueUsernames)
+
+      console.log(otherUsernames)
+    
+      for (const username of otherUsernames) {
+        console.log("UNIQUE USERNAME", username)
+        let matchingEntry = unreadMessagesList.find(entry => entry.username === username);
+        if (!matchingEntry) {
+          matchingEntry = { unreadMessagescount: 0 }; // Default value when no matching entry is found
+        }
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/unreadMessagesFromConversation', {
+          token: tokenVal,
+          otherUser: username,
+          unreadMessagesCount: matchingEntry.unreadMessagescount
+        }).catch(error => {
+          console.log("Couldn't fetch message - fetch unread messages")
+          //return null
+        })
+        if (!response) {
+          console.log("No response for messages - fetchunread messages")
+          //return null
+        }
+        unreadMessagesListTemp.push({
+        username: username,
+        unreadMessagesCount: response.data.unreadMessagesCount
+        });
+        console.log("UNREAD TEMP     ", unreadMessagesListTemp)
+        //return response.data
+      }
+      setUnreadMessagesList(unreadMessagesListTemp)
+    };
+
+    console.log()
+    console.log("UNREAD MESSAGES LIST", unreadMessagesList)
+    console.log()
+
+    // console.log("UNREAD MESSAGES COUNT", unreadMessagesList)
+
+    // // Initialize unreadMessagesList after setting the state
+    // useEffect(() => {
+    //   fetchUnreadMessages(otherUsersAndUpdates, unreadMessagesList);
+    // }, [otherUsersAndUpdates]);
+    
+    // fetchUnreadMessages(otherUsersAndUpdates)
+    //console.log("OTHER USERS", otherUsersAndUpdates)
+    //console.log("UNREAD MESSAGES COUNT", unreadMessagesList)
+    //fetchUnreadMessages(otherUsersAndUpdates)
+    //console.log("NEW FUNCTION: ", unreadMessagesList)
+
+    const formatTimestamp = (timestamp) => {
+      const date = new Date(timestamp);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+  
+      // Convert hours from 24-hour format to 12-hour format
+      const formattedHours = hours % 12 || 12;
+  
+      // Pad single-digit minutes with a leading zero
+      const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+  
+      // Get the month, day, and year
+      const month = date.getMonth() + 1; // Months are 0-indexed
+      const day = date.getDate();
+      const year = date.getFullYear();
+
+      // Get the last two digits of the year
+      const lastTwoYearDigits = String(year).slice(-2);
+
+      // Format the date part as MM/DD/YYYY
+      const formattedDate = `${month}/${day}/${lastTwoYearDigits}`;
+  
+      return `${formattedDate}\n ${formattedHours}:${formattedMinutes} ${ampm}`;
+  };
+
+  const formatTimestampDate = (timestamp) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    // Convert hours from 24-hour format to 12-hour format
+    const formattedHours = hours % 12 || 12;
+
+    // Pad single-digit minutes with a leading zero
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+
+    // Get the month, day, and year
+    const month = date.getMonth() + 1; // Months are 0-indexed
+    const day = date.getDate();
+    const year = date.getFullYear();
+
+    // Get the last two digits of the year
+    const lastTwoYearDigits = String(year).slice(-2);
+
+    // Format the date part as MM/DD/YYYY
+    const formattedDate = `${month}/${day}/${lastTwoYearDigits}`;
+
+    return `${formattedDate}`;
+};
+    
     const ChatItem = ({ item }) => (
       <TouchableOpacity style={[feedStyles.iconContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handleChatPress(item.otherUser)}>
         <View style={[styles.chatItem, {backgroundColor:theme.backgroundColor}]}>
+
           
           
           <View style={{flexDirection: 'row', alignItems: 'center', }}>
@@ -174,13 +353,55 @@ export default function ChatList({navigation,checkForMatch}) {
                 
               />
             { <Text style={[feedStyles.name, {color:theme.color}]}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
-
+            { <Text style={feedStyles.time}>{formatTimestamp(item.lastUpdated)} </Text> }
+            {unreadMessagesList.map((user) => {
+            if (user.username === item.otherUser.username && user.unreadMessagesCount !== 0) {
+              return (
+                <View key={user.username} style={{ marginLeft: 5 }}>
+                  <Text style={{ color: 'blue' }}>● {user.unreadMessagesCount}</Text>
+                </View>
+              );
+            }
+            return null;
+            })}
+            
           </View>    
         </View>
       </TouchableOpacity>
     );
 
-    console.log(displayedUsers)
+    // MODAL FOR DISPLAYING USERS FANCY... DOESN'T WORK THO
+    // //console.log(displayedUsers)
+    // const SearchMessagesDropdown = ({ data }) => {
+    //   return (
+    //     <Modal
+    //       animationType="slide"
+    //       transparent={true}
+    //       visible={isDropdownVisible}
+    //     >
+    //       <View style={styles.dropdownContainer}>
+    //         {/* <Text> HELLO </Text> */}
+    //         <FlatList
+    //           data={data}
+    //           renderItem={({ item }) => (
+    //             <TouchableOpacity
+    //               style={styles.dropdownItem}
+    //               onPress={() => {
+    //                 // Handle the item selection (e.g., navigate to the selected message)
+    //                 // You can pass the selected message to the parent component if needed.
+    //                 // onClose();
+    //               }}
+    //             >
+    //               <Text>{item.message}</Text>
+    //             </TouchableOpacity>
+    //           )}
+    //           //keyExtractor={(item) => item.id.toString()} // Replace with your unique key
+    //         />
+    //       </View>
+    //     </Modal>
+    //   );
+    // };
+    
   
   
     return (
@@ -197,9 +418,33 @@ export default function ChatList({navigation,checkForMatch}) {
               onChangeText={(text) => {
                 setSearchTerm(text);
                 fetchSearchMessages(text);
+                setIsDropdownVisible(!!text);
               }}
               autoCapitalize="none"
             />
+
+            {isDropdownVisible && (
+              
+              <View style={styles.dropdownContainer}>
+                <FlatList
+                data={sortedDataFromSearch}
+                keyExtractor={(item) => item._id}
+                renderItem={({item,index }) => (
+                  <TouchableOpacity
+                    //value={searchTerm}
+                    onPress={() => handleChatPressSearch(username !== item.users[0] ? item.users[0] : item.users[1])}
+                    //activeOpacity={0.7} // You can adjust this value
+                    underlayColor="gray">
+                      <View style={styles.dropdownItemContainer}>
+                      <Text style={styles.dropdownItem}>{"Conversation with: "}{username !== item.users[0] ? item.users[0] : item.users[1]}{'\n'}{item.sender}{": "}{item.message}{".........."}{formatTimestampDate(item.timestamp)}</Text>
+                      </View>
+                  </TouchableOpacity>
+                  
+                )}
+                />
+              </View>
+            )}
+
           </View>          
         </View>
 
@@ -267,6 +512,7 @@ export default function ChatList({navigation,checkForMatch}) {
       borderRadius: .5,     // Border radius
        // Padding around the text
       marginRight: 30,   // Margin between items
+      color: 'black',
     },
     dropdownContainer: {
       backgroundColor: 'white',
@@ -279,6 +525,7 @@ export default function ChatList({navigation,checkForMatch}) {
       top: 46,
       position: 'absolute',
       zIndex: 90,
+      height: '1700%',
       },
     inputContainer: {
       flex : 1,
@@ -373,8 +620,13 @@ export default function ChatList({navigation,checkForMatch}) {
       lineHeight: 40
     },
     name: {
-      padding: 10,
+      padding: 1,
       fontSize: 20
+    },
+    time: {
+      paddingLeft: 10,
+      fontSize: 10,
+      alignItems: "flex-end",
     },
     username: {
       fontSize: 16,
@@ -383,6 +635,22 @@ export default function ChatList({navigation,checkForMatch}) {
     },
     infoLabel: {
       fontWeight: '600',
+    },
+    dropdownContainer: {
+      flex: 1,
+      backgroundColor: 'grey',
+      position: 'absolute',
+      top: 60, // Adjust the position as needed
+      right: 10, // Adjust the position as needed
+      width: 200, // Adjust the width as needed
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+    },
+    dropdownItem: {
+      padding: 10,
+      borderBottomWidth: 1,
+      borderColor: 'lightgray',
     },  
     
-  })
+  });

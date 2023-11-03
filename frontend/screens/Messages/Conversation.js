@@ -3,7 +3,11 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, Tex
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModal component
+
+import UnmatchModal from './UnmatchModal'; // Import the ReportBlockModal component
+
 import themeContext from '../../theme/themeContext';
+
 
 import axios from "axios"
 
@@ -14,6 +18,15 @@ export default function Conversation(props, {navigation}) {
     const theme = useContext(themeContext)
 
     const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
+    const [UnmatchModalVisible, setUnmatchModalVisible] = useState(false);
+
+    const openUnmatchModal = () => {
+        setUnmatchModalVisible(true);
+    };
+
+    const closeUnmatchModal = () => {
+        setUnmatchModalVisible(false);
+    };
 
     const openReportBlockModal = () => {
         setReportBlockModalVisible(true);
@@ -211,18 +224,19 @@ export default function Conversation(props, {navigation}) {
                     </Pressable>
                 </View>
                 
-                <View style={{width: '30%', alignItems: 'center', color:theme.color}}>
-                    <Text style={{color:theme.color}}>{otherUser}</Text>
+                
+                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color}}>
+                    <Text style={{fontSize: 24}}>{otherUser}</Text>
                 </View>
-                {/* <View style={{width: '30%'}} /> */}
-                <View style={{width: '30%', alignItems: 'right', backgroundColor:theme.backgroundColor}}>
-                    <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
-                        <Text style={conversationStyles.buttonText}>Block or Report</Text>
+                
+                <View style={conversationStyles.buttonContainer}>
+                    <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
+                            <Text style={[conversationStyles.buttonText,{color:theme.color}]}>Unmatch</Text>
                     </TouchableOpacity>
-                    {/* do below code for an information button */}
-                    {/* <Pressable style={{paddingLeft:80}}>
-                        <Ionicons name="information-circle-outline" size={30} color="gold" />
-                    </Pressable> */}
+                    <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
+                        <Text style={conversationStyles.buttonText}>Block</Text>
+                    </TouchableOpacity>
+ 
                 </View>
             </View>
 
@@ -250,6 +264,7 @@ export default function Conversation(props, {navigation}) {
                 </View>
 
             </KeyboardAvoidingView>
+            <UnmatchModal visible={UnmatchModalVisible} onClose={closeUnmatchModal} onCloseConversation={props.onClose} otherUsername={otherUser} />
             <ReportBlockModal visible={reportBlockModalVisible} onClose={closeReportBlockModal} onCloseConversation={props.onClose} otherUsername={otherUser} />
         </SafeAreaView>
     )
@@ -258,7 +273,7 @@ export default function Conversation(props, {navigation}) {
 
 const conversationStyles = StyleSheet.create({
     buttonText: {
-      fontSize: 15,
+      fontSize: 12,
       alignSelf: "center"
     },
     button: {
@@ -277,6 +292,12 @@ const conversationStyles = StyleSheet.create({
       alignItems: 'center',
       width: '100%'
     },
+    buttonContainer: {
+        flexDirection: 'column', // Display buttons horizontally
+        justifyContent: 'space-between', // You can change this to 'space-between' for different spacing
+        width: '20%',
+        padding: 10
+    },
     convoContainer: {
         flex: 1,
         flexDirection: 'column',
@@ -287,7 +308,7 @@ const conversationStyles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         width: '100%',
-        height: '8%',
+        height: '16%',
         alignItems: 'center',
         borderBottomWidth: 1,
         borderColor: 'gold',
