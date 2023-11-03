@@ -76,7 +76,6 @@ export default function MainFeed({navigation,checkForMatches}){
   const { notificationsEnabled, setNotificationsEnabled } = useNotification();
   const [hasNoti,setHasNoti] = useState(false);
   const theme = useContext(themeContext);
-  const navigation = useNavigation();
 
   //variables for match pop up
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
@@ -84,6 +83,10 @@ export default function MainFeed({navigation,checkForMatches}){
   useEffect(() => {
     handleRefreshFeed()
   },[currentFeed]);
+
+  const setTokenInSecureStore = async (token) => {
+    await SecureStore.setItemAsync('token', token);
+  };
 
 
   useEffect(() => {
@@ -200,6 +203,7 @@ export default function MainFeed({navigation,checkForMatches}){
       console.log("response", response);
       console.log("response.requestn: ", response.notification.request.content.data.type);
       var ans = response.notification.request.content.data.type;
+      //navigation.navigate("ChatList");
       if (ans === "like") {
        await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${username}`).then((response) => {
        //console.log(response.data.users[0]);
@@ -210,11 +214,13 @@ export default function MainFeed({navigation,checkForMatches}){
           console.log(error.response.data)
       })
     } else {
-      navigation.navigate('YourDestinationScreen');
+      navigation.navigate("ChatList");
 
     }
+    
       console.log(response);
     });
+    
     
     return () => {
       Notifications.removeNotificationSubscription(notificationListener.current);
@@ -284,6 +290,7 @@ export default function MainFeed({navigation,checkForMatches}){
       })
    
       if(isUserLiked.data.liked == true){
+        console.log("tokenval", tokenVal);
        // console.log(res.data.userLiked)
        const answer = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/messages/createConversation`, {
         token: tokenVal,
@@ -294,7 +301,9 @@ export default function MainFeed({navigation,checkForMatches}){
         console.log("Error creating conversation: ", error)
       })
         setMatchPopUpUserShown(user)
+        console.log("before usernotimatch")
         if(user.recieveNotifications) {
+          console.log("usernotificationTOken", user.username)
         sendMatchNotification(user.notificationToken,username)
         }
       }
@@ -315,7 +324,8 @@ export default function MainFeed({navigation,checkForMatches}){
           console.log("error")
         }
       });
-      console.log("like", liked);
+      
+      //tokenVal = await SecureStore.getItemAsync('token')
       const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
         token: tokenVal,
         userShown: user.username,
