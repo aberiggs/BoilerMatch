@@ -3,13 +3,11 @@ import { ObjectId } from "mongodb";
 const jwt = require( 'jsonwebtoken');
 
 export default async function handler(req, res) {
-    console.log("Attempting to like/dislike a user")
+    console.log("Attempting to dislike a user")
 
     const { database } = await connectToDatabase();
     const interactions = database.collection("interactions");
-  
 
-    console.log(req.body.user)
     // if (!req.body.user || !req.body.userShown || !req.body.liked) {
     //    return res.status(400).json({
     //         success: false,
@@ -27,21 +25,37 @@ export default async function handler(req, res) {
             return payload.username
         }
     });
-
+    
     try {
     // Query the database for potential user suggestions based on the search term
-    const user = await interactions.findOne(
+    const userAdded = await interactions.findOneAndUpdate(
       {
-        "userInteracting": req.body.userShown, "userInteractedWith": currentUser
-     },
-     {
-        "userInteracting":0, "userInteractedWith":1, "liked_or_disliked": "liked"
-     }
-    )
+        "userInteracting": currentUser,
+        "userInteractedWith": req.body.userShown
+      },
+      [{
+        $set: {
+          liked_or_disliked: {
+            $cond: {
+              if: {
+                 $not: {$eq: ["$liked_or_disliked", "disliked"] },
+              },
+              "then": "disliked",
+              "else": "neither"
+            }
+          }
+        },
+      }],
+      {
+        upsert: true,
+        new: true
+      }
+  
+    );
 
     return res.status(200).json({
       success: true,
-      liked: user!=null?user.liked_or_disliked=="liked":false,
+      user_added: userAdded,
       message: "Potential users found",
     });
   } catch (error) {

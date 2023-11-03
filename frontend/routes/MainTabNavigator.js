@@ -1,13 +1,19 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MainFeed from '../screens/MainFeed/MainFeed'
-import Messages from '../screens/Messages/Messages'
+import ChatList from '../screens/Messages/ChatList'
 import Profile from '../screens/Profile/Profile'
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
-
+    const [refreshOnMatch, SetRefreshOnMatch] = useState(false)
+    const handleMatchMade = () => {
+      // Update the externalChange state when an event occurs in this component
+      SetRefreshOnMatch(!refreshOnMatch);
+    };
+  
     return (
     <Tab.Navigator screenOptions={({ route }) => ({
         
@@ -16,7 +22,7 @@ export default function MainTabNavigator() {
         
           if (route.name === "Main Feed") {
             iconName =  "ios-home"
-          } else if (route.name === "Messages") {
+          } else if (route.name === "ChatList") {
             iconName = "chatbubble"
           }
           else {
@@ -30,8 +36,18 @@ export default function MainTabNavigator() {
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="Main Feed" component={MainFeed} />
-      <Tab.Screen name="Messages" component={Messages} />
+      <Tab.Screen
+        name="Main Feed"
+        options={{ tabBarBadge: refreshOnMatch ? 1 : null }} // Example of using the state for a badge
+      >
+        {(props) => <MainFeed {...props} handleMatchMade={handleMatchMade} />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="ChatList"
+        options={{ tabBarBadge: refreshOnMatch ? 1 : null }}
+      >
+        {(props) => <ChatList {...props} refreshOnMatch={refreshOnMatch} />}
+      </Tab.Screen>
       <Tab.Screen name="Profile" component={Profile} />
       
     </Tab.Navigator>

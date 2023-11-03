@@ -49,47 +49,72 @@ export default async function handler(req, res) {
               message: 'No image file provided' 
             });
           }
+          
 
-      
           const oldPath = image.filepath
-          const filename = username + ".jpg"
+          const filename = username + "_" + Date.now() + ".jpg"
           const rawData = fs.readFileSync(oldPath)
 
           const stream = intoStream(rawData)
           const streamLength = rawData.length 
 
-          const blobService = new BlockBlobClient(process.env.AZURE_CONNECTION_STRING, "pfp", filename);
+          const blobService = new BlockBlobClient(process.env.AZURE_CONNECTION_STRING, "otherphotos", filename);
           
           return new Promise(() => {
             blobService.uploadStream(stream, streamLength)
-                .then(() => {
+                .then(async () => {
                     console.log("Upload successful")
+
+                    const { database } = await connectToDatabase();
+                    const users = database.collection("users");
+
+                    const user = await users.findOne({username: username})
+
+                    if (!user) {
+                        return res.status(400).json({ 
+                            success: false,
+                            message: 'An unexpected error has occurred' 
+                          });
+                    }
+
+                    const images = (user.otherphotos) ? user.otherphotos.concat([filename]) : [filename]
+
+                    console.log("Updated photos list", images)
+
+                    const updateDocument = {
+                        $set: {
+                           otherphotos: images,
+                        },
+                    };
+
+                    await users.updateOne({username: username}, updateDocument)
+                
                     
                     return res.status(200).json({
                       success: true,
-                      message: 'Profile picture updated',
+                      message: 'Other photo uploaded',
                     })
                 })
                 .catch((err) => {
                     if(err) {
-                        console.log("Error uploading pfp:", err)
+                        console.log("Error uploading other photo", err)
                         return res.status(500).json({ 
                           success: false,
-                          message: 'Error uploading profile picture' 
+                          message: 'Error uploading other photo' 
                         });
                     }
                 })
             }).catch((err) => {
             return res.status(200).json({
               success: true,
-              message: 'Profile picture updated',
+              message: 'Other photo added',
             })
           })
       })
     }).catch((err) => {
       return res.status(500).json({ 
         success: false,
-        message: 'Error uploading profile picture' 
+        message: 'Error uploading other photo' 
       });
     })
 }
