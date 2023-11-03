@@ -162,8 +162,8 @@ export default function Profile({navigation}){
         <Avatar.Accessory {...iconProps} size={35} onPress={pickImage}/>
       </Avatar>
     )
-  }
-
+    }
+  
   return(
       <View style={styles.container}>
         <ScrollView style={{width: '100%'}} contentContainerStyle={styles.scrollView}>
@@ -204,10 +204,15 @@ export default function Profile({navigation}){
           <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.button} onPress={navigateToManageNotifications}>
+          <Text style={styles.buttonText}>Notifications/Other</Text>
+          </TouchableOpacity>
+
           <Pressable style={styles.button} onPress={handleLogout}>
           <TouchableOpacity style={styles.button} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
+          </Pressable>
 
         </View>
 
@@ -215,6 +220,7 @@ export default function Profile({navigation}){
       </View>
   )
 }
+
 
 const styles = StyleSheet.create({
   container: {

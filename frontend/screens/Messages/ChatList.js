@@ -9,7 +9,7 @@ import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function ChatList({navigation,refreshOnMatch}) {
+export default function ChatList({navigation,checkForMatch}) {
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
@@ -73,7 +73,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
 
     useEffect(() => {
       handleRefreshFeed()
-    },[refreshOnMatch]);
+    },[checkForMatch]);
 
     useFocusEffect(
       React.useCallback(() => {
