@@ -6,27 +6,6 @@ import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModa
 
 import axios from "axios"
 
-
-// const messagesEx = [
-//         {
-//             from: "A",
-//             message: "Yo what's up"
-//         },
-//         {
-//             from: "B",
-//             message: "Test text one"
-//         },
-//         {
-//             from: "A",
-//             message: "This is a bunch of of test text to see what happens when you create a larger message"
-//         },
-//         {
-//             from: "B",
-//             message: "💥💥💥"
-//         },
-
-//     ]
-
 export default function Conversation(props, {navigation}) {
     const [currentMessages, setCurrentMessages] = useState(null)
     const [newMessage, setNewMessage] = useState('')
@@ -95,7 +74,6 @@ export default function Conversation(props, {navigation}) {
         const updatedMessages = (currentMessages ? currentMessages : [])
         updatedMessages.push(messageObj)
         setCurrentMessages(updatedMessages)
-        setNewMessage('')
 
         const tokenVal = await SecureStore.getItemAsync('token')
         const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/send', {
@@ -111,6 +89,8 @@ export default function Conversation(props, {navigation}) {
             console.log("No response for sending message")
             return false
         }
+        await sendMessageNotification()
+        setNewMessage('')
     }
 
     const formatTimestamp = (timestamp) => {
@@ -151,6 +131,43 @@ export default function Conversation(props, {navigation}) {
         }
         return mostRecentReadMessage;
     }
+
+    async function sendMessageNotification() {
+        // console.log("Sending like noti: ", recipientNotificationToken, senderUsername)
+
+        const pushTokenRes = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNotiToken', {
+            name: otherUser,
+          }).catch((error) => {
+            if (error.response) {
+              console.log("error")
+            }
+          });
+          
+        if (!pushTokenRes || !pushTokenRes.data || !pushTokenRes.data.notificationToken) {
+        return
+        }
+
+        const notifData = {
+            to: pushTokenRes.data.notificationToken,
+            title: username + " sent a message",
+            body: newMessage,
+          }
+
+        console.log(notifData)
+
+        const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
+          headers: {
+            'host': 'exp.host',
+            'accept': 'application/json',
+            'accept-encoding': 'gzip, deflate',
+            'content-type': 'application/json'
+          }
+        }).catch((err) => {
+          console.log("Sending message failed: ", err)
+        })
+  
+        console.log(res.data)
+      }
 
     
     const messageItem = ({ item }) => {

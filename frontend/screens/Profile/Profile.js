@@ -123,9 +123,22 @@ export default function Profile({navigation}){
       navigation.navigate('ManagePreferenceRankings');
     };
   
-   const handleLogout = async () => {
+   const handleLogout = async () => {     
+        const tokenVal = await SecureStore.getItemAsync('token');
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notifications', {
+          token: tokenVal,
+          pushToken: "",
+          recieveNotifications: false,
+        }).catch((error) => {
+          if (error.response) {
+            return error.response.data;
+          }
+          return;
+        });
+  
         await SecureStore.deleteItemAsync('token')
         await SecureStore.deleteItemAsync('username')
+
         navigation.navigate("Landing")
     }
 
