@@ -31,36 +31,61 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
     }
 });
 
-//const currentUser = req.body.username
   try {
     const potentialUsers = await users.aggregate([
         { 
             $lookup: {
                 from: "interactions",
                 localField: "username",
-                foreignField: "userLiked",
-                as: "InteractionsWhereUserIsLiked"
+                foreignField: "userInteractedWith",
+                as: "InteractionsWithUser"
             },
         },
         {
             $match: {
             $and:[ 
-              {InteractionsWhereUserIsLiked: {$not: {$elemMatch: {userLiking:currentUser, liked: true}}} },
+              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "liked"}}} },
+              {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, liked_or_disliked: "disliked"}}} },
+              {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
+              {InteractionsByUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
             {"username" : { $not: { $eq: currentUser} }},
             {"discoverable": true}
           ]
-    }
-  }
-    , 
+    }},
+    
+    {
+      $project: {
+        user: "$$ROOT",
+          Interactions: {
+              $filter: {
+                  input: "$InteractionsWithUser",
+                  as: "interaction",
+                  cond: { $eq: ["$$interaction.userInteracting",  currentUser] }
+              }
+              }
+          }
+      },
+      
     {$sample: {
       size: 5
     }},
-    // {
-    //   $project: { "InteractionsWhereUserIsLiked": 0}
-    // }
-   
+    {
+      $replaceRoot: {
+          newRoot: "$user"  
+      }
+    },
+    {
+      $addFields: {
+        "interaction": "$InteractionsWithUser",
+    }
+    },
+    {
+        $project: {
+            "InteractionsWithUser": 0,
+        }
+    }
     ]).toArray()
-    
+    console.log(potentialUsers)
     return res.status(200).json({
       success: true,
       users: potentialUsers,

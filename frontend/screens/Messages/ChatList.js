@@ -7,25 +7,86 @@ import axios from "axios"
 import { Avatar } from '@rneui/themed';
 import { RefreshControl } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ChatList({navigation,refreshOnMatch}) {
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [showOnlyUsersLikedBy, setShowOnlyUsersLikedBy] = useState(false)
-  
+
+    const [searchTerm, setSearchTerm] = useState('');
+    //variables for dropdown
+    const [searchResults, setSearchResults] = useState([])
+
+    const [chatOpened, setChatOpened] = useState(false) 
+
+    const [selectedUser, setSelectedUser] = useState('')
     
-  
+    const fetchSearchMessages = async (text) => {
+      try {
+        // get token value and set it as config to send in API call
+        const tokenVal = await SecureStore.getItemAsync('token'); 
+        const config = {
+          headers: {
+            authorization: tokenVal
+          }
+        };
+
+        const response = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_HOSTNAME}/api/messages/search/${text}`,
+          config
+        );
     
+        // Check if the response status is 200 (OK)
+        if (response.status === 200) {
+          // Check if there are messages in the response
+          if (response.data.messages.length > 0) {
+            setSearchResults(response.data.messages);
+            // Set your dropdown visibility state here if needed.
+          } else {
+            // Show a pop-up message saying that no messages match.
+            console.log("No messages match")
+          }
+        } else {
+          // Handle non-200 status codes if needed.
+          console.log(`Received a non-200 status code: ${response.status}`);
+        }
+      } catch (error) {
+        console.log("Error occurred while searching for messages:", error);
+        // Handle the error as needed.
+      }
+    };
+
+    const dataFromSearch = searchResults.map(result => ({
+      userOne: result.userOne,
+      userTwo: result.userTwo,
+      message: result.messages,
+    }));
+    
+    console.log(dataFromSearch);
+    
+
+    // console.log("SEARCHHHH")
+    // console.log(searchResults)
+    // console.log("NEWDATA")
+    // console.log(dataFromSearch)
+
     useEffect(() => {
       handleRefreshFeed()
     },[refreshOnMatch]);
+
+    useFocusEffect(
+      React.useCallback(() => {
+        handleRefreshFeed();
+      }, [])
+    );
     
     
-    /* edit this function to open chat */
-    const handleUserItemClick = (user) => {
-    //   setSelectedUser(user);
-    //   setIsUserModalVisible(true);
-    };
+    // useEffect(() => {
+    //   setDisplayedUsers([...displayedUsers].sort((a, b) => a.lastUpdated - b.lastUpdated));
+    // }, [displayedUsers])
+
+   
   
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
@@ -36,13 +97,30 @@ export default function ChatList({navigation,refreshOnMatch}) {
       ).catch(error => {
         console.log("Error occurred while pulling users", error)
       })
-      console.log(response.data)
-      setDisplayedUsers(response.data.users)
+      // console.log(response.data)
+      if (response.data.users.length > 0) {
+        const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+        console.log("SORTED USERS: ", sortedUsers)
+        setDisplayedUsers(sortedUsers);
+      }
+    }
+
+    const ConversationModal = () => {
+      return (
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={chatOpened}>
+            <Conversation otherUser={selectedUser} onClose={() => setChatOpened(false)}/>
+        </Modal>
+      )
     }
   
     const handleChatPress = async(user) => {
-      //open chat    
-      console.log("chat pressed!")
+      //open chat
+      setSelectedUser(user.username)
+      setChatOpened(true)
+      console.log("CHAT PRESSED")
     };
     
   
@@ -54,48 +132,90 @@ export default function ChatList({navigation,refreshOnMatch}) {
       setRefreshing(false);
     };
   
-    const ChatItem = ({ user, onChatPress }) => (
-      <View style={styles.chatItem}>
-        <Avatar
-            size={250}
-            rounded
-            source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + user.username + '.jpg'}}
-            containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'left'}}
-            activeOpacity={0.8}
-          />
-        
-        <View style={{flexDirection: 'row'}}>
-          <TouchableOpacity style={feedStyles.iconContainer} onPress={() => onChatPress(user)}>
-            <Ionicons
-              name={'chatbubble-outline'} 
-              color={'gray'}
-              size={40}
-            />
-          </TouchableOpacity>
+    {/* RENDER FOR BLUE DOT AND UNREAD MESSAGES */}
+
+    // const ChatItem = ({ item, hasUnreadMessages }) => (
+    //   <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
+    //     <View style={styles.chatItem}>
           
-        </View>    
-      </View>
+          
+    //       <View style={{flexDirection: 'row', alignItems: 'center', }}>
+    //         <Avatar
+    //             size={100}
+    //             rounded
+    //             source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + item.otherUser.username + '.jpg'}}
+    //             containerStyle={{backgroundColor: 'grey', margin: 10}}
+    //             activeOpacity={0.8}
+                
+    //           />
+    //         { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
+    //         {hasUnreadMessages && <View style={styles.unreadDot} />} 
+    //       </View>    
+    //     </View>
+    //   </TouchableOpacity>
+    // );
+    const ChatItem = ({ item }) => (
+      <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleChatPress(item.otherUser)}>
+        <View style={styles.chatItem}>
+          
+          
+          <View style={{flexDirection: 'row', alignItems: 'center', }}>
+            <Avatar
+                size={100}
+                rounded
+                source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + item.otherUser.username + '.jpg'}}
+                containerStyle={{backgroundColor: 'grey', margin: 10}}
+                activeOpacity={0.8}
+                
+              />
+            { <Text style={feedStyles.name}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
+          </View>    
+        </View>
+      </TouchableOpacity>
     );
+
+    console.log(displayedUsers)
   
   
     return (
-      <View style={styles.flatListContainer}>
-        {displayedUsers.length > 0 ? (
-          <FlatList
-            data={displayedUsers} // Replace with your data array
-              renderItem={({ item }) => <ChatItem user={item} onChatPress={handleChatPress}/>}
+      <View style={styles.container}>
+
+        <View style={styles.topBar}>
+
+          <ConversationModal />
+          <View style ={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Search for a message"
+              onChangeText={(text) => {
+                setSearchTerm(text);
+                fetchSearchMessages(text);
+              }}
+              autoCapitalize="none"
+            />
+          </View>          
+        </View>
+
+        <View style={styles.flatListContainer}>
+          {displayedUsers.length > 0 ? (
+            <FlatList
+              data={displayedUsers} // Replace with your data array
+              
+              renderItem={({ item }) => ChatItem({item}) }
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
               horizontal={false}
               contentContainerStyle={styles.flatListContent}
-          />
+            />
           ) : (
-            <ScrollView>
-              <Text style={styles.noMatchesText}>
-                You have no matches. L
-              </Text>
-            </ScrollView>
+          <ScrollView>
+            <Text style={styles.noMatchesText}>
+              You have no matches. L
+            </Text>
+          </ScrollView>
           )}
+        </View>
       </View>
+      
     );
   }
   
@@ -104,8 +224,8 @@ export default function ChatList({navigation,refreshOnMatch}) {
     container: {
       flex: 1,
       backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: 'left',
+      justifyContent: 'left',
     },
     searchContainer: {
       backgroundColor: 'white',
@@ -122,7 +242,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
      // Take up the entire available space
       backgroundColor: 'white',
       alignContent: 'center',
-      alignItems: 'center',
+      alignItems: 'left',
       padding: 15,
       marginBottom: 10,
       shadowColor: 'black',
@@ -157,16 +277,15 @@ export default function ChatList({navigation,refreshOnMatch}) {
       flex : 1,
       position: 'relative',
       minHeight: 0,
-    }
-    ,
-    input: { // Adjust the width as needed to make it smaller
-      height: 40, // Adjust the height as needed
-      flex: 1,
+    },
+    input: {
+      width: '100%',
+      height: 40,
+      fontSize: 15,
       borderWidth: 1,
       borderColor: 'gray',
       borderRadius: 5,
-      padding: 10,
-      marginRight: 30,
+      paddingLeft: 10,
     },
     hyperlink: {
       textDecorationLine: 'underline',
@@ -192,7 +311,7 @@ export default function ChatList({navigation,refreshOnMatch}) {
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: 'white',
-      padding: 20,
+      padding: 10,
       zIndex: 1,
     },
     flatListContainer: {
@@ -224,12 +343,21 @@ export default function ChatList({navigation,refreshOnMatch}) {
       textAlign: 'left',
       marginVertical: 1,
     },
+    unreadDot: {
+      width: 10,
+      height: 10,
+      backgroundColor: 'blue',
+      borderRadius: 5,
+      marginRight: 5, // Adjust the margin as needed
+    },
     });
     
   
   const feedStyles = StyleSheet.create({
     iconContainer: {
-      paddingHorizontal: 10
+      paddingHorizontal: 10,
+      textAlign: "right",
+      alignContent: "right"
     },
     infoContainer: {
       width: '100%',
@@ -238,7 +366,8 @@ export default function ChatList({navigation,refreshOnMatch}) {
       lineHeight: 40
     },
     name: {
-      fontSize: 25
+      padding: 10,
+      fontSize: 20
     },
     username: {
       fontSize: 16,
