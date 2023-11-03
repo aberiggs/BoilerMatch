@@ -1,6 +1,8 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { Db,ObjectId} from "mongodb";
 const jwt = require( 'jsonwebtoken');
+const Spearman = require('spearman-rho');
+const { shuffle } = require('lodash');
 
 //TODO Have not tested
 export default async function handler(req, res) {
@@ -34,7 +36,6 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
 
   try {
   const userInfo = await users.findOne({username: currentUser})
-  console.log(userInfo.information)
     const potentialUsers = await users.aggregate([
         { 
             $lookup: {
@@ -52,8 +53,8 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
               {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
               {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
             {"username" : { $not: { $eq: currentUser} }},
-           {"information.gender": userInfo.information.gender},
-           {"information.yearForRoommate": userInfo.information.yearForRoommate},
+          {"information.gender": userInfo.information.gender},
+          {"information.yearForRoommate": userInfo.information.yearForRoommate},
             {"discoverable": true}
           ]
     }},
@@ -69,14 +70,38 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
     },
   },
     {$sample: {
-      size: 5
+      size: 30
     }},
     ]).toArray()
-   console.log(potentialUsers)
+    
+    const ranked_objects= Object.values(userInfo.rankings)
+
+    const current_user_rankings = ranked_objects.map((value,index, array) => 
+      array.indexOf(value));
+    const usersWithCoefficients= []
+    for (const user of potentialUsers){
+      const user_rankings = Object.values(user.rankings).map((value) => ranked_objects.indexOf(value));
+      const spearman = new Spearman(current_user_rankings, user_rankings);
+      await spearman.calc()
+      .then(value => {
+        console.log(ranked_objects); console.log(Object.values(user.rankings));
+        console.log("similarity score:" + value)
+        usersWithCoefficients.push({user,value})})
+      .catch(err => console.error(err));
+    }
+
+     usersWithCoefficients.sort((a, b) =>{
+      return b.value - a.value;
+  });
+ 
+  const top5Users = usersWithCoefficients.slice(0, 5);
+  
+  console.log(top5Users)
+  const usersInfo = shuffle(top5Users.map(item => item.user));
 
     return res.status(200).json({
       success: true,
-      users: potentialUsers,
+      users: usersInfo,
       message: "Potential users found",
     });
   } catch (error) {

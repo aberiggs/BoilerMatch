@@ -24,7 +24,8 @@
     "nodemailer": "^6.9.5",
     "npm": "^10.2.0",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "statistics.js": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "latest",
