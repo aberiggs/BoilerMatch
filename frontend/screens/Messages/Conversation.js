@@ -202,13 +202,17 @@ export default function Conversation(props, {navigation}) {
                     </Pressable>
                 </View>
                 
-                <View style={{width: '30%', alignItems: 'center'}}>
-                    <Text style={{}}>{otherUser}</Text>
+                
+                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center'}}>
+                    <Text style={{fontSize: 24}}>{otherUser}</Text>
                 </View>
-                {/* <View style={{width: '30%'}} /> */}
-                <View style={{width: '30%', alignItems: 'right'}}>
+                
+                <View style={conversationStyles.buttonContainer}>
                     <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
-                        <Text style={conversationStyles.buttonText}>Remove</Text>
+                            <Text style={conversationStyles.buttonText}>Unmatch</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
+                        <Text style={conversationStyles.buttonText}>Block</Text>
                     </TouchableOpacity>
                     {/* do below code for an information button */}
                     {/* <Pressable style={{paddingLeft:80}}>
@@ -241,7 +245,8 @@ export default function Conversation(props, {navigation}) {
                 </View>
 
             </KeyboardAvoidingView>
-            <UnmatchModal visible={UnmatchModalVisible} onClose={closeReportBlockModal} onCloseConversation={props.onClose} otherUsername={otherUser} />
+            <UnmatchModal visible={UnmatchModalVisible} onClose={closeUnmatchModal} onCloseConversation={props.onClose} otherUsername={otherUser} />
+            <ReportBlockModal visible={reportBlockModalVisible} onClose={closeReportBlockModal} onCloseConversation={props.onClose} otherUsername={otherUser} />
         </SafeAreaView>
     )
 }
@@ -249,7 +254,7 @@ export default function Conversation(props, {navigation}) {
 
 const conversationStyles = StyleSheet.create({
     buttonText: {
-      fontSize: 15,
+      fontSize: 12,
       alignSelf: "center"
     },
     button: {
@@ -268,6 +273,12 @@ const conversationStyles = StyleSheet.create({
       alignItems: 'center',
       width: '100%'
     },
+    buttonContainer: {
+        flexDirection: 'column', // Display buttons horizontally
+        justifyContent: 'space-between', // You can change this to 'space-between' for different spacing
+        width: '20%',
+        padding: 10
+    },
     convoContainer: {
         flex: 1,
         flexDirection: 'column',
@@ -278,7 +289,7 @@ const conversationStyles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         width: '100%',
-        height: '8%',
+        height: '16%',
         alignItems: 'center',
         borderBottomWidth: 1,
         borderColor: 'darkgrey',

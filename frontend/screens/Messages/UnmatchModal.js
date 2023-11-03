@@ -1,21 +1,44 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Pressable, TextInput} from 'react-native';
 import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import RNPickerSelect from "react-native-picker-select"
 import * as SecureStore from 'expo-secure-store'
+
 import axios from "axios"
 
-export default function ConfirmationModal({ visible, onClose, onReport, onUnmatch }) {
+export default function ConfirmationModal({ visible, onClose, otherUsername}) {
+
+    
+
+    const handleSubmit = async () => {
+        // api call
+        const tokenVal = await SecureStore.getItemAsync('token')
+        await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
+            params: {
+              token: tokenVal,
+              userBlocked: otherUsername,
+            }
+          }).catch(error => {
+            console.log("Error occurred while blocking users - deleting messages:", error);
+          });
+        await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/search/unmatch', {
+            params: {
+              token: tokenVal,
+              userBlocked: otherUsername,
+            }
+          }).catch(error => {
+            console.log("Error occurred while unmatching user:", error);
+          });
+
+          
+
+
+    }
+
     return (
       <Modal transparent={true} visible={visible} animationType="slide">
         <View style={styles.container}>
           <Text style={styles.title}>Choose an option:</Text>
-  
-          <TouchableOpacity style={styles.button} onPress={onReport}>
-            <Text style={styles.modalButtonText}>Report</Text>
-          </TouchableOpacity>
-  
-          <TouchableOpacity style={styles.button} onPress={onUnmatch}>
+    
+          <TouchableOpacity style={styles.button} onPress={() => {handleSubmit(); onClose();}}>
             <Text style={styles.modalButtonText}>Unmatch</Text>
           </TouchableOpacity>
   
