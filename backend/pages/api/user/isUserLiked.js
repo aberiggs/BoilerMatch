@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const interactions = database.collection("interactions");
   
 
-    console.log(req.body.user)
+    console.log(req.body.userShown)
     // if (!req.body.user || !req.body.userShown || !req.body.liked) {
     //    return res.status(400).json({
     //         success: false,
@@ -17,6 +17,7 @@ export default async function handler(req, res) {
     //     })
     // }
     const token = req.body.token;
+    console.log("token", token)
 
     const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
         if (err) {
@@ -32,16 +33,16 @@ export default async function handler(req, res) {
     // Query the database for potential user suggestions based on the search term
     const user = await interactions.findOne(
       {
-        "userLiking": currentUser, "userLiked": req.body.userShown
+        "userInteracting": req.body.userShown, "userInteractedWith": currentUser
      },
      {
-        "userLiking":0, "userLiked":0, "liked": 1
+        "userInteracting":0, "userInteractedWith":1, "liked_or_disliked": "liked"
      }
     )
 
     return res.status(200).json({
       success: true,
-      liked: user.liked,
+      liked: user!=null?user.liked_or_disliked=="liked":false,
       message: "Potential users found",
     });
   } catch (error) {

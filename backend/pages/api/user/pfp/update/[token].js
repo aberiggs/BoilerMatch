@@ -51,7 +51,6 @@ export default async function handler(req, res) {
           }
 
       
-          // Move the uploaded file to the "images" folder
           const oldPath = image.filepath
           const filename = username + ".jpg"
           const rawData = fs.readFileSync(oldPath)

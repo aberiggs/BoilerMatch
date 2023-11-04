@@ -1,22 +1,32 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import MainFeed from '../screens/MainFeed'
-import ChatRoom from '../screens/ChatRoom'
-import Profile from '../screens/Profile'
-import {Ionicons } from '@expo/vector-icons';
+import MainFeed from '../screens/MainFeed/MainFeed'
+import ChatList from '../screens/Messages/ChatList'
+import Profile from '../screens/Profile/Profile'
+import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
+    const [checkForMatch, setCheckForMatch] = useState(false)
 
+
+    const checkForMatches = () => {
+      // Update the externalChange state when an event occurs in this component
+      setCheckForMatch(!checkForMatch);
+      
+    };
+
+   
     return (
     <Tab.Navigator screenOptions={({ route }) => ({
         
         tabBarIcon: ({color, size }) => {
           let iconName;
         
-          if (route.name === "MainFeed") {
+          if (route.name === "Main Feed") {
             iconName =  "ios-home"
-          } else if (route.name === "ChatRoom") {
+          } else if (route.name === "ChatList") {
             iconName = "chatbubble"
           }
           else {
@@ -30,8 +40,18 @@ export default function MainTabNavigator() {
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="MainFeed" component={MainFeed} />
-      <Tab.Screen name="ChatRoom" component={ChatRoom} />
+      <Tab.Screen
+        name="Main Feed"
+        options={{ tabBarBadge: checkForMatch ? 1 : null }} // Example of using the state for a badge
+      >
+        {(props) => <MainFeed {...props} checkForMatches={checkForMatches} />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="ChatList"
+        options={{ tabBarBadge: checkForMatch ? 1 : null }}
+      >
+        {(props) => <ChatList {...props} checkForMatch={checkForMatch} />}
+      </Tab.Screen>
       <Tab.Screen name="Profile" component={Profile} />
       
     </Tab.Navigator>

@@ -30,19 +30,33 @@ export default async function handler(req, res) {
     // Query the database for potential user suggestions based on the search term
     const userAdded = await interactions.findOneAndUpdate(
       {
-        "userLiking": currentUser, "userLiked": req.body.userShown
-     },
-     [
+        "userInteracting": currentUser,
+        "userInteractedWith": req.body.userShown
+      },
+      [{
+        $set: {
+          liked_or_disliked: {
+            $cond: {
+              if: {
+                $not: {$eq: ["$liked_or_disliked", "liked"] },
+              },
+              "then": "liked",
+              "else": "neither"
+            }
+          },
+          date_liked_or_disliked_changed: "$$NOW"
+        },
+       
+      },
+     ],
+     
       {
-        $set: {liked: { $not: "$liked" } }
+        upsert: true,
+        new: true
       }
-    ],
   
-    {
-      upsert: true,
-    },
-    { new: true }
-    )
+    );
+    
 
     return res.status(200).json({
       success: true,

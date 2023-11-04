@@ -6,10 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type": "module"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.16.0",
+    "expo": "^49.0.16",
+    "expo-constants": "^14.4.2",
+    "expo-device": "^5.6.0",
+    "expo-notifications": "^0.23.0",
     "formidable": "^3.5.1",
     "into-stream": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
@@ -19,7 +24,9 @@
     "nodemailer": "^6.9.5",
     "npm": "^10.2.0",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "spearman-rho": "^1.0.6",
+    "statistics.js": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "latest",
