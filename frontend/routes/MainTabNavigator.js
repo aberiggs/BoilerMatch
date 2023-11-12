@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MainFeed from '../screens/MainFeed/MainFeed'
 import ChatList from '../screens/Messages/ChatList'
 import Profile from '../screens/Profile/Profile'
+import PostsFeed from '../screens/PostsFeed/PostsFeed'
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 
@@ -9,7 +10,6 @@ const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
     const [checkForMatch, setCheckForMatch] = useState(false)
-
 
     const checkForMatches = () => {
       // Update the externalChange state when an event occurs in this component
@@ -26,10 +26,11 @@ export default function MainTabNavigator() {
         
           if (route.name === "Main Feed") {
             iconName =  "ios-home"
-          } else if (route.name === "ChatList") {
+          } else if (route.name === "Messages") {
             iconName = "chatbubble"
-          }
-          else {
+          } else if (route.name === "Posts") {
+            iconName = "newspaper"
+          } else {
             iconName = "person";
           }
     
@@ -46,12 +47,16 @@ export default function MainTabNavigator() {
       >
         {(props) => <MainFeed {...props} checkForMatches={checkForMatches} />}
       </Tab.Screen>
+
+      <Tab.Screen name="Posts" component={PostsFeed} />
+
       <Tab.Screen
-        name="ChatList"
+        name="Messages"
         options={{ tabBarBadge: checkForMatch ? 1 : null }}
       >
         {(props) => <ChatList {...props} checkForMatch={checkForMatch} />}
       </Tab.Screen>
+
       <Tab.Screen name="Profile" component={Profile} />
       
     </Tab.Navigator>
