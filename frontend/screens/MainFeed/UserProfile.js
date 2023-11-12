@@ -1,30 +1,60 @@
 
-import { StyleSheet, Text, View, Pressable, ScrollView, Image} from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView, Image, TouchableOpacity} from 'react-native';
 import React, {useState, useEffect, useRef, useContext} from 'react';
 import { Avatar } from '@rneui/themed';
 import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
+import { Ionicons,FontAwesome} from '@expo/vector-icons';
 
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
   const carouselRef = useRef(null);
-
+  const [viewingSelf, setViewingSelf] = useState(false)
   const selectedUser = props.user
   const theme = useContext(themeContext)
-
+  const [userLiked, setUserLiked] = useState(false)
+  const [userBookmarked, setUserBookmarked] = useState(false)
+  const [userDisliked, setUserDisliked] = useState(false)
   const goForward = () => {
     carouselRef.current.snapToNext();
   };
 
-  console.log("Backgroundtheme", theme.background);
-  console.log("djkflsa",theme.color )
+
+  useEffect(() => {
+    getInteractionWithUser()
+  }, [props.visible]);
 
   useEffect(() => {
     getUserPhotos()
   }, []);
+  
+  const getInteractionWithUser = async() => {
 
+    console.log(selectedUser)
+    const tokenVal = await SecureStore.getItemAsync('token');
+    response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getInteractionWithUser', {
+      token: tokenVal,
+      userShown: selectedUser.username
+
+    }
+    ).catch(error => {
+      console.log("Error occurred while getting users:", error)
+    })
+    console.log("HII")
+    console.log(response.data)
+    setViewingSelf(response.data.viewingSelf)
+
+    interaction = response.data.interaction
+    if (interaction != null){
+    setUserLiked(interaction.liked_or_disliked =="liked" || false)
+    
+    setUserDisliked(interaction.liked_or_disliked =="disliked" || false)
+
+    setUserBookmarked(interaction.bookmarked || false)
+  }
+  }
   /* Gets the URI's for all user photos */
   const getUserPhotos = async () => {
     console.log(selectedUser)
@@ -114,6 +144,33 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
 
         </ScrollView>
+        { !viewingSelf ? (
+        <View style={modalStyles.iconRow}>
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() =>{setUserLiked(!userLiked); setUserDisliked(false); props.handleLikePress(selectedUser)}}>
+          <Ionicons
+            name={userLiked ? 'heart' : 'heart-outline'} 
+            color={userLiked ? 'red' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() => {setUserBookmarked(!userBookmarked); props.handleBookmarkPressed(selectedUser)}}>
+          <Ionicons
+            name={userBookmarked ? 'bookmark' : 'bookmark-outline'} 
+            color={userBookmarked ? 'gold' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() => {setUserDisliked(!userDisliked); setUserLiked(false); props.handleDislikePress(selectedUser)}}>
+          <Ionicons
+            name={userDisliked ? 'heart-dislike' : 'heart-dislike-outline'} 
+            color={userDisliked? 'red' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+      </View>
+        ):(<></>)}
+
         <View style={modalStyles.closeButtonContainer}>
           <Pressable style={modalStyles.closeButton} onPress={props.closeModal}>
             <Text style={modalStyles.closeButtonText}>Close</Text>
@@ -138,6 +195,14 @@ const modalStyles = StyleSheet.create({
     height: '90%', 
     alignItems: 'center',
   },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    width: "60%"
+  },
+  iconContainer: {
+    paddingHorizontal: 5
+  },
   closeButtonContainer: {
     flexDirection: 'column',
     justifyContent: 'flex-end',
@@ -148,7 +213,7 @@ const modalStyles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
-    width: 'auto',
+    width: '60%',
     alignSelf: 'center',
     padding: 10
   },

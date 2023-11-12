@@ -272,7 +272,7 @@ export default function MainFeed({navigation,checkForMatches}){
       })
 
       //Update returns what the data previously look like so if there was no interaction
-      //we set to true and if there was an interaction we said liked to the reciprocal
+      //we set to true and if there was an interaction we set liked to the reciprocal
       let liked = true
       
       if(response.data.user_added == null){
@@ -281,8 +281,6 @@ export default function MainFeed({navigation,checkForMatches}){
       else{
         liked = !(response.data.user_added.liked_or_disliked == "liked")
       }
-      if(liked == true){
-
       const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
         token: tokenVal,
         userShown: user.username,
@@ -290,7 +288,7 @@ export default function MainFeed({navigation,checkForMatches}){
       ).catch(error => {
         console.log("error occurred while liking user:", error)
       })
-   
+      if(liked == true){
       if(isUserLiked.data.liked == true){
         console.log("tokenval", tokenVal);
        // console.log(res.data.userLiked)
@@ -310,12 +308,22 @@ export default function MainFeed({navigation,checkForMatches}){
         }
       }
     }
+    else{
+      setMatchPopUpUserShown(null)
+    }
 
       setUsersLiked((usersLiked) => ({
         ...usersLiked,
         [user.username]: liked,
       })
       )
+      if(liked && usersDisliked[user.username]){
+        setUsersDisliked((usersDisliked) => ({
+          ...usersDisliked,
+          [user.username]: false,
+        })
+        )
+      }
       
       console.log("user", user.username);
       console.log("user noties", user.recieveNotifications)
@@ -328,15 +336,8 @@ export default function MainFeed({navigation,checkForMatches}){
       });
       
       //tokenVal = await SecureStore.getItemAsync('token')
-      const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
-        token: tokenVal,
-        userShown: user.username,
-      }
-      ).catch(error => {
-        console.log("error occurred while liking user:", error)
-      })
       if (ans && ans.data && ans.data.notificationToken) {
-        token = ans.data.notificationToken;
+        const token = ans.data.notificationToken;
         console.log("other user", token);
        
         if (user.recieveNotifications && liked && !isUserLiked.data.liked) {
@@ -345,16 +346,8 @@ export default function MainFeed({navigation,checkForMatches}){
       }
       //await schedulePushNotification(username)
       //commented out but this is how you send notifications to others
-      console.log("likenotifcation", token);
+     // console.log("likenotifcation", token);
 
-      
-      if(liked && usersDisliked[user.username]){
-        setUsersDisliked((usersDisliked) => ({
-          ...usersDisliked,
-          [user.username]: false,
-        })
-        )
-      }
     
       checkForMatches()
   };
@@ -380,7 +373,9 @@ export default function MainFeed({navigation,checkForMatches}){
       else{
         disliked = !(response.data.user_added.liked_or_disliked == "disliked")
       }
-
+      if(disliked){
+        setMatchPopUpUserShown(null)
+      }
       setUsersDisliked((usersDisliked) => ({
         ...usersDisliked,
         [user.username]: disliked,
@@ -426,6 +421,7 @@ export default function MainFeed({navigation,checkForMatches}){
   const handleUserItemClick = (user) => {
     setSelectedUser(user);
     setIsUserModalVisible(true);
+
   };
   
   const handleCloseUserModal = () => {
@@ -439,6 +435,7 @@ export default function MainFeed({navigation,checkForMatches}){
     setRefreshing(false);
   };
 
+  
   const FeedItem = ({ user }) => (
     <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
       <Avatar
@@ -452,7 +449,7 @@ export default function MainFeed({navigation,checkForMatches}){
       <View style={styles.iconRow}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user)}>
           <Ionicons
-            name={usersLiked[user.username] ? 'heart' : 'heart-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={usersLiked[user.username] ? 'heart' : 'heart-outline'} 
             color={usersLiked[user.username] ? 'red' : 'gray'}
             size={40}
           />
@@ -462,14 +459,14 @@ export default function MainFeed({navigation,checkForMatches}){
         <View style={{flexDirection:"row"}}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleUserItemClick(user)}>
           <Ionicons
-            name={'information-circle-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={'information-circle-outline'} 
             color={'gray'}
             size={40}
           />
         </TouchableOpacity>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleBookmarkPressed(user)}>
           <Ionicons
-            name={usersBookmarked[user.username] ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={usersBookmarked[user.username] ? 'bookmark' : 'bookmark-outline'} 
             color={usersBookmarked[user.username] ? 'gold' : 'gray'}
             size={40}
           />
@@ -478,12 +475,11 @@ export default function MainFeed({navigation,checkForMatches}){
 
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleDislikePress(user)}>
           <Ionicons
-            name={usersDisliked[user.username] ? 'heart-dislike' : 'heart-dislike-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={usersDisliked[user.username] ? 'heart-dislike' : 'heart-dislike-outline'} 
             color={usersDisliked[user.username] ? 'red' : 'gray'}
             size={40}
           />
         </TouchableOpacity>
-        
       </View>
 
       <View style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]}>
@@ -539,17 +535,18 @@ export default function MainFeed({navigation,checkForMatches}){
     });
   };
 
-  useEffect(() => {
-    if (selectedUser) {
-      setSearchResult([selectedUser]);
-    } else {
-      setSearchResult([]);
-    }
-  }, [selectedUser]);
+  // useEffect(() => {
+  //   if (selectedUser) {
+  //     setSearchResult([selectedUser]);
+  //   } else {
+  //     setSearchResult([]);
+  //   }
+  // }, [selectedUser]);
   
   const handleSearchListButtonPress = (value,index) => {
     setSelectedUser(value);
-    toggleModal()
+    setIsUserModalVisible(true)
+   
   };
       
   
@@ -621,39 +618,39 @@ export default function MainFeed({navigation,checkForMatches}){
    
     }
 
-  const renderModal = () => {
-    if (searchResult) {
-      return (
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={isModalVisible}
-        >
-          <UserProfile user={selectedUser} closeModal={() => setIsModalVisible(false)}/>
-        </Modal>
-      );
-    }  else if (userNotFound) {
-      return (
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={userNotFound}
-        >
-          <View style={modalStyles.modalContainer}>
-            <View style={modalStyles.modalContent}>
-              <Text>User not found</Text>
-              <View style={modalStyles.closeButtonContainer}>
-                <Button title="Close" onPress={toggleUser} />
-              </View>
-            </View>
-          </View>
-        </Modal>
-      );
-    }
-    else {
-      return null;
-    }
-};  
+//   const renderModal = () => {
+//     if (searchResult) {
+//       return (
+//         <Modal
+//           animationType="slide"
+//           transparent={false}
+//           visible={isModalVisible}
+//         >
+//           <UserProfile user={selectedUser} closeModal={() => setIsModalVisible(false)}/>
+//         </Modal>
+//       );
+//     }  else if (userNotFound) {
+//       return (
+//         <Modal
+//           animationType="slide"
+//           transparent={false}
+//           visible={userNotFound}
+//         >
+//           <View style={modalStyles.modalContainer}>
+//             <View style={modalStyles.modalContent}>
+//               <Text>User not found</Text>
+//               <View style={modalStyles.closeButtonContainer}>
+//                 <Button title="Close" onPress={toggleUser} />
+//               </View>
+//             </View>
+//           </View>
+//         </Modal>
+//       );
+//     }
+//     else {
+//       return null;
+//     }
+// };  
     return(
       <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
         <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
@@ -711,18 +708,9 @@ export default function MainFeed({navigation,checkForMatches}){
         </View>
 
         
-        {selectedUser && (
-          <Modal
-            animationType="slide"
-            transparent={false}
-            visible={isUserModalVisible}
-          >
-            <UserProfile user={selectedUser} closeModal={handleCloseUserModal}/>
-          </Modal>
-        )}
 
     
-       {renderModal()}
+       {/* {renderModal()} */}
         
         <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp} navigation={navigation}/>
 
@@ -750,6 +738,13 @@ export default function MainFeed({navigation,checkForMatches}){
             </ScrollView>
           )}
         </View>
+        <Modal
+            animationType="slide"
+            transparent={false}
+            visible={isUserModalVisible}
+          >
+            <UserProfile visible={isUserModalVisible} user={selectedUser} closeModal={handleCloseUserModal} handleLikePress={handleLikePress} handleBookmarkPressed={handleBookmarkPressed} handleDislikePress={handleDislikePress}/>
+          </Modal>
       </View>
   );
     }
