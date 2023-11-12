@@ -75,7 +75,7 @@ export default function ManageInformation({navigation}) {
     setMajor(text);
   };
 
-  const badWords = ["fuck", "shit", "slut", "whore", "cunt", "bitch", "dick", "sprocket"]
+  const badWords = ["fuck", "shit", "slut", "whore", "cunt", "bitch", "dick", "pussy"]
 
   const checkBad = () => {
     const first = firstName.toLowerCase()
