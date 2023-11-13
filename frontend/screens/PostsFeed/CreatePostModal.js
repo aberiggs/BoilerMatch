@@ -5,7 +5,7 @@ import RNPickerSelect from "react-native-picker-select"
 import * as SecureStore from 'expo-secure-store'
 import axios from "axios"
 
-export default function ReportBlockModal({ visible, onClose }) {
+export default function CreatePostModal({ visible, onClose }) {
   
   const [category, setCategory] = useState('');
   const [titleOfPost, setTitleOfPost] = useState('');
@@ -35,30 +35,28 @@ export default function ReportBlockModal({ visible, onClose }) {
 
   const createPostApi = async(user) => {
     console.log("creating post with api call")
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/createPost', {
+      token: tokenVal,
+      category: category,
+      title: titleOfPost,
+      details: detailsOfPost,
+    }). catch(error => {
+      console.log("Error occured while creating posts: ", error)
+    })
+    setCategory('');
+    setTitleOfPost('');
+    setDetailsOfPost('');
   }
 
-//   const blockThroughApi = async(user) => {
-//     console.log("BLOCKING THROUGH API")
-//     const tokenVal = await SecureStore.getItemAsync('token')
-//     const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportOtherUser/blockOtherUser', {
-//       token: tokenVal,
-//       userBlocked: otherUsername,
-//     }
-//     ).catch(error => {
-//       console.log("Error occurred while blocking users:", error)
-//     })
-//     console.log(response)
-//     const response2 = await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
-//       params: {
-//         token: tokenVal,
-//         userBlocked: otherUsername,
-//       }
-//     }).catch(error => {
-//       console.log("Error occurred while blocking users - deleting messages:", error);
-//     });
-    
-//     console.log(response2)
-
+  const onCloseModal = () => {
+    setCategory('');
+    setTitleOfPost('');
+    setDetailsOfPost('');
+    setErrMsgVisible(false);
+    setSubmitMsgVisible(false);
+    onClose();
+  };
 
   return (
     <Modal
@@ -68,7 +66,7 @@ export default function ReportBlockModal({ visible, onClose }) {
     >
       <View style={styles.container}>
         
-        <Pressable style={{padding: 6, alignSelf:"flex-start", marginTop: 40}} onPress={onClose}>
+        <Pressable style={{padding: 6, alignSelf:"flex-start", marginTop: 40}} onPress={onCloseModal}>
           <Ionicons name="chevron-back" size={30} color="gold" />
         </Pressable>
 
@@ -82,8 +80,9 @@ export default function ReportBlockModal({ visible, onClose }) {
                 onValueChange={(value) => setCategory(value)}
                 value={category}
                 items={[
-                    { label: "Yes", value: "yes" },
-                    { label: "No", value: "no" },
+                    { label: "Housing", value: "housing" },
+                    { label: "Roommate searching", value: "roommateSearching" },
+                    { label: "MISC", value: "misc" },
                 ]}
                 style={pickerSelectStyles}
             /> 
@@ -143,7 +142,7 @@ export default function ReportBlockModal({ visible, onClose }) {
               <Text style={styles.modalText}>
                 You have successfully created a post.
               </Text>
-              <Pressable style={styles.modalButton} onPress={() => {setSubmitMsgVisibleReport(false); onClose();}}>
+              <Pressable style={styles.modalButton} onPress={() => {setSubmitMsgVisible(false); onClose();}}>
                 <Text style={styles.modalButtonText}>OK</Text>
               </Pressable>
             </View>

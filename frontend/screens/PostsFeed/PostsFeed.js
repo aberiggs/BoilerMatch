@@ -4,7 +4,19 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
 import * as SecureStore from 'expo-secure-store';
 
+import CreatePostModal from './CreatePostModal'; // Import the ReportBlockModal component
+
 export default function PostsFeed({navigation}) {
+
+    const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
+
+    const openCreatePostModal = () => {
+        setCreatePostModalVisible(true);
+    };
+
+    const closeCreatePostModal = () => {
+        setCreatePostModalVisible(false);
+    };
 
     const displayedPosts = [{title: "Looking for a roommate!"},
                             {title: "Subleasing for Spring 2024"}, 
@@ -15,6 +27,7 @@ export default function PostsFeed({navigation}) {
             <Text>
                 {item.title}
             </Text>
+            
         </View>
     )
 
@@ -29,12 +42,13 @@ export default function PostsFeed({navigation}) {
                 horizontal={false}
             />
             <View style={styles.bottomContainer}>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={openCreatePostModal}>
                     <Text style={styles.buttonText}>
                         Create Post
                     </Text>
                 </TouchableOpacity>
             </View>
+            <CreatePostModal visible={createPostModalVisible} onClose={closeCreatePostModal} />
        </View>
     )
 

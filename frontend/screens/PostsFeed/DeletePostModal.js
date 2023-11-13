@@ -5,7 +5,7 @@ import RNPickerSelect from "react-native-picker-select"
 import * as SecureStore from 'expo-secure-store'
 import axios from "axios"
 
-export default function ReportBlockModal({ visible, onClose }) {
+export default function DeletePostModal({ visible, onClose }) {
   
   const [confirmation, setConfirmation] = useState('');
 
