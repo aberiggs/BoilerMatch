@@ -1,5 +1,5 @@
 import { StyleSheet, View, FlatList, Text, TouchableOpacity} from 'react-native';
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
 import * as SecureStore from 'expo-secure-store';
@@ -8,70 +8,77 @@ import themeContext from '../../theme/themeContext';
 import CreatePostModal from './CreatePostModal'; // Import the ReportBlockModal component
 
 export default function PostsFeed({navigation}) {
+  const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
+  const theme = useContext(themeContext);
+  const [username, setUsername] = useState(null);
+  const [posts, setPosts] = useState(null)
+  
 
-    const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
-    const theme = useContext(themeContext);
-    const [username, setUsername] = useState(null);
-    
-    const openCreatePostModal = () => {
-        setCreatePostModalVisible(true);
-    };
+  useEffect(() => {
+    console.log("Initializing")
+    initialize()
+  },[])
 
-    const closeCreatePostModal = () => {
-        setCreatePostModalVisible(false);
-    };
+  const initialize = async () => {
+    const userVal = await SecureStore.getItemAsync('username')
+    setUsername(userVal)
+    fetchPosts()
+  }
 
-    const initialize = async () => {
-      const userVal = await SecureStore.getItemAsync('username')
-      setUsername(userVal)
+  const fetchPosts = async () => {
+    console.log("Fetching...")
+    const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getPostList', { params: {
+      fetchAmount: 20
+    }}).catch(error => {
+      console.log("Error occurred while fetching posts: ", error)
+    })
+
+    // Fails to fetch data
+    if (!res || !res.data || !res.data.postList) {
+      return
     }
 
-    initialize()
-
-    // @ Sprocket, you can look at ChatList and formatTimestamp or formatTimestampDate
-    // and see how you wanna format the timestamp thats going on the feed
+    setPosts(res.data.postList)
     
+  }
 
-    const displayedPosts = [{title: "Looking for a roommate!"},
-                            {title: "Subleasing for Spring 2024"}, 
-                            {title: "Where can I find cheaper leases?"}]
+  const PostItem = ({item}) => {
+    
+    const lastUpdated = "x days ago"
 
-    const PostItem = ({item}) => (
+    return (
       <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
-          <View style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]}>
-            <Text style={[feedStyles.name, {color:theme.color}]}>{"Title"}</Text>
-            <Text style={feedStyles.username}>@{"username handle"}</Text>
-            <Text style={[styles.subtitle, {color:theme.color}]}>
-              <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Timestamp: </Text>
-            </Text>
-            <Text style={[styles.subtitle, {color:theme.color}]}>
-              <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Details </Text>
-            </Text>
-            
-          </View> 
-        </View>
+        <View style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]}>
+          <Text style={[feedStyles.title, {color:theme.color}]}>{item.title}</Text>
+          <Text style={feedStyles.username}>@{item.user}</Text>
+          <Text style={[styles.subtitle, {color:theme.color}]}>
+            <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
+          </Text>
+        </View> 
+      </View>
     )
+  }
 
-    return(
-        <View style={styles.container}>
-            <FlatList
-                style={styles.postsListContainer}
-                data={displayedPosts}
-                
-                renderItem={({ item }) => PostItem({item}) }
-                keyExtractor={(item) => item._id} // Replace with a unique key extractor
-                horizontal={false}
-            />
-            <View style={styles.bottomContainer}>
-                <TouchableOpacity style={styles.button} onPress={openCreatePostModal}>
-                    <Text style={styles.buttonText}>
-                        Create Post
-                    </Text>
-                </TouchableOpacity>
-            </View>
-            <CreatePostModal visible={createPostModalVisible} onClose={closeCreatePostModal} />
-       </View>
-    )
+  return(
+    <View style={styles.container}>
+      <FlatList
+          style={styles.postsListContainer}
+          data={posts}
+          
+          renderItem={({ item }) => PostItem({item}) }
+          keyExtractor={(item) => {return item.id}} 
+          horizontal={false}
+      />
+      <View style={styles.bottomContainer}>
+          <TouchableOpacity style={styles.button} onPress={() => setCreatePostModalVisible(true)}>
+              <Text style={styles.buttonText}>
+                  Create Post
+              </Text>
+          </TouchableOpacity>
+      </View>
+      <CreatePostModal visible={createPostModalVisible} onClose={() => {setCreatePostModalVisible(false); fetchPosts()}} />
+    </View>
+  )
 
 }
 
@@ -129,15 +136,16 @@ const feedStyles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 40,
   },
-  name: {
-    fontSize: 25
+  title: {
+    fontSize: 16
   },
   username: {
     fontSize: 16,
     color: 'grey',
-    paddingBottom: 6
+    paddingBottom: 0
   },
   infoLabel: {
-    fontWeight: '600',
+    fontSize: 14,
+    color: 'grey'
   },  
 })

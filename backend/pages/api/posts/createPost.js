@@ -13,9 +13,9 @@ export default async function handler(req, res) {
     /* Check that request body is valid. This shouldn't happen, as there is validation in frontend, so we will throw an error if it occurs. */
     console.log("body ", req.body)
     console.log("token ", req.body.token)
-    console.log("token ", req.body.category)
-    console.log("token ", req.body.title)
-    console.log("token ", req.body.details)
+    console.log("category ", req.body.category)
+    console.log("title ", req.body.title)
+    console.log("details ", req.body.details)
 
 
     if (!req.body || !req.body.token || !req.body.category || !req.body.title || !req.body.details) {
