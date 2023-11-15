@@ -28,9 +28,9 @@ export default function Comment(props, {navigation}) {
         updatedComments.push(newComment)
         setComments(updatedComments)
 
-        const tokenVal = await SecureStore.getItemAsync('token')
+        const username = await SecureStore.getItemAsync('username')
         const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/createComment', {
-          token: tokenVal,
+          username: username,
           comment: newComment,
           id: post._id,
         }). catch(error => {

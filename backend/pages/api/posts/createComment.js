@@ -9,30 +9,14 @@ export default async function handler(req, res) {
     const postsCollection = database.collection("posts");
     const currentDateTime = new Date()
 
-    if (!req.body || !req.body.token || !req.body.id || !req.body.comment) {
+    if (!req.body || !req.body.username || !req.body.id || !req.body.comment) {
         return res.status(400).json({
             success: false,
             message: "Your comment is empty."
         })
     }
-
-    const tokenData = jwt.verify(req.body.token, 'MY_SECRET', (err, payload) => {
-        if (err) {
-            return res.status(400).json({
-                success: false,
-            })
-        } else {
-            return payload
-        }
-    });
-  
-    if (!tokenData) {
-        return res.status(400).json({
-            success: false,
-        })
-    }
     
-    const username = tokenData.username
+    const username = req.body.username
     const post = await postsCollection.findOne({_id: new ObjectId(req.body.id)})
     const newComment = {from: username, details: req.body.comment, timestamp: currentDateTime}
 
