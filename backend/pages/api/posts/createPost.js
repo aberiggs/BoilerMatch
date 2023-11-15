@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     
     const username = tokenData.username
 
-    const newPost = {user: username, timestamp: currentDateTime, category: req.body.category, title: req.body.title, details: req.body.details }
+    const newPost = {user: username, timestamp: currentDateTime, category: req.body.category, title: req.body.title, details: req.body.details, comments: [] }
     await postsCollection.insertOne(newPost).catch(err => {
         return res.status(400).json({
             success: false,

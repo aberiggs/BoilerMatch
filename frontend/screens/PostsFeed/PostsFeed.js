@@ -1,5 +1,6 @@
-import { StyleSheet, View, FlatList, Text, TouchableOpacity} from 'react-native';
+import { StyleSheet, View, Modal, FlatList, Text, TouchableOpacity} from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
+import Comment from './Comment';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
 import * as SecureStore from 'expo-secure-store';
@@ -9,6 +10,8 @@ import CreatePostModal from './CreatePostModal'; // Import the ReportBlockModal 
 
 export default function PostsFeed({navigation}) {
   const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
+  const [selectedPost, setSelectedPost] = useState('')
+  const [postOpened, setPostOpened] = useState(false) 
   const theme = useContext(themeContext);
   const [username, setUsername] = useState(null);
   const [posts, setPosts] = useState(null)
@@ -42,25 +45,46 @@ export default function PostsFeed({navigation}) {
     
   }
 
+  const PostModal = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={postOpened}>
+          <Comment post={selectedPost} onClose={() => setPostOpened(false)}/>
+      </Modal>
+    )
+  }
+
+  const handlePostPress = async (post) => {
+    if (post) {
+      setSelectedPost(post)
+      setPostOpened(true)
+    } else {
+      console.log("User is undefined");
+    }
+  };
+
   const PostItem = ({item}) => {
     
     const lastUpdated = "x days ago"
 
     return (
       <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
-        <View style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]}>
+        <TouchableOpacity style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handlePostPress(item)}>
           <Text style={[feedStyles.title, {color:theme.color}]}>{item.title}</Text>
           <Text style={feedStyles.username}>@{item.user}</Text>
           <Text style={[styles.subtitle, {color:theme.color}]}>
             <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
           </Text>
-        </View> 
+        </TouchableOpacity> 
       </View>
     )
   }
 
   return(
     <View style={styles.container}>
+      <PostModal />
       <FlatList
           style={styles.postsListContainer}
           data={posts}
