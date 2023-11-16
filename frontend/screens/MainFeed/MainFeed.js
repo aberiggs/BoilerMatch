@@ -111,7 +111,7 @@ export default function MainFeed({navigation,checkForMatches}){
     //  console.log("notiSettings: ", notificationsEnabled)
 
   //NotificationSettings()
-
+  console.log("notificationsEnabled: ", notificationsEnabled);
   useEffect(() => {
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
       if (notificationsEnabled) {

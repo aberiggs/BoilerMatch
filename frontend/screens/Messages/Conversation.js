@@ -1,12 +1,14 @@
 import { useEffect, useState, useContext } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModal component
+import { Avatar } from '@rneui/themed';
 
 import UnmatchModal from './UnmatchModal'; // Import the ReportBlockModal component
 
 import themeContext from '../../theme/themeContext';
+import UserProfile from '../MainFeed/UserProfile'
 
 
 import axios from "axios"
@@ -19,6 +21,9 @@ export default function Conversation(props, {navigation}) {
 
     const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
     const [UnmatchModalVisible, setUnmatchModalVisible] = useState(false);
+    const [otherUserKey, setOtherUserKey] = useState(null)
+    const [isUserModalVisible,setIsUserModalVisible] = useState(false);
+    const [selectedUser, setSelectedUser] = useState('');
 
     const openUnmatchModal = () => {
         setUnmatchModalVisible(true);
@@ -35,13 +40,26 @@ export default function Conversation(props, {navigation}) {
     const closeReportBlockModal = () => {
         setReportBlockModalVisible(false);
     };
+    const handleUserItemClick = (user) => {
+        setSelectedUser(user);
+        setIsUserModalVisible(true);
+        console.log("Touched");
+      };
+      const handleCloseUserModal = () => {
+        setIsUserModalVisible(false);
+      };
 
     const otherUser = props.otherUser
+    const user = props.user
 
     useEffect(() => {
-        initialize()
+        initialize();
     },[])
+    
+    
+      //fetchUser(otherUser)
 
+    console.log("otherUserKey", props)
     const initialize = async () => {
         const userVal = await SecureStore.getItemAsync('username')
         setUsername(userVal)
@@ -58,6 +76,8 @@ export default function Conversation(props, {navigation}) {
             }
         }
     }
+
+    
 
     const fetchMessages = async (previousMessages) => {
         const tokenVal = await SecureStore.getItemAsync('token')
@@ -193,7 +213,8 @@ export default function Conversation(props, {navigation}) {
         const messageBoxStyle = item.from === username ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox;
         const isCurrentUser = item.from === username;
         const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
-    
+
+       
         return (
             <View style={[messageContainerStyle]}>
                 <View style={messageBoxStyle}>
@@ -215,9 +236,8 @@ export default function Conversation(props, {navigation}) {
             </View>
         );
     };
-    
-      
 
+    //console.log("otherUser", otherUser);
     return(
         <SafeAreaView style={{height: '100%', width: '100%', backgroundColor:theme.background}}>
             <View style={[conversationStyles.headingContainer, {backgroundColor:theme.background}]}>
@@ -226,8 +246,18 @@ export default function Conversation(props, {navigation}) {
                         <Ionicons name="chevron-back" size={30} color="gold" />
                     </Pressable>
                 </View>
+                <TouchableOpacity onPress={() => handleUserItemClick(props.otherUserItem)}>
+                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color }}>
+                <Avatar
+                        size={110}
+                        rounded
+                        source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + otherUser + '.jpg'}}
+                        containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
+                        activeOpacity={0.8}
+                    />
                 
-                
+                </View>
+                </TouchableOpacity>
                 <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color}}>
                     <Text style={{fontSize: 24, color:theme.color}}>{otherUser}</Text>
                 </View>
@@ -242,7 +272,15 @@ export default function Conversation(props, {navigation}) {
  
                 </View>
             </View>
-
+            {selectedUser && (
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={isUserModalVisible}
+          >
+            <UserProfile user={selectedUser} closeModal={handleCloseUserModal}/>
+          </Modal>
+        )}
             <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={[conversationStyles.convoContainer, {backgroundColor:theme.background}]}>
                 <FlatList
                     style={[conversationStyles.chatScrollView, {backgroundColor:theme.backgroundColor}]}

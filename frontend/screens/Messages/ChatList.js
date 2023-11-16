@@ -37,6 +37,12 @@ export default function ChatList({navigation,checkForMatch}) {
 
     const [username, setUsername] = useState(null);
 
+    const [selecetedUserkey, setselectedUserKey] = useState(null);
+
+
+
+    
+
     useEffect(() => {
       initialize()
     },[])
@@ -62,6 +68,7 @@ export default function ChatList({navigation,checkForMatch}) {
         fetchUnreadMessages(usernames);
       }
     }
+    
     
     const fetchSearchMessages = async (text) => {
       try {
@@ -139,6 +146,7 @@ export default function ChatList({navigation,checkForMatch}) {
         setDisplayedUsers(sortedUsers);
       }
     }
+    
 
     const ConversationModal = () => {
       return (
@@ -146,14 +154,15 @@ export default function ChatList({navigation,checkForMatch}) {
           animationType="slide"
           transparent={false}
           visible={chatOpened}>
-            <Conversation otherUser={selectedUser} onClose={() => setChatOpened(false)}/>
+            <Conversation otherUser={selectedUser} otherUserItem={selecetedUserkey} onClose={() => setChatOpened(false)}/>
         </Modal>
       )
     }
-  
+
     const handleChatPress = async (user) => {
       console.log("INPUT", user)
       if (user) {
+        setselectedUserKey(user)
         setSelectedUser(user.username);
         setChatOpened(true);
         console.log("CHAT PRESSED");
@@ -338,14 +347,14 @@ export default function ChatList({navigation,checkForMatch}) {
 };
     
     const ChatItem = ({ item }) => (
-      <TouchableOpacity style={[feedStyles.iconContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handleChatPress(item.otherUser)}>
+      <TouchableOpacity style={[feedStyles.iconContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => {handleChatPress(item.otherUser); }}>
         <View style={[styles.chatItem, {backgroundColor:theme.backgroundColor}]}>
 
           
           
           <View style={{flexDirection: 'row', alignItems: 'center', }}>
             <Avatar
-                size={100}
+                size={100} 
                 rounded
                 source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + item.otherUser.username + '.jpg'}}
                 containerStyle={{backgroundColor: 'grey', margin: 10}}
