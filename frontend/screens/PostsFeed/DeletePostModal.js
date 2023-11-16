@@ -35,6 +35,13 @@ export default function DeletePostModal({ visible, onClose }) {
     console.log("creating post with api call")
   }
 
+  const onCloseModal = () => {
+    setErrMsgVisible(false);
+    setSubmitMsgVisible(false);
+    setConfirmation('');
+    onClose()
+  }
+
 //   const blockThroughApi = async(user) => {
 //     console.log("BLOCKING THROUGH API")
 //     const tokenVal = await SecureStore.getItemAsync('token')
@@ -66,7 +73,7 @@ export default function DeletePostModal({ visible, onClose }) {
     >
       <View style={styles.container}>
         
-        <Pressable style={{padding: 6, alignSelf:"flex-start", marginTop: 40}} onPress={onClose}>
+        <Pressable style={{padding: 6, alignSelf:"flex-start", marginTop: 40}} onPress={onCloseModal}>
           <Ionicons name="chevron-back" size={30} color="gold" />
         </Pressable>
 
@@ -81,7 +88,6 @@ export default function DeletePostModal({ visible, onClose }) {
                 value={confirmation}
                 items={[
                     { label: "Yes", value: "yes" },
-                    { label: "No", value: "no" },
                 ]}
                 style={pickerSelectStyles}
             /> 
@@ -90,7 +96,7 @@ export default function DeletePostModal({ visible, onClose }) {
             <Text style={styles.modalButtonText}>OK</Text>
           </Pressable>
 
-          {/* Modal for error message */}
+          {/* Modal for error message on confirmation */}
           <Modal
             animationType="slide"
             transparent={true}
@@ -122,7 +128,7 @@ export default function DeletePostModal({ visible, onClose }) {
               <Text style={styles.modalText}>
                 You have successfully deleted a post.
               </Text>
-              <Pressable style={styles.modalButton} onPress={() => {setSubmitMsgVisibleReport(false); onClose();}}>
+              <Pressable style={styles.modalButton} onPress={() => {setSubmitMsgVisible(false); onClose();}}>
                 <Text style={styles.modalButtonText}>OK</Text>
               </Pressable>
             </View>

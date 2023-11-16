@@ -6,10 +6,12 @@ import axios from "axios"
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
 
-import CreatePostModal from './CreatePostModal'; // Import the ReportBlockModal component
+import CreatePostModal from './CreatePostModal'; 
+import DeletePostModal from './DeletePostModal';
 
 export default function PostsFeed({navigation}) {
   const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
+  const [deletePostModalVisible, setDeletePostModalVisible] = useState(false);
   const [selectedPost, setSelectedPost] = useState('')
   const [postOpened, setPostOpened] = useState(false) 
   const theme = useContext(themeContext);
@@ -66,6 +68,12 @@ export default function PostsFeed({navigation}) {
   };
 
   const PostItem = ({item}) => {
+
+    console.log(item.user)
+
+    const isCurrentUserPost = item.user == username;
+
+    console.log(isCurrentUserPost)
     
     const lastUpdated = "x days ago"
 
@@ -77,6 +85,13 @@ export default function PostsFeed({navigation}) {
           <Text style={[styles.subtitle, {color:theme.color}]}>
             <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
           </Text>
+          { isCurrentUserPost && (
+            <TouchableOpacity style={styles.deleteButton} onPress={() => setDeletePostModalVisible(true)}>
+            <Text style={styles.deleteButtonText}>
+              Delete post
+            </Text>
+          </TouchableOpacity>
+          )}
         </TouchableOpacity> 
       </View>
     )
@@ -101,6 +116,7 @@ export default function PostsFeed({navigation}) {
           </TouchableOpacity>
       </View>
       <CreatePostModal visible={createPostModalVisible} onClose={() => {setCreatePostModalVisible(false); fetchPosts()}} />
+      <DeletePostModal visible={deletePostModalVisible} onClose={() => {setDeletePostModalVisible(false) }} />
     </View>
   )
 
@@ -148,6 +164,17 @@ const styles = StyleSheet.create({
        shadowRadius: 2,
        elevation: 2,
      },
+     deleteButton: {
+      width: "30%",
+      height: 30,
+      backgroundColor: "gold",
+      borderRadius: 6,
+      justifyContent: 'center',
+     },
+     deleteButtonText: {
+      fontSize: 12,
+      alignSelf: "center",
+     }
 })
 
 const feedStyles = StyleSheet.create({
