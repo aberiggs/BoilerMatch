@@ -14,12 +14,14 @@ export default async function handler(req, res) {
     console.log("req params:", req.query)
 
     const fetchAmount = (req.query && req.query.fetchAmount) ? req.query.fetchAmount : 20
+    const filterCategory = req.query.filterCategory;
+    const query = filterCategory ? { category: filterCategory } : {};
 
     // If there's a last loaded time, set it so we know what posts to grab we want whatever existed before that
     // TODO: THink about if it should be done this way.
     // const lastLoaded = (req.query && req.query.lastLoaded) ? req.query.lastLoaded : new Date()
 
-    const cursor = postsCollection.find({})
+    const cursor = postsCollection.find(query)
 
     const postList = []
     for await (const post of cursor) {

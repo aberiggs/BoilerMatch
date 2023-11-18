@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
+import RNPickerSelect from "react-native-picker-select"
 
 import CreatePostModal from './CreatePostModal'; 
 import DeletePostModal from './DeletePostModal';
@@ -17,6 +18,7 @@ export default function PostsFeed({navigation}) {
   const theme = useContext(themeContext);
   const [username, setUsername] = useState(null);
   const [posts, setPosts] = useState(null)
+  const [filterCategory, setFilterCategory] = useState('');
   
 
   useEffect(() => {
@@ -31,21 +33,29 @@ export default function PostsFeed({navigation}) {
   }
 
   const fetchPosts = async () => {
-    console.log("Fetching...")
-    const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getPostList', { params: {
-      fetchAmount: 20
-    }}).catch(error => {
-      console.log("Error occurred while fetching posts: ", error)
-    })
-
+    console.log("Fetching...");
+    const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getPostList', {
+      params: {
+        fetchAmount: 20,
+        filterCategory: filterCategory
+      }
+    }).catch(error => {
+      console.log("Error occurred while fetching posts: ", error);
+    });
+  
     // Fails to fetch data
     if (!res || !res.data || !res.data.postList) {
-      return
+      return;
     }
+  
+    setPosts(res.data.postList);
+  };
 
-    setPosts(res.data.postList)
-    
+  const handleFilterCategory = (value) => {
+    setFilterCategory(value);
+    fetchPosts()
   }
+  
 
   const PostModal = () => {
     return (
@@ -77,11 +87,22 @@ export default function PostsFeed({navigation}) {
     
     const lastUpdated = "x days ago"
 
+    let categoryDisplayed = ''
+    if (item.category == "housing") {
+      categoryDisplayed = "Housing";
+    } else if (item.category == "roommateSearching") {
+      categoryDisplayed = "Roommate searching";
+    } else if (item.category == "misc") {
+      categoryDisplayed = "MISC"
+    }
+
     return (
+      
       <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
         <TouchableOpacity style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handlePostPress(item)}>
           <Text style={[feedStyles.title, {color:theme.color}]}>{item.title}</Text>
           <Text style={feedStyles.username}>@{item.user}</Text>
+          <Text style={feedStyles.username}>{categoryDisplayed}</Text>
           <Text style={[styles.subtitle, {color:theme.color}]}>
             <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
           </Text>
@@ -102,7 +123,20 @@ export default function PostsFeed({navigation}) {
   }
 
   return(
+
+    
     <View style={styles.container}>
+      <RNPickerSelect
+          placeholder={ {label: "Filter posts by category", value: null}}
+          onValueChange={(value) => handleFilterCategory(value)}
+          value={filterCategory}
+          items={[
+            { label: "Housing", value: "housing" },
+            { label: "Roommate searching", value: "roommateSearching" },
+            { label: "MISC", value: "misc" },
+          ]}
+          style={pickerSelectStyles}
+      /> 
       <PostModal />
       <FlatList
           style={styles.postsListContainer}
@@ -204,3 +238,17 @@ const feedStyles = StyleSheet.create({
     color: 'grey'
   },  
 })
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    marginTop: 10,
+    marginBottom: 20,
+    marginHorizontal: 20,
+    borderWidth: 1,
+    borderColor: 'grey', // Set the color of the border
+    borderRadius: 8, // Set the border radius for rounded corners
+    paddingHorizontal: 10, // Add padding to the left and right for better appearance
+    paddingVertical: 10, // Add padding to the top and bottom for better appearance
+  },
+});
