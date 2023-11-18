@@ -120,7 +120,7 @@ export default function PostsFeed({navigation}) {
           </TouchableOpacity>
       </View>
       <CreatePostModal visible={createPostModalVisible} onClose={() => {setCreatePostModalVisible(false); fetchPosts()}} />
-      <DeletePostModal visible={deletePostModalVisible} post={selectedPost} onClose={() => {setDeletePostModalVisible(false) }} />
+      <DeletePostModal visible={deletePostModalVisible} post={selectedPost} onClose={() => {setDeletePostModalVisible(false); fetchPosts() }} />
     </View>
   )
 
