@@ -5,7 +5,9 @@ import RNPickerSelect from "react-native-picker-select"
 import * as SecureStore from 'expo-secure-store'
 import axios from "axios"
 
-export default function DeletePostModal({ visible, onClose }) {
+export default function DeletePostModal({ visible, post, onClose }) {
+
+  console.log("Trying to delete this post: ", post)
   
   const [confirmation, setConfirmation] = useState('');
 
@@ -27,12 +29,29 @@ export default function DeletePostModal({ visible, onClose }) {
       setErrMsgVisible(true);
     } else {
       const res = deletePostApi();
+      setConfirmation('');
       setSubmitMsgVisible(true);
     }
   }
 
   const deletePostApi = async(user) => {
     console.log("creating post with api call")
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const information = {
+      id: post._id,
+      username: post.user,
+      timestamp: post.timestamp,
+    }
+    console.log("INFORMATION", information)
+    const response = await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/deletePost', {
+      params: {
+        token: tokenVal,
+        user: post.user,
+        timestamp: post.timestamp,
+      }
+    }).catch(error => {
+      console.log("Error occurred while trying to delete a post:", error);
+    });
   }
 
   const onCloseModal = () => {
@@ -42,30 +61,9 @@ export default function DeletePostModal({ visible, onClose }) {
     onClose()
   }
 
-//   const blockThroughApi = async(user) => {
-//     console.log("BLOCKING THROUGH API")
-//     const tokenVal = await SecureStore.getItemAsync('token')
-//     const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportOtherUser/blockOtherUser', {
-//       token: tokenVal,
-//       userBlocked: otherUsername,
-//     }
-//     ).catch(error => {
-//       console.log("Error occurred while blocking users:", error)
-//     })
-//     console.log(response)
-//     const response2 = await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
-//       params: {
-//         token: tokenVal,
-//         userBlocked: otherUsername,
-//       }
-//     }).catch(error => {
-//       console.log("Error occurred while blocking users - deleting messages:", error);
-//     });
-    
-//     console.log(response2)
-
 
   return (
+
     <Modal
       transparent={true}
       visible={visible}

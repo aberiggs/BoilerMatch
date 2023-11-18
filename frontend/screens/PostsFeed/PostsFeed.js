@@ -85,12 +85,16 @@ export default function PostsFeed({navigation}) {
           <Text style={[styles.subtitle, {color:theme.color}]}>
             <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
           </Text>
-          { isCurrentUserPost && (
-            <TouchableOpacity style={styles.deleteButton} onPress={() => setDeletePostModalVisible(true)}>
-            <Text style={styles.deleteButtonText}>
-              Delete post
-            </Text>
-          </TouchableOpacity>
+          {isCurrentUserPost && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => {
+                setSelectedPost(item); // Pass the selected post
+                setDeletePostModalVisible(true);
+              }}
+            >
+              <Text style={styles.deleteButtonText}>Delete post</Text>
+            </TouchableOpacity>
           )}
         </TouchableOpacity> 
       </View>
@@ -116,7 +120,7 @@ export default function PostsFeed({navigation}) {
           </TouchableOpacity>
       </View>
       <CreatePostModal visible={createPostModalVisible} onClose={() => {setCreatePostModalVisible(false); fetchPosts()}} />
-      <DeletePostModal visible={deletePostModalVisible} onClose={() => {setDeletePostModalVisible(false) }} />
+      <DeletePostModal visible={deletePostModalVisible} post={selectedPost} onClose={() => {setDeletePostModalVisible(false) }} />
     </View>
   )
 
