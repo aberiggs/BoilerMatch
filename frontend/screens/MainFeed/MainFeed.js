@@ -215,9 +215,12 @@ export default function MainFeed({navigation,checkForMatches}){
       }).catch((error) => {
           console.log(error.response.data)
       })
-    } else {
+      // navigate the notification
+    } else if (ans === "update") {
+      navigation.navigate("Settings");
+    }
+    else {
       navigation.navigate("ChatList");
-
     }
     
       console.log(response);
@@ -229,6 +232,7 @@ export default function MainFeed({navigation,checkForMatches}){
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, [username]);
+  
   /*
   useEffect(() => {
   const updateNotificationsThroughApi = async() => {
