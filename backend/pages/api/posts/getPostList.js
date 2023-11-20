@@ -21,7 +21,9 @@ export default async function handler(req, res) {
     // TODO: THink about if it should be done this way.
     // const lastLoaded = (req.query && req.query.lastLoaded) ? req.query.lastLoaded : new Date()
 
-    const cursor = postsCollection.find(query)
+    const sort = {timestamp: -1}
+
+    const cursor = postsCollection.find(query).sort(sort)
 
     const postList = []
     for await (const post of cursor) {

@@ -1,6 +1,5 @@
 import { StyleSheet, View, Modal, FlatList, Text, TouchableOpacity} from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
-import Comment from './Comment';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
 import * as SecureStore from 'expo-secure-store';
@@ -9,6 +8,9 @@ import RNPickerSelect from "react-native-picker-select"
 
 import CreatePostModal from './CreatePostModal'; 
 import DeletePostModal from './DeletePostModal';
+import Post from './Post';
+
+import {timeSince} from '../../utils/timeSince'
 
 export default function PostsFeed({navigation}) {
   const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
@@ -63,7 +65,7 @@ export default function PostsFeed({navigation}) {
         animationType="slide"
         transparent={false}
         visible={postOpened}>
-          <Comment post={selectedPost} onClose={() => setPostOpened(false)}/>
+          <Post post={selectedPost} onClose={() => setPostOpened(false)}/>
       </Modal>
     )
   }
@@ -85,7 +87,7 @@ export default function PostsFeed({navigation}) {
 
     console.log(isCurrentUserPost)
     
-    const lastUpdated = "x days ago"
+    const lastUpdated = timeSince(item.timestamp)
 
     let categoryDisplayed = ''
     if (item.category == "housing") {
@@ -106,6 +108,7 @@ export default function PostsFeed({navigation}) {
           <Text style={[styles.subtitle, {color:theme.color}]}>
             <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
           </Text>
+
           {isCurrentUserPost && (
             <TouchableOpacity
               style={styles.deleteButton}
@@ -117,6 +120,7 @@ export default function PostsFeed({navigation}) {
               <Text style={styles.deleteButtonText}>Delete post</Text>
             </TouchableOpacity>
           )}
+
         </TouchableOpacity> 
       </View>
     )
@@ -143,7 +147,7 @@ export default function PostsFeed({navigation}) {
           data={posts}
           
           renderItem={({ item }) => PostItem({item}) }
-          keyExtractor={(item) => {return item.id}} 
+          keyExtractor={(item) => {return item._id}} 
           horizontal={false}
       />
       <View style={styles.bottomContainer}>
@@ -175,7 +179,7 @@ const styles = StyleSheet.create({
     },
     bottomContainer: {
         width: '100%',
-        height: '15%',
+        height: '10%',
         alignItems: 'center',
         justifyContent: 'center'
     },    

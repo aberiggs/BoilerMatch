@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
 
+import {timeSince} from '../../utils/timeSince'
+
 import axios from "axios"
 
 export default function Comment(props, {navigation}) {
@@ -57,15 +59,13 @@ export default function Comment(props, {navigation}) {
 
     const CommentItem = ({item}) => {
     
-        const lastUpdated = "x days ago"
+        const lastUpdated = timeSince(item.timestamp)
     
         return (
           <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
-            <Text style={{color: 'grey', fontWeight: "bold"}}>{item.from}</Text>
-              <Text style={[commentStyles.title, {color:theme.color}]}>{item.details}</Text>
-              <Text style={[styles.subtitle, {color:theme.color}]}>
-                <Text style={[commentStyles.infoLabel]}>{lastUpdated}</Text>
-              </Text>
+            <Text style={[commentStyles.title, {color:theme.color}]}>{item.details}</Text>
+            <Text style={{color: 'grey', fontWeight: "bold"}}>@{item.from}</Text>
+            <Text style={[commentStyles.infoLabel]}>{lastUpdated}</Text>
           </View>
         )
     }
@@ -85,13 +85,20 @@ export default function Comment(props, {navigation}) {
             </View>
 
             <View style={{paddingHorizontal: 15, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
-                    <Text style={{textDecorationLine: 'underline', fontSize: 15, color:theme.color}}>Posted by {post.user}</Text>
+                    <Text style={{textDecorationLine: 'underline', fontSize: 15, color:'gray'}}>@{post.user}</Text>
+            </View>
+
+            <View style={{paddingHorizontal: 15, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
+                    <Text style={{fontSize: 15, color:'gray'}}>{timeSince(post.timestamp)}</Text>
             </View>
 
             <View style={{paddingHorizontal: 15, paddingVertical: 10, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
                     <Text style={{fontSize: 18, color:theme.color}}>{post.details}</Text>
             </View>
-
+            
+            <View style={{paddingHorizontal: 15, paddingVertical: 10, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
+                    <Text style={{textDecorationLine: 'underline', fontSize: 18, color:theme.color}}>Comments</Text>
+            </View>
             <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={[commentStyles.convoContainer, {backgroundColor:theme.background}]}>
                 <FlatList
                     style={commentStyles.chatScrollView}
@@ -216,7 +223,7 @@ const commentStyles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'left',
         width: '100%',
-        height: '5%',
+        height: '6%',
         alignItems: 'left',
         borderBottomWidth: 1,
         borderColor: 'gold',
