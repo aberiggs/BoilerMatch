@@ -6,10 +6,22 @@ import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
+import AwaitRateModal from './AwaitRateModal';
 
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
   const carouselRef = useRef(null);
+
+  const [awaitModalVisible, setAwaitModalVisible] = useState(false);
+
+  const openAwaitModal = () => {
+    setAwaitModalVisible(true);
+    console.log("Modal pressed")
+  };
+
+  const closeAwaitModal = () => {
+    setAwaitModalVisible(false);
+  };
 
   const selectedUser = props.user
   const theme = useContext(themeContext)
@@ -112,9 +124,13 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
-
+          <Pressable style={modalStyles.closeButton} onPress={openAwaitModal}>
+            <Text style={modalStyles.closeButtonText}>Rate User</Text>
+          </Pressable>
+          <AwaitRateModal visible={awaitModalVisible} currentUser={props.currentUser} username={selectedUser.username} onClose={closeAwaitModal} />
         </ScrollView>
         <View style={modalStyles.closeButtonContainer}>
+          
           <Pressable style={modalStyles.closeButton} onPress={props.closeModal}>
             <Text style={modalStyles.closeButtonText}>Close</Text>
           </Pressable>
