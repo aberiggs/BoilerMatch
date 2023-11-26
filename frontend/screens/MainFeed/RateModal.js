@@ -113,12 +113,12 @@ export default function ManagePreferences({navigation}) {
           onValueChange={(value) => setBedtime(value)}
           value={bedtime}
           items={[
-              { label: "Before 9PM", value: "< 9" },
-              { label: "9PM-10PM", value: "9-10" },
-              { label: "10PM-11PM", value: "10-11" },
-              { label: "11PM-12PM", value: "11-12" },
-              { label: "12PM-1AM", value: "12-1" },
-              { label: "1AM+", value: "1+" }
+              { label: "Before 9PM", value: "9" },
+              { label: "9PM-10PM", value: "10" },
+              { label: "10PM-11PM", value: "11" },
+              { label: "11PM-12PM", value: "12" },
+              { label: "12PM-1AM", value: "1" },
+              { label: "1AM+", value: "2" }
           ]}
           style={{
             ...pickerSelectStyles,
@@ -153,11 +153,11 @@ export default function ManagePreferences({navigation}) {
           onValueChange={(value) => setClean(value)}
           value={clean}
           items={[
-              { label: "5: Spotless, very organized.", value: "Spotless" },
-              { label: "4: Clean, but doesn't have to be perfect", value: "Clean" },
-              { label: "3: Not clean, but not filthy", value: "In the middle" },
-              { label: "2: Not so clean", value: "Not so clean"},
-              { label: "1: Dumpster", value: "Dirty"}
+              { label: "5: Spotless, very organized.", value: "5" },
+              { label: "4: Clean, but doesn't have to be perfect", value: "4" },
+              { label: "3: Not clean, but not filthy", value: "3" },
+              { label: "2: Not so clean", value: "2"},
+              { label: "1: Dumpster", value: "1"}
           ]}
           style={{
             ...pickerSelectStyles,
@@ -173,11 +173,11 @@ export default function ManagePreferences({navigation}) {
           onValueChange={(value) => setNoise(value)}
           value={noise}
           items={[
-              { label: "5: Be as loud as you want.", value: "LOUD" },
-              { label: "4: We can be loud on the weekends", value: "Ocassionally loud" },
-              { label: "3: A good balance of loud and quiet", value: "A good balance" },
-              { label: "2: I prefer it to be quiet more often", value: "Quiet"},
-              { label: "1: Library, 24/7.", value: "Silent"}
+              { label: "5: Be as loud as you want.", value: "5" },
+              { label: "4: We can be loud on the weekends", value: "4" },
+              { label: "3: A good balance of loud and quiet", value: "3" },
+              { label: "2: I prefer it to be quiet more often", value: "2"},
+              { label: "1: Library, 24/7.", value: "1"}
           ]}
           style={{
             ...pickerSelectStyles,
