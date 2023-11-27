@@ -11,9 +11,8 @@ import RNPickerSelect from "react-native-picker-select"
 
 
 
-export default function ManagePreferences({navigation}) {
+export default function ManageRatings({visible, user, onClose}) {
 
-  const [gender, setGender] = useState('');
   const [bedtime, setBedtime] = useState('');
   const [guest, setGuest] = useState('');
   const [clean, setClean] = useState('');
@@ -22,61 +21,32 @@ export default function ManagePreferences({navigation}) {
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
   const theme = useContext(themeContext)
 
-  useEffect(() => {
-    setupInitialPrefs()
-  }, [])
-
-  const setupInitialPrefs = async() => {
-    const resData = await getInitialPrefs()
-    // No data or success is false
-    if (!resData || !resData.success) {
-      return
-    }
-
-    setGender(resData.preferences.gender)
-    setBedtime(resData.preferences.bedtime)
-    setGuest(resData.preferences.guest)
-    setClean(resData.preferences.clean)
-    setNoise(resData.preferences.noise)
-  }
-
-  const getInitialPrefs = async() => {
-    const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferences', {
-      token: tokenVal,
-    }).catch((error) => {
-      if (error.response) {
-        return error.response.data
-      }
-      return
-    })
-
-    return response.data
-  }
 
   const handleSubmit = async () => {
-    if (!gender || !bedtime || !guest || !clean || !noise ){
+    if (!bedtime || !guest || !clean || !noise ){
       setErrMsgVisible(true);
     } else {
       //TODO: Error checking
-      const res = await updatePreferencesThroughApi();
-      setSubmitMsgVisible(true);
+      const res = await updateRatingsThroughApi();
+      closeRateModal();
     }
   }
 
-  const navigateToProfile = () => {
-    navigation.goBack()
-  }
 
-  const updatePreferencesThroughApi = async() => {
+  const closeRateModal = () => {
+    onClose();
+  };
+
+  const updateRatingsThroughApi = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferences/update', {
+    console.log("RATING!")
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/rate', {
       token: tokenVal,
-      gender: gender,
       bedtime: bedtime,
       guest: guest,
       clean: clean,
-      noise: noise
+      noise: noise,
+      username: user
     }).catch((error) => {
       if (error.response) {
         return error.response.data
@@ -87,38 +57,26 @@ export default function ManagePreferences({navigation}) {
   }
 
   return (
-    <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
-      <ScrollView style={styles.scrollView}>
-      <Text style={[styles.subtitle, {color:theme.color}]}>Select the preferred gender of your roommate</Text>
-       <RNPickerSelect
-          placeholder={ {label: "Select gender.", value: null}}
-          onValueChange={(value) => setGender(value)}
-          value={gender}
-          items={[
-              { label: "Male", value: "male" },
-              { label: "Female", value: "female" },
-              { label: "Other/No preference", value: "other" }
-          ]}
-          style={{
-            ...pickerSelectStyles,
-            inputIOS: {
-              ...pickerSelectStyles.inputIOS,
-              color: theme.color
-            }
-          }}
-        />
-        <Text style={[styles.subtitle, {color:theme.color}]}>Select your preferred bedtime:</Text>
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      
+    >
+        <View style={[styles.modalView]}>
+        <ScrollView style={styles.scrollView}>
+        <Text style={[styles.subtitle, {color:theme.color}]}>What time does this person usually go to bed:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select bedtime: ", value: null}}
           onValueChange={(value) => setBedtime(value)}
           value={bedtime}
           items={[
-              { label: "Before 9PM", value: "9" },
-              { label: "9PM-10PM", value: "10" },
-              { label: "10PM-11PM", value: "11" },
-              { label: "11PM-12PM", value: "12" },
-              { label: "12PM-1AM", value: "1" },
-              { label: "1AM+", value: "2" }
+              { label: "Before 9PM", value: "< 9" },
+              { label: "9PM-10PM", value: "9-10" },
+              { label: "10PM-11PM", value: "10-11" },
+              { label: "11PM-12PM", value: "11-12" },
+              { label: "12PM-1AM", value: "12-1" },
+              { label: "1AM+", value: "1+" }
           ]}
           style={{
             ...pickerSelectStyles,
@@ -128,16 +86,16 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-        <Text style={[styles.subtitle, {color:theme.color}]}>How comfortable are you with guests:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>How often does this person have guests over:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select:", value: null}}
           onValueChange={(value) => setGuest(value)}
           value={guest}
           items={[
               { label: "Never", value: "never" },
-              { label: "Weekends only", value: "weekend" },
-              { label: "Most of the time (weekends, some weekdays)", value: "sometimes" },
-              { label : "Anytime!", value: "anytime"}
+              { label: "Weekends only", value: "Weekends only" },
+              { label: "Most of the time (weekends, some weekdays)", value: "Fairly often" },
+              { label : "All the time", value: "All the time"}
           ]}
           style={{
             ...pickerSelectStyles,
@@ -147,17 +105,17 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-        <Text style={[styles.subtitle, {color:theme.color}]}>On a scale of 1-5, how clean do you prefer your environment:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>On a scale of 1-5, how clean was this person:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select cleanliness.", value: null}}
           onValueChange={(value) => setClean(value)}
           value={clean}
           items={[
-              { label: "5: Spotless, very organized.", value: "5" },
-              { label: "4: Clean, but doesn't have to be perfect", value: "4" },
-              { label: "3: Not clean, but not filthy", value: "3" },
-              { label: "2: Not so clean", value: "2"},
-              { label: "1: Dumpster", value: "1"}
+              { label: "5: Spotless, very organized.", value: "Spotless" },
+              { label: "4: Clean, but doesn't have to be perfect", value: "Clean" },
+              { label: "3: Not clean, but not filthy", value: "In the middle" },
+              { label: "2: Not so clean", value: "Not so clean"},
+              { label: "1: Dumpster", value: "Dirty"}
           ]}
           style={{
             ...pickerSelectStyles,
@@ -167,17 +125,17 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-         <Text style={[styles.subtitle, {color:theme.color}]}>What's your preferred noise level?</Text>
+         <Text style={[styles.subtitle, {color:theme.color}]}>How loud was this person?</Text>
         <RNPickerSelect
           placeholder={ {label: "Select noise level:", value: null}}
           onValueChange={(value) => setNoise(value)}
           value={noise}
           items={[
-              { label: "5: Be as loud as you want.", value: "5" },
-              { label: "4: We can be loud on the weekends", value: "4" },
-              { label: "3: A good balance of loud and quiet", value: "3" },
-              { label: "2: I prefer it to be quiet more often", value: "2"},
-              { label: "1: Library, 24/7.", value: "1"}
+              { label: "5: LOUD", value: "LOUD" },
+              { label: "4: Ocassionally loud", value: "Ocassionally loud" },
+              { label: "3: A good balance of loud and quiet", value: "A good balance" },
+              { label: "2: Quiet more often", value: "Quiet"},
+              { label: "1: Library, 24/7.", value: "Silent"}
           ]}
           style={{
             ...pickerSelectStyles,
@@ -188,61 +146,62 @@ export default function ManagePreferences({navigation}) {
           }}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Submit Preferences</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Submit ratings</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
-        <Text style={styles.buttonText}>Go Back to Profile</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={closeRateModal}>
+            <Text style={styles.buttonText}>Go Back to Profile</Text>
+            </TouchableOpacity>
 
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={errMsgVisible}
-          onRequestClose={() => {
-            setErrMsgVisible(!errMsgVisible);
-          }}
-        >
-           <View style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Please make sure all the fields are filled out.
-            </Text>
-            <Pressable
-              style={styles.modalButton}
-              onPress={() => setErrMsgVisible(!errMsgVisible)}
+            <Modal
+            animationType="slide"
+            transparent={true}
+            visible={errMsgVisible}
+            onRequestClose={() => {
+                setErrMsgVisible(!errMsgVisible);
+            }}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
-            </Pressable>
-          </View>
-        </Modal>
+            <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                Please make sure all the fields are filled out.
+                </Text>
+                <Pressable
+                style={styles.modalButton}
+                onPress={() => setErrMsgVisible(!errMsgVisible)}
+                >
+                <Text style={styles.modalButtonText}>OK</Text>
+                </Pressable>
+            </View>
+            </Modal>
 
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={submitMsgVisible}
-          onRequestClose={() => {
-            setSubmitMsgVisible(!submitMsgVisible);
-          }}
-        >
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Your information has been saved.
-            </Text>
-            <Pressable
-              style={styles.modalButton}
-              onPress={() => {
+            <Modal
+            animationType="slide"
+            transparent={true}
+            visible={submitMsgVisible}
+            onRequestClose={() => {
                 setSubmitMsgVisible(!submitMsgVisible);
-                navigateToProfile();
-              }}
+            }}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
-            </Pressable>
-          </View>
-        </Modal>
+            <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                Your information has been saved.
+                </Text>
+                <Pressable
+                style={styles.modalButton}
+                onPress={() => {
+                    setSubmitMsgVisible(!submitMsgVisible);
+                    navigateToProfile();
+                }}
+                >
+                <Text style={styles.modalButtonText}>OK</Text>
+                </Pressable>
+            </View>
+            </Modal>
 
-        </ScrollView>
-    </View>
+            </ScrollView>
+        </View>
+    </Modal>
 
     
   );

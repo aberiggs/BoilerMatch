@@ -7,20 +7,32 @@ import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
 import AwaitRateModal from './AwaitRateModal';
+import RateModal from './RateModal';
+
 
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
   const carouselRef = useRef(null);
 
   const [awaitModalVisible, setAwaitModalVisible] = useState(false);
+  const [rateModalVisible, setRateModalVisible] = useState(false);
+
 
   const openAwaitModal = () => {
     setAwaitModalVisible(true);
-    console.log("Modal pressed")
   };
+
+  const openRateModal = () => {
+    setRateModalVisible(true);
+
+  }
 
   const closeAwaitModal = () => {
     setAwaitModalVisible(false);
+  };
+
+  const closeRateModal = () => {
+    setRateModalVisible(false);
   };
 
   const selectedUser = props.user
@@ -124,9 +136,10 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
-          <Pressable style={modalStyles.closeButton} onPress={openAwaitModal}>
+          <Pressable style={modalStyles.closeButton} onPress={openRateModal}>
             <Text style={modalStyles.closeButtonText}>Rate User</Text>
           </Pressable>
+          <RateModal visible={rateModalVisible} user={selectedUser.username} onClose={closeRateModal}/>
           <AwaitRateModal visible={awaitModalVisible} currentUser={props.currentUser} username={selectedUser.username} onClose={closeAwaitModal} />
         </ScrollView>
         <View style={modalStyles.closeButtonContainer}>

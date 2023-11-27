@@ -13,8 +13,6 @@ const AwaitRateModal = ({ visible, username, currentUser, onClose }) => {
   };
 
   const requestPermission = async () => {
-    // TODO: .env for dev/production environments
-    console.log("Calling function!!!")
     const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getPermission', {
         username: username,
         currentUser: currentUser

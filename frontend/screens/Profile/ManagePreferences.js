@@ -55,7 +55,7 @@ export default function ManagePreferences({navigation}) {
   }
 
   const handleSubmit = async () => {
-    if (!gender || !bedtime || !guest || !clean || !noise ){
+    if (!bedtime || !guest || !clean || !noise ){
       setErrMsgVisible(true);
     } else {
       //TODO: Error checking
@@ -89,25 +89,7 @@ export default function ManagePreferences({navigation}) {
   return (
     <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
       <ScrollView style={styles.scrollView}>
-      <Text style={[styles.subtitle, {color:theme.color}]}>Select the preferred gender of your roommate</Text>
-       <RNPickerSelect
-          placeholder={ {label: "Select gender.", value: null}}
-          onValueChange={(value) => setGender(value)}
-          value={gender}
-          items={[
-              { label: "Male", value: "male" },
-              { label: "Female", value: "female" },
-              { label: "Other/No preference", value: "other" }
-          ]}
-          style={{
-            ...pickerSelectStyles,
-            inputIOS: {
-              ...pickerSelectStyles.inputIOS,
-              color: theme.color
-            }
-          }}
-        />
-        <Text style={[styles.subtitle, {color:theme.color}]}>Select your preferred bedtime:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>What time would you prefer to go to bed:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select bedtime: ", value: null}}
           onValueChange={(value) => setBedtime(value)}
@@ -128,16 +110,16 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-        <Text style={[styles.subtitle, {color:theme.color}]}>How comfortable are you with guests:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>How comfortable with having guests over:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select:", value: null}}
           onValueChange={(value) => setGuest(value)}
           value={guest}
           items={[
               { label: "Never", value: "never" },
-              { label: "Weekends only", value: "weekend" },
-              { label: "Most of the time (weekends, some weekdays)", value: "sometimes" },
-              { label : "Anytime!", value: "anytime"}
+              { label: "Weekends only", value: "Weekends only" },
+              { label: "Most of the time (weekends, some weekdays)", value: "Fairly often" },
+              { label : "All the time", value: "All the time"}
           ]}
           style={{
             ...pickerSelectStyles,
@@ -147,7 +129,7 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-        <Text style={[styles.subtitle, {color:theme.color}]}>On a scale of 1-5, how clean do you prefer your environment:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>On a scale of 1-5, how clean do you prefer your living space:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select cleanliness.", value: null}}
           onValueChange={(value) => setClean(value)}
@@ -167,16 +149,16 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-         <Text style={[styles.subtitle, {color:theme.color}]}>What's your preferred noise level?</Text>
+         <Text style={[styles.subtitle, {color:theme.color}]}>How comfortable are you with noise level?</Text>
         <RNPickerSelect
           placeholder={ {label: "Select noise level:", value: null}}
           onValueChange={(value) => setNoise(value)}
           value={noise}
           items={[
-              { label: "5: Be as loud as you want.", value: "LOUD" },
-              { label: "4: We can be loud on the weekends", value: "Ocassionally loud" },
+              { label: "5: LOUD", value: "LOUD" },
+              { label: "4: Ocassionally loud", value: "Ocassionally loud" },
               { label: "3: A good balance of loud and quiet", value: "A good balance" },
-              { label: "2: I prefer it to be quiet more often", value: "Quiet"},
+              { label: "2: Quiet more often", value: "Quiet"},
               { label: "1: Library, 24/7.", value: "Silent"}
           ]}
           style={{
@@ -189,7 +171,7 @@ export default function ManagePreferences({navigation}) {
         />
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Submit Preferences</Text>
+        <Text style={styles.buttonText}>Submit Ratings</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
