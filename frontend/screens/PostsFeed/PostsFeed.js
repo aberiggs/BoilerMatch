@@ -1,4 +1,4 @@
-import { StyleSheet, View, Modal, FlatList, Text, TouchableOpacity} from 'react-native';
+import { StyleSheet, View, Modal, FlatList, Text, TouchableOpacity, RefreshControl } from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
@@ -17,10 +17,11 @@ export default function PostsFeed({navigation}) {
   const [deletePostModalVisible, setDeletePostModalVisible] = useState(false);
   const [selectedPost, setSelectedPost] = useState('')
   const [postOpened, setPostOpened] = useState(false) 
-  const theme = useContext(themeContext);
-  const [username, setUsername] = useState(null);
+  const theme = useContext(themeContext)
+  const [username, setUsername] = useState(null)
   const [posts, setPosts] = useState(null)
-  const [filterCategory, setFilterCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState('')
+  const [postsToLoad, setPostsToLoad] = useState(0)
   
 
   useEffect(() => {
@@ -28,17 +29,28 @@ export default function PostsFeed({navigation}) {
     initialize()
   },[])
 
+  useEffect (() => {
+    console.log(postsToLoad)
+    // If we aren't currently trying to fetch any posts
+    if (postsToLoad === 0) {
+      // Increase the number of posts to fetch
+      incrementPosts()
+      return
+    }
+    fetchPosts()
+  },[postsToLoad])
+
   const initialize = async () => {
     const userVal = await SecureStore.getItemAsync('username')
     setUsername(userVal)
-    fetchPosts()
+    incrementPosts()
   }
 
   const fetchPosts = async () => {
-    console.log("Fetching...");
+    console.log("Fetching... ", postsToLoad);
     const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getPostList', {
       params: {
-        fetchAmount: 20,
+        fetchAmount: postsToLoad,
         filterCategory: filterCategory
       }
     }).catch(error => {
@@ -52,6 +64,17 @@ export default function PostsFeed({navigation}) {
   
     setPosts(res.data.postList);
   };
+
+  const incrementPosts = () => {
+    console.log("Incrementing posts")
+    const additionalPostCount = 4
+    setPostsToLoad(postsToLoad + additionalPostCount)
+  }
+
+  const refreshPosts = () => {
+    console.log("Refreshing posts")
+    setPostsToLoad(0)
+  }
 
   const handleFilterCategory = (value) => {
     setFilterCategory(value);
@@ -80,13 +103,7 @@ export default function PostsFeed({navigation}) {
   };
 
   const PostItem = ({item}) => {
-
-    console.log(item.user)
-
     const isCurrentUserPost = item.user == username;
-
-    console.log(isCurrentUserPost)
-    
     const lastUpdated = timeSince(item.timestamp)
 
     let categoryDisplayed = ''
@@ -143,12 +160,18 @@ export default function PostsFeed({navigation}) {
       /> 
       <PostModal />
       <FlatList
-          style={styles.postsListContainer}
-          data={posts}
-          
-          renderItem={({ item }) => PostItem({item}) }
-          keyExtractor={(item) => {return item._id}} 
-          horizontal={false}
+        style={styles.postsListContainer}
+        data={posts}
+        
+        renderItem={({ item }) => PostItem({item}) }
+        keyExtractor={(item) => {return item._id}} 
+        horizontal={false}
+        onEndReached={() => incrementPosts()}
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => {refreshPosts()}}
+          />
+        }
       />
       <View style={styles.bottomContainer}>
           <TouchableOpacity style={styles.button} onPress={() => setCreatePostModalVisible(true)}>

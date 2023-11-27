@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     if (!req.body || !req.body.id) {
         return res.status(400).json({
             success: false,
-            message: "Insufficient information to send message."
+            message: "Insufficient information to get comments."
         })
     }
 
