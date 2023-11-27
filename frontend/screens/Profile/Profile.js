@@ -130,6 +130,10 @@ export default function Profile({navigation}){
     const navigateToManagePreferenceRankings = () => {
       navigation.navigate('ManagePreferenceRankings');
     };
+
+    const navigateToReadReceiptsOptions = () => {
+      navigation.navigate('ReadReceiptsOptions');
+    };
   
    const handleLogout = async () => {     
         const tokenVal = await SecureStore.getItemAsync('token');
@@ -206,8 +210,8 @@ export default function Profile({navigation}){
           <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={navigateToManageNotifications}>
-          <Text style={styles.buttonText}>Notifications/Other</Text>
+          <TouchableOpacity style={styles.button} onPress={navigateToReadReceiptsOptions}>
+          <Text style={styles.buttonText}>Read Receipt Options</Text>
           </TouchableOpacity>
 
           <Pressable style={styles.button} onPress={handleLogout}>

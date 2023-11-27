@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     textAlign: 'left',
-    marginBottom: 8
+    marginBottom: 8,
   },
   
   scrollView: {

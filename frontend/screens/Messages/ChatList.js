@@ -234,14 +234,8 @@ export default function ChatList({navigation,checkForMatch}) {
       const tokenVal = await SecureStore.getItemAsync('token');
     
       const unreadMessagesListTemp = [];
-      // Remove duplicates and get unique usernames.
-      //const uniqueUsernames = Array.from(new Set(otherUsernames.map(usernameData => usernameData.username)));
-      //console.log("UNIQUE USERNAMES", uniqueUsernames)
-
-      console.log(otherUsernames)
     
       for (const username of otherUsernames) {
-        console.log("UNIQUE USERNAME", username)
         let matchingEntry = unreadMessagesList.find(entry => entry.username === username);
         if (!matchingEntry) {
           matchingEntry = { unreadMessagescount: 0 }; // Default value when no matching entry is found
@@ -259,18 +253,14 @@ export default function ChatList({navigation,checkForMatch}) {
           //return null
         }
         unreadMessagesListTemp.push({
-        username: username,
-        unreadMessagesCount: response.data.unreadMessagesCount
+          username: username,
+          unreadMessagesCount: response.data.unreadMessagesCount
         });
         console.log("UNREAD TEMP     ", unreadMessagesListTemp)
         //return response.data
       }
       setUnreadMessagesList(unreadMessagesListTemp)
     };
-
-    console.log()
-    console.log("UNREAD MESSAGES LIST", unreadMessagesList)
-    console.log()
 
     // console.log("UNREAD MESSAGES COUNT", unreadMessagesList)
 
