@@ -7,6 +7,7 @@ import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModa
 import UnmatchModal from './UnmatchModal'; // Import the ReportBlockModal component
 
 import themeContext from '../../theme/themeContext';
+import { useReadReceipts } from '../../ReadReceiptsContext';
 
 
 import axios from "axios"
@@ -16,6 +17,7 @@ export default function Conversation(props, {navigation}) {
     const [newMessage, setNewMessage] = useState('')
     const [username, setUsername] = useState(null)
     const theme = useContext(themeContext)
+    const { readReceiptsEnabled, setReadReceiptsEnabled } = useReadReceipts();
 
     const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
     const [UnmatchModalVisible, setUnmatchModalVisible] = useState(false);
@@ -204,7 +206,7 @@ export default function Conversation(props, {navigation}) {
                         {formatTimestamp(item.timestamp)}
                     </Text>
                 </View>
-                {item.from === username && item.read && (
+                {readReceiptsEnabled && item.from === username && item.read && (
                     <View>
                         <Text style={conversationStyles.readReceiptText}>
                             {/* {formatTimestamp(item.readTime)} - R */}
