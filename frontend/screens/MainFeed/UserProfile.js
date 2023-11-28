@@ -22,8 +22,10 @@ export default function userProfile(props) {
     setAwaitModalVisible(true);
   };
 
-  const openRateModal = () => {
+  const openRateModal = async () => {
     setRateModalVisible(true);
+    const permissionStatus = await isPermitted();
+    console.log("isPermitted: ", permissionStatus);
 
   }
 
@@ -35,15 +37,39 @@ export default function userProfile(props) {
     setRateModalVisible(false);
   };
 
+  
+
   const selectedUser = props.user
+  const selectedUsername = props.user.username
+  console.log("SELECTED: ", selectedUsername)
   const theme = useContext(themeContext)
+
+
+  const isPermitted = async() => {
+    try {
+      const tokenVal = await SecureStore.getItemAsync('token');
+      const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/isPermitted', {
+      params :{
+      token: tokenVal,
+      selectedUser: selectedUsername,
+      }
+    });
+    
+      return response.data.hasPermission;
+    }
+    catch (error) {
+      console.error('Error:', error);
+      return false; 
+    }
+     
+  }
 
   const goForward = () => {
     carouselRef.current.snapToNext();
   };
 
-  console.log("Backgroundtheme", theme.background);
-  console.log("djkflsa",theme.color )
+  // console.log("Backgroundtheme", theme.background);
+  // console.log("djkflsa",theme.color )
 
   useEffect(() => {
     getUserPhotos()
