@@ -6,20 +6,79 @@ import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
+import AwaitRateModal from './AwaitRateModal';
+import RateModal from './RateModal';
+
 
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
   const carouselRef = useRef(null);
 
+  const [awaitModalVisible, setAwaitModalVisible] = useState(false);
+  const [rateModalVisible, setRateModalVisible] = useState(false);
+
+
+  const openAwaitModal = () => {
+    setAwaitModalVisible(true);
+  };
+
+  const openRateModal = () => {
+    setRateModalVisible(true);
+    
+
+  }
+
+  const rateOrAwaitDecision = async() => {
+    const permissionStatus = await isPermitted();
+    if(permissionStatus) {
+      openRateModal();
+    }
+    else {
+      openAwaitModal();
+    }    
+  }
+
+  const closeAwaitModal = () => {
+    setAwaitModalVisible(false);
+  };
+
+  const closeRateModal = () => {
+    setRateModalVisible(false);
+  };
+
+  
+
   const selectedUser = props.user
+  const selectedUsername = props.user.username
+  console.log("SELECTED: ", selectedUsername)
   const theme = useContext(themeContext)
+
+
+  const isPermitted = async() => {
+    try {
+      const tokenVal = await SecureStore.getItemAsync('token');
+      const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/isPermitted', {
+      params :{
+      token: tokenVal,
+      selectedUser: selectedUsername,
+      }
+    });
+    
+      return response.data.hasPermission;
+    }
+    catch (error) {
+      console.error('Error:', error);
+      return false; 
+    }
+     
+  }
 
   const goForward = () => {
     carouselRef.current.snapToNext();
   };
 
-  console.log("Backgroundtheme", theme.background);
-  console.log("djkflsa",theme.color )
+  // console.log("Backgroundtheme", theme.background);
+  // console.log("djkflsa",theme.color )
 
   useEffect(() => {
     getUserPhotos()
@@ -112,9 +171,44 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
+                  
 
+          {selectedUser.ratings && selectedUser.ratings.length > 0 ? (
+          selectedUser.ratings.map((rating, index) => (
+            <View key={index}>
+              <Text style={[styles.title, { color: theme.color }]}>
+                {'\n'}Rating by a user
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.color }]}>
+                Usual bedtime: {rating.bedtime}
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.color }]}>
+                Guest frequency: {rating.guest}
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.color }]}>
+                General cleanliness: {rating.clean}
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.color }]}>
+                Noise level: {rating.noise}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.title}>No ratings</Text>
+          )}
+          
+
+
+          <Text style={[styles.subtitle,{color:theme.color}]}> {}</Text>
+
+          <Pressable style={modalStyles.closeButton} onPress={rateOrAwaitDecision}>
+          <Text style={modalStyles.closeButtonText}>Rate User</Text>
+          </Pressable>
+          <RateModal visible={rateModalVisible} user={selectedUser.username} onClose={closeRateModal}/>
+          <AwaitRateModal visible={awaitModalVisible} currentUser={props.currentUser} username={selectedUser.username} onClose={closeAwaitModal} />
         </ScrollView>
         <View style={modalStyles.closeButtonContainer}>
+          
           <Pressable style={modalStyles.closeButton} onPress={props.closeModal}>
             <Text style={modalStyles.closeButtonText}>Close</Text>
           </Pressable>
