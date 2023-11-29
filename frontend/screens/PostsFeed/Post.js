@@ -14,6 +14,9 @@ export default function Comment(props, {navigation}) {
 
     const [newComment, setNewComment] = useState('')
     const [comments, setComments] = useState(null)
+    const [upvoteCount, setUpvoteCount] = useState(post.upvoteCount ? post.upvoteCount : 0)
+    const [upvoted, setUpvoted] = useState(post.upvoteUsers ? post.upvoteUsers.includes(props.currentUsername) : false)
+    const [downvoted, setDownvoted] = useState(post.downvoteUsers ? post.downvoteUsers.includes(props.currentUsername) : false)
 
     useEffect(() => {
         console.log("Initializing")
@@ -70,6 +73,38 @@ export default function Comment(props, {navigation}) {
         )
     }
 
+    const handleUpvote = async () => {
+        const newUpvoteVal = !upvoted
+        setUpvoted(newUpvoteVal)
+        setDownvoted(false)
+        updateVote(newUpvoteVal ? 1 : 0)
+      }
+      
+      const handleDownvote = () => {
+        const newDownvoteVal = !downvoted
+        setDownvoted(newDownvoteVal)
+        setUpvoted(false)
+        updateVote(newDownvoteVal ? -1 : 0)
+      }
+    
+      const updateVote = async (voteVal) => {
+        console.log(voteVal)
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/modifyVote', {
+          token: tokenVal,
+          vote: voteVal,
+          id: post._id,
+        }).catch(error => {
+          console.log("Error occurred while updating vote: ", error.response.data )
+        })
+    
+        if (response && response.data) {
+          const newUpvoteCount = response.data.upvoteCount
+          setUpvoteCount(newUpvoteCount)
+          props.getPost()
+        }
+      } 
+
     return(
         <SafeAreaView style={{height: '100%', width: '100%', backgroundColor:theme.background}}>
             <View style={[commentStyles.headingContainer, {backgroundColor:theme.background}]}>
@@ -94,6 +129,18 @@ export default function Comment(props, {navigation}) {
 
             <View style={{paddingHorizontal: 15, paddingVertical: 10, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
                     <Text style={{fontSize: 18, color:theme.color}}>{post.details}</Text>
+            </View>
+
+            <View style={{justifyContent: 'space-between', alignItems: 'center', width:'20%'}}>
+                <Pressable onPress={() => handleUpvote()}>
+                    <Ionicons name="chevron-up" size={46} color={upvoted ? 'gold' : theme.color}/>
+                </Pressable>
+        
+                <Text style={{fontSize: 20, color:theme.color}}>{upvoteCount}</Text>
+        
+                <Pressable onPress={() => handleDownvote()}>
+                    <Ionicons name="chevron-down" size={46} color={downvoted ? 'gold' : theme.color} />
+                </Pressable>
             </View>
             
             <View style={{paddingHorizontal: 15, paddingVertical: 10, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>

@@ -93,6 +93,7 @@ export default function PostsFeed({navigation}) {
       />
       
       <ScrollView
+        extraData={posts}
         style={{width: '100%'}}
         onScroll={({nativeEvent}) => {
           if (isCloseToBottom(nativeEvent)) {

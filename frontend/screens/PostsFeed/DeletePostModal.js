@@ -7,7 +7,7 @@ import axios from "axios"
 
 export default function DeletePostModal({ visible, post, onClose }) {
 
-  console.log("Trying to delete this post: ", post)
+  //console.log("Trying to delete this post: ", post)
   
   const [confirmation, setConfirmation] = useState('');
 
@@ -23,7 +23,6 @@ export default function DeletePostModal({ visible, post, onClose }) {
   };
 
   const handleSubmit = async () => {
-    // If not all the fields filled out then send error message
     // If not all the fields filled out then send error message
     if ( !confirmation) {
       setErrMsgVisible(true);

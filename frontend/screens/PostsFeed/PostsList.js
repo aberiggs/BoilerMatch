@@ -43,7 +43,7 @@ export default function PostsFeed(props) {
 }
 
 function PostItem (props) {
-    const item = props.post
+    const [item, setItem] = useState(props.post)
     const theme = useContext(themeContext)
     const [postOpened, setPostOpened] = useState(false) 
     const [deletePostModalVisible, setDeletePostModalVisible] = useState(false);
@@ -53,6 +53,16 @@ function PostItem (props) {
   
     const isCurrentUserPost = item.user == props.currentUsername;
     const lastUpdated = timeSince(item.timestamp)
+
+    useEffect(() => {
+        getPost()
+    }, [props.post])
+    
+    useEffect(() => {
+        setUpvoteCount(item.upvoteCount ? item.upvoteCount : 0)
+        setUpvoted(item.upvoteUsers ? item.upvoteUsers.includes(props.currentUsername) : false)
+        setDownvoted(item.downvoteUsers ? item.downvoteUsers.includes(props.currentUsername) : false)
+    },[item])
   
     let categoryDisplayed = ''
     if (item.category == "housing") {
@@ -69,9 +79,27 @@ function PostItem (props) {
           animationType="slide"
           transparent={false}
           visible={postOpened}>
-            <Post post={item} onClose={() => setPostOpened(false)}/>
+            <Post post={item} currentUsername={props.currentUsername} getPost={getPost} onClose={() => setPostOpened(false)}/>
         </Modal>
       )
+    }
+
+    const getPost = async () => {
+        const postId = item._id
+        const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getPostById', {
+        params: {
+            id: postId
+        }
+        }).catch(error => {
+            console.log("Error occurred while fetching post by id: ", error);
+        });
+    
+        // Fails to fetch data
+        if (!res || !res.data || !res.data.post) {
+            return;
+        }
+    
+        setItem(res.data.post)
     }
   
     const handlePostPress = async (post) => {
@@ -110,12 +138,18 @@ function PostItem (props) {
       if (response && response.data) {
         const newUpvoteCount = response.data.upvoteCount
         setUpvoteCount(newUpvoteCount)
+        getPost()
       }
     } 
     
     return (
       <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
-        <PostModal />
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={postOpened}>
+            <Post post={item} currentUsername={props.currentUsername} getPost={getPost} onClose={() => setPostOpened(false)}/>
+        </Modal>
         <DeletePostModal visible={deletePostModalVisible} post={item} onClose={() => {setDeletePostModalVisible(false); props.fetchPosts() }} />
         <View style={{flexGrow: 1}}>
           <TouchableOpacity style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handlePostPress(item)}>
