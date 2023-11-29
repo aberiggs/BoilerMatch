@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
     const currentDateTime = new Date()
 
-    const newMessage = {from: username, message: req.body.messageToSend, timestamp: currentDateTime, read: false, readTime: "no"}
+    const newMessage = {from: username, message: req.body.messageToSend, timestamp: currentDateTime, read: false, readTime: "no", reactions: [],}
 
     /* Look for a conversation between the two users */
     const query = {$or: [{userOne: req.body.toUser, userTwo: username},{userOne: username, userTwo: req.body.toUser}]}
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     /* Create a conversation if one doesn't exist yet */
     /* TODO: This will be removed later once matching functionality triggers a conversation to be created. */
     if (!conversation) {
-        const newConversation = {userOne: username, userTwo: req.body.toUser, last_updated: currentDateTime, messages: [newMessage]}
+        const newConversation = {userOne: username, userTwo: req.body.toUser, last_updated: currentDateTime, messages: [newMessage] }
         await messageCollection.insertOne(newConversation).catch(err => {
             return res.status(400).json({
                 success: false,

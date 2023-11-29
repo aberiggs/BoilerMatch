@@ -78,8 +78,16 @@ export default function Conversation(props, {navigation}) {
         }
 
         //console.log(response.data)
+        // if (response.data.messages) {
+        //     return response.data.messages
+        // }
         if (response.data.messages) {
-            return response.data.messages
+            // Initialize the reactions property for each message
+            const messagesWithReactions = response.data.messages.map((msg) => ({
+                ...msg,
+                reactions: msg.reactions || [],
+            }));
+            return messagesWithReactions;
         }
         return null
 
@@ -188,7 +196,47 @@ export default function Conversation(props, {navigation}) {
   
         console.log(res.data)
       }
+    
+      const handleReaction = (message) => {
+        const updatedMessages = currentMessages.map((msg) => {
+            if (msg === message) {
+                if (msg.reactions.includes(username)) {
+                    msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
+                } else {
+                    msg.reactions.push(username); // Add reaction
+                }
+            }
+            return msg;
+        });
+    
+        setCurrentMessages(updatedMessages);
+    };
 
+    const handleUndoReaction = (message) => {
+        const updatedMessages = currentMessages.map((msg) => {
+            if (msg === message) {
+                msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
+            }
+            return msg;
+        });
+    
+        setCurrentMessages(updatedMessages);
+    };
+
+    const handleToggleReaction = (message) => {
+        const updatedMessages = currentMessages.map((msg) => {
+            if (msg === message) {
+                if (msg.reactions.includes(username)) {
+                    msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
+                } else {
+                    msg.reactions.push(username); // Add reaction
+                }
+            }
+            return msg;
+        });
+    
+        setCurrentMessages(updatedMessages);
+    };
     
     const messageItem = ({ item }) => {
         const messageContainerStyle = item.from === username ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg;
@@ -214,11 +262,17 @@ export default function Conversation(props, {navigation}) {
                         </Text>
                     </View>
                 )}
+                {item.from !== username && (
+                    <TouchableOpacity onPress={() => handleToggleReaction(item)}>
+                        <Ionicons name="thumbs-up" size={20} color={item.reactions.includes(username) ? 'black' : 'grey'} />
+                    </TouchableOpacity>
+                )}
+                {item.from === username && item.reactions.includes(otherUser) && (
+                    <Ionicons name="thumbs-up" size={20} color="black" />
+                )}
             </View>
         );
     };
-    
-      
 
     return(
         <SafeAreaView style={{height: '100%', width: '100%', backgroundColor:theme.background}}>
