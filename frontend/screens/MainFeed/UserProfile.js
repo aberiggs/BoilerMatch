@@ -22,11 +22,20 @@ export default function userProfile(props) {
     setAwaitModalVisible(true);
   };
 
-  const openRateModal = async () => {
+  const openRateModal = () => {
     setRateModalVisible(true);
-    const permissionStatus = await isPermitted();
-    console.log("isPermitted: ", permissionStatus);
+    
 
+  }
+
+  const rateOrAwaitDecision = async() => {
+    const permissionStatus = await isPermitted();
+    if(permissionStatus) {
+      openRateModal();
+    }
+    else {
+      openAwaitModal();
+    }    
   }
 
   const closeAwaitModal = () => {
@@ -162,8 +171,32 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
-          <Pressable style={modalStyles.closeButton} onPress={openRateModal}>
-            <Text style={modalStyles.closeButtonText}>Rate User</Text>
+                  
+
+          {selectedUser.ratings.map((rating, index) => (
+            <View key={index}>
+              <Text style={[styles.title,{color:theme.color}]}>{'\n'}Rating by a user</Text>
+              <Text style={[styles.subtitle, { color: theme.color }]}>
+                Usual bedtime: {rating.bedtime}
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.color }]}>
+                Guest frequency: {rating.guest}
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.color }]}>
+                General cleanliness: {rating.clean}
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.color }]}>
+                Noise level: {rating.noise}
+              </Text>
+            </View>
+          ))}
+          
+
+
+          <Text style={[styles.subtitle,{color:theme.color}]}> {}</Text>
+
+          <Pressable style={modalStyles.closeButton} onPress={rateOrAwaitDecision}>
+          <Text style={modalStyles.closeButtonText}>Rate User</Text>
           </Pressable>
           <RateModal visible={rateModalVisible} user={selectedUser.username} onClose={closeRateModal}/>
           <AwaitRateModal visible={awaitModalVisible} currentUser={props.currentUser} username={selectedUser.username} onClose={closeAwaitModal} />
