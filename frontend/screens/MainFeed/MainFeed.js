@@ -66,7 +66,6 @@ export default function MainFeed({navigation,checkForMatches}){
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isNewSearch, setIsNewSearch] = useState(false);
   const [newSearch, setNewSearch] = useState([]);
-  const [currentUser, setCurrentUser] = useState(false);
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
@@ -89,8 +88,6 @@ export default function MainFeed({navigation,checkForMatches}){
     await SecureStore.setItemAsync('token', token);
   };
 
-  
-
 
   useEffect(() => {
     // Define a separate async function to fetch the username
@@ -98,7 +95,6 @@ export default function MainFeed({navigation,checkForMatches}){
       try {
         const userVal = await SecureStore.getItemAsync('username');
         setUsername(userVal);
-        setCurrentUser(userVal)
         //console.log("username in init", userVal); // Log the username here if needed
       } catch (error) {
         console.error("Error fetching username", error);
@@ -633,7 +629,7 @@ export default function MainFeed({navigation,checkForMatches}){
           transparent={false}
           visible={isModalVisible}
         >
-          <UserProfile user={selectedUser} currentUser={username} closeModal={() => setIsModalVisible(false)}/>
+          <UserProfile user={selectedUser} closeModal={() => setIsModalVisible(false)}/>
         </Modal>
       );
     }  else if (userNotFound) {
@@ -721,13 +717,11 @@ export default function MainFeed({navigation,checkForMatches}){
             transparent={false}
             visible={isUserModalVisible}
           >
-            <UserProfile currentUser = {username} user={selectedUser} closeModal={handleCloseUserModal}/> 
+            <UserProfile user={selectedUser} closeModal={handleCloseUserModal}/>
           </Modal>
         )}
 
-{/* // need to pass current user here */}
-
-
+    
        {renderModal()}
         
         <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp} navigation={navigation}/>
