@@ -1,4 +1,4 @@
-import { StyleSheet, View, Modal, FlatList, Text, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, View, Modal, FlatList, Text, TouchableOpacity, RefreshControl, Pressable } from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
@@ -13,11 +13,9 @@ import Post from './Post';
 import {timeSince} from '../../utils/timeSince'
 
 export default function PostsFeed({navigation}) {
-  const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
-  const [deletePostModalVisible, setDeletePostModalVisible] = useState(false);
-  const [selectedPost, setSelectedPost] = useState('')
-  const [postOpened, setPostOpened] = useState(false) 
   const theme = useContext(themeContext)
+  const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
+  const [selectedPost, setSelectedPost] = useState('')
   const [username, setUsername] = useState(null)
   const [posts, setPosts] = useState(null)
   const [filterCategory, setFilterCategory] = useState('')
@@ -80,71 +78,8 @@ export default function PostsFeed({navigation}) {
     setFilterCategory(value);
     fetchPosts()
   }
-  
-
-  const PostModal = () => {
-    return (
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={postOpened}>
-          <Post post={selectedPost} onClose={() => setPostOpened(false)}/>
-      </Modal>
-    )
-  }
-
-  const handlePostPress = async (post) => {
-    if (post) {
-      setSelectedPost(post)
-      setPostOpened(true)
-    } else {
-      console.log("User is undefined");
-    }
-  };
-
-  const PostItem = ({item}) => {
-    const isCurrentUserPost = item.user == username;
-    const lastUpdated = timeSince(item.timestamp)
-
-    let categoryDisplayed = ''
-    if (item.category == "housing") {
-      categoryDisplayed = "Housing";
-    } else if (item.category == "roommateSearching") {
-      categoryDisplayed = "Roommate searching";
-    } else if (item.category == "misc") {
-      categoryDisplayed = "MISC"
-    }
-
-    return (
-      
-      <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
-        <TouchableOpacity style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handlePostPress(item)}>
-          <Text style={[feedStyles.title, {color:theme.color}]}>{item.title}</Text>
-          <Text style={feedStyles.username}>@{item.user}</Text>
-          <Text style={feedStyles.username}>{categoryDisplayed}</Text>
-          <Text style={[styles.subtitle, {color:theme.color}]}>
-            <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
-          </Text>
-
-          {isCurrentUserPost && (
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => {
-                setSelectedPost(item); // Pass the selected post
-                setDeletePostModalVisible(true);
-              }}
-            >
-              <Text style={styles.deleteButtonText}>Delete post</Text>
-            </TouchableOpacity>
-          )}
-
-        </TouchableOpacity> 
-      </View>
-    )
-  }
 
   return(
-
     
     <View style={styles.container}>
       <RNPickerSelect
@@ -158,12 +93,11 @@ export default function PostsFeed({navigation}) {
           ]}
           style={pickerSelectStyles}
       /> 
-      <PostModal />
       <FlatList
         style={styles.postsListContainer}
         data={posts}
         
-        renderItem={({ item }) => PostItem({item}) }
+        renderItem={({ item }) => <PostItem post={item} currentUsername={username} fetchPosts={fetchPosts}/> }
         keyExtractor={(item) => {return item._id}} 
         horizontal={false}
         onEndReached={() => incrementPosts()}
@@ -181,10 +115,122 @@ export default function PostsFeed({navigation}) {
           </TouchableOpacity>
       </View>
       <CreatePostModal visible={createPostModalVisible} onClose={() => {setCreatePostModalVisible(false); fetchPosts()}} />
-      <DeletePostModal visible={deletePostModalVisible} post={selectedPost} onClose={() => {setDeletePostModalVisible(false); fetchPosts() }} />
     </View>
   )
 
+}
+
+function PostItem (props) {
+  const item = props.post
+  const theme = useContext(themeContext)
+  const [postOpened, setPostOpened] = useState(false) 
+  const [deletePostModalVisible, setDeletePostModalVisible] = useState(false);
+  const [upvoteCount, setUpvoteCount] = useState(item.upvoteCount ? item.upvoteCount : 0)
+  const [upvoted, setUpvoted] = useState(item.upvoteUsers ? item.upvoteUsers.includes(props.currentUsername) : false)
+  const [downvoted, setDownvoted] = useState(item.downvoteUsers ? item.downvoteUsers.includes(props.currentUsername) : false)
+
+  const isCurrentUserPost = item.user == props.currentUsername;
+  const lastUpdated = timeSince(item.timestamp)
+
+  let categoryDisplayed = ''
+  if (item.category == "housing") {
+    categoryDisplayed = "Housing";
+  } else if (item.category == "roommateSearching") {
+    categoryDisplayed = "Roommate searching";
+  } else if (item.category == "misc") {
+    categoryDisplayed = "MISC"
+  }
+
+  const PostModal = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={postOpened}>
+          <Post post={item} onClose={() => setPostOpened(false)}/>
+      </Modal>
+    )
+  }
+
+  const handlePostPress = async (post) => {
+    if (post) {
+      setPostOpened(true)
+    } else {
+      console.log("User is undefined");
+    }
+  };
+  
+  const handleUpvote = async () => {
+    const newUpvoteVal = !upvoted
+    setUpvoted(newUpvoteVal)
+    setDownvoted(false)
+    updateVote(newUpvoteVal ? 1 : 0)
+  }
+  
+  const handleDownvote = () => {
+    const newDownvoteVal = !downvoted
+    setDownvoted(newDownvoteVal)
+    setUpvoted(false)
+    updateVote(newDownvoteVal ? -1 : 0)
+  }
+
+  const updateVote = async (voteVal) => {
+    console.log(voteVal)
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/modifyVote', {
+      token: tokenVal,
+      vote: voteVal,
+      id: item._id,
+    }).catch(error => {
+      console.log("Error occurred while updating vote: ", error.response.data )
+    })
+
+    if (response && response.data) {
+      const newUpvoteCount = response.data.upvoteCount
+      setUpvoteCount(newUpvoteCount)
+    }
+  } 
+  
+  return (
+    <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
+      <PostModal />
+      <DeletePostModal visible={deletePostModalVisible} post={item} onClose={() => {setDeletePostModalVisible(false); props.fetchPosts() }} />
+      <View style={{flexGrow: 1}}>
+        <TouchableOpacity style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handlePostPress(item)}>
+          <Text style={[feedStyles.title, {color:theme.color}]}>{item.title}</Text>
+          <Text style={feedStyles.username}>@{item.user}</Text>
+          <Text style={feedStyles.username}>{categoryDisplayed}</Text>
+          <Text style={[styles.subtitle, {color:theme.color}]}>
+            <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
+          </Text>
+
+          {isCurrentUserPost && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => {
+                setDeletePostModalVisible(true);
+              }}
+            >
+              <Text style={styles.deleteButtonText}>Delete post</Text>
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity> 
+      </View>
+
+      <View style={{justifyContent: 'space-between', alignItems: 'center', width:'20%'}}>
+        <Pressable onPress={() => handleUpvote()}>
+          <Ionicons name="chevron-up" size={46} color={upvoted ? 'gold' : theme.color}/>
+        </Pressable>
+
+        <Text style={{fontSize: 20, color:theme.color}}>{upvoteCount}</Text>
+
+        <Pressable onPress={() => handleDownvote()}>
+          <Ionicons name="chevron-down" size={46} color={downvoted ? 'gold' : theme.color} />
+        </Pressable>
+      </View>
+      
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -219,27 +265,28 @@ const styles = StyleSheet.create({
     },
     feedItem: {
       // Take up the entire available space
-       backgroundColor: 'white',
-       alignContent: 'center',
-       padding: 15,
-       marginBottom: 10,
-       shadowColor: 'black',
-       shadowOffset: { width: 0, height: 2 },
-       shadowOpacity: 0.2,
-       shadowRadius: 2,
-       elevation: 2,
-     },
-     deleteButton: {
-      width: "30%",
-      height: 30,
-      backgroundColor: "gold",
-      borderRadius: 6,
-      justifyContent: 'center',
-     },
-     deleteButtonText: {
-      fontSize: 12,
-      alignSelf: "center",
-     }
+      flexDirection: 'row',
+      backgroundColor: 'white',
+      alignContent: 'center',
+      padding: 15,
+      marginBottom: 10,
+      shadowColor: 'black',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    deleteButton: {
+    width: "30%",
+    height: 30,
+    backgroundColor: "gold",
+    borderRadius: 6,
+    justifyContent: 'center',
+    },
+    deleteButtonText: {
+    fontSize: 12,
+    alignSelf: "center",
+    }
 })
 
 const feedStyles = StyleSheet.create({
