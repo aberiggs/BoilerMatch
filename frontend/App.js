@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Landing from './screens/Landing'
 import Register from './screens/LoginRegister/Register'
 import Login from './screens/LoginRegister/Login'
+import Getstarted from './screens/LoginRegister/Getstarted'
 
 import MainTabNavigator from './routes/MainTabNavigator';
 
@@ -66,6 +67,9 @@ export default function App() {
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back", title: ""
         }}/>
         <Stack.Screen name = "Login" component={Login} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name = "Getstarted" component={Getstarted} options={{
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
         }}/>
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{
