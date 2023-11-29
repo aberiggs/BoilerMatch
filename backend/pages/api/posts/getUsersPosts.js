@@ -6,7 +6,6 @@ export default async function handler(req, res) {
     /* Setup */
     const { database } = await connectToDatabase();
     const postsCollection = database.collection("posts");
-    const currentDateTime = new Date()
 
     if (!req.query || !req.query.user) {
         return res.status(400).json({
@@ -16,13 +15,14 @@ export default async function handler(req, res) {
     }
 
     const user = req.query.user
+    console.log("Querying posts for", user)
     const query = {user: user }
 
     const sort = {timestamp: -1}
 
-    const postList = postsCollection.find(query).sort(sort).toArray()
+    const postList = await postsCollection.find(query).sort(sort).toArray()
+    console.log(postList)
 
-    await cursor.close()
 
     return res.status(200).json({
         success: true,

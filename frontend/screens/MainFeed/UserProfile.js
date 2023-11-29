@@ -7,23 +7,40 @@ import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
 
+import PostsList from '../PostsFeed/PostsList'
+
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
-  const carouselRef = useRef(null);
+  const [posts, setPosts] = useState(null)
 
+  const carouselRef = useRef(null);
   const selectedUser = props.user
   const theme = useContext(themeContext)
 
-  const goForward = () => {
-    carouselRef.current.snapToNext();
-  };
-
-  console.log("Backgroundtheme", theme.background);
-  console.log("djkflsa",theme.color )
 
   useEffect(() => {
     getUserPhotos()
+    getUserPosts()
   }, []);
+
+  const getUserPosts = async () => {
+    console.log("Loading posts for ", selectedUser.username)
+    const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getUsersPosts', {
+      params: {
+        user: selectedUser.username
+      }
+    }).catch(error => {
+      console.log("Error occurred while fetching posts: ", error);
+    });
+  
+    // Fails to fetch data
+    if (!res || !res.data || !res.data.postList) {
+      return;
+    }
+  
+    console.log("Posts found", res.data.postList)
+    setPosts(res.data.postList);
+  }
 
   /* Gets the URI's for all user photos */
   const getUserPhotos = async () => {
@@ -66,7 +83,7 @@ export default function userProfile(props) {
 
     <View style={[modalStyles.modalContainer,{backgroundColor:theme.background}]}>
       <View style={modalStyles.modalContent}>
-        <ScrollView style={{width: '70%'}}>
+        <ScrollView style={{width: '100%'}}>
           <Avatar
             size='xlarge'
             rounded
@@ -75,44 +92,47 @@ export default function userProfile(props) {
             activeOpacity={0.8}
           />
 
-          <Text style={[styles.subtitle,{color:theme.color}]}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.information.gender}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Grad Year: {selectedUser.information.graduation}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Major: {selectedUser.information.major}</Text>
+          <View style={{width: '70%', alignSelf: 'center'}}>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.information.gender}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Grad Year: {selectedUser.information.graduation}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Major: {selectedUser.information.major}</Text>
 
+            <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+              <Carousel
+                ref={carouselRef}
+                data={userPhotos}
+                sliderWidth={400}
+                itemWidth={270}
+                hasParallaxImages={true}
+                renderItem={this._renderItem}
+              />
+            </View>
 
-          <View style={{flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-            <Carousel
-              ref={carouselRef}
-              data={userPhotos}
-              sliderWidth={400}
-              itemWidth={270}
-              hasParallaxImages={true}
-              renderItem={this._renderItem}
-            />
+            <Text style={[styles.title,{color:theme.color}]}>{'\n'}Information</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Political Views: {selectedUser.information.politicalViews}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Pets: {selectedUser.information.pets}</Text>
+            
+
+            <Text style={[styles.title,{color:theme.color}]}>{'\n'}Housing Information</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Housing: {selectedUser.housingInformation.housing}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
+
+            <Text style={[styles.title,{color:theme.color}]}>{'\n'}Preferences</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.preferences.gender}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Bedtime: {selectedUser.preferences.bedtime}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
+            <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
           </View>
-
-          <Text style={[styles.title,{color:theme.color}]}>{'\n'}Information</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Political Views: {selectedUser.information.politicalViews}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Pets: {selectedUser.information.pets}</Text>
           
 
-          <Text style={[styles.title,{color:theme.color}]}>{'\n'}Housing Information</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Housing: {selectedUser.housingInformation.housing}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Number Of Roommates: {selectedUser.housingInformation.numRoommates}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>UnknownHousingSituation: {selectedUser.housingInformation.unknownHousingSituation}</Text>
-
-          <Text style={[styles.title,{color:theme.color}]}>{'\n'}Preferences</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.preferences.gender}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Bedtime: {selectedUser.preferences.bedtime}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
-
+          <PostsList posts={posts} fetchPosts={getUserPosts} />
         </ScrollView>
         <View style={modalStyles.closeButtonContainer}>
           <Pressable style={modalStyles.closeButton} onPress={props.closeModal}>
