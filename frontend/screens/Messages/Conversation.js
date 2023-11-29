@@ -95,7 +95,7 @@ export default function Conversation(props, {navigation}) {
 
     const sendMessage = async () => {
         console.log("Sending Message")
-        const messageObj = {from: username, message: newMessage}
+        const messageObj = {from: username, message: newMessage, reactions: []}
         const updatedMessages = (currentMessages ? currentMessages : [])
         updatedMessages.push(messageObj)
         setCurrentMessages(updatedMessages)
@@ -197,9 +197,35 @@ export default function Conversation(props, {navigation}) {
         console.log(res.data)
       }
     
-      const handleReaction = (message) => {
+    //   const handleReaction = (message) => {
+    //     const updatedMessages = currentMessages.map((msg) => {
+    //         if (msg === message) {
+    //             if (msg.reactions.includes(username)) {
+    //                 msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
+    //             } else {
+    //                 msg.reactions.push(username); // Add reaction
+    //             }
+    //         }
+    //         return msg;
+    //     });
+    
+    //     setCurrentMessages(updatedMessages);
+    // };
+
+    // const handleUndoReaction = (message) => {
+    //     const updatedMessages = currentMessages.map((msg) => {
+    //         if (msg === message) {
+    //             msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
+    //         }
+    //         return msg;
+    //     });
+    
+    //     setCurrentMessages(updatedMessages);
+    // };
+
+    const handleToggleReaction = async (item) => {
         const updatedMessages = currentMessages.map((msg) => {
-            if (msg === message) {
+            if (msg === item) {
                 if (msg.reactions.includes(username)) {
                     msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
                 } else {
@@ -210,32 +236,17 @@ export default function Conversation(props, {navigation}) {
         });
     
         setCurrentMessages(updatedMessages);
-    };
 
-    const handleUndoReaction = (message) => {
-        const updatedMessages = currentMessages.map((msg) => {
-            if (msg === message) {
-                msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
-            }
-            return msg;
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/updateReaction', {
+            token: tokenVal,
+            otherUser: otherUser,
+            timestamp: item.timestamp,
+            reactions: item.reactions.includes(username) ? [username] : [],
+        }).catch((error) => {
+            console.log("Couldn't update reaction status:", error.response.data);
+            // Handle the error as needed
         });
-    
-        setCurrentMessages(updatedMessages);
-    };
-
-    const handleToggleReaction = (message) => {
-        const updatedMessages = currentMessages.map((msg) => {
-            if (msg === message) {
-                if (msg.reactions.includes(username)) {
-                    msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
-                } else {
-                    msg.reactions.push(username); // Add reaction
-                }
-            }
-            return msg;
-        });
-    
-        setCurrentMessages(updatedMessages);
     };
     
     const messageItem = ({ item }) => {
@@ -243,7 +254,7 @@ export default function Conversation(props, {navigation}) {
         const messageBoxStyle = item.from === username ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox;
         const isCurrentUser = item.from === username;
         const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
-    
+        
         return (
             <View style={[messageContainerStyle]}>
                 <View style={messageBoxStyle}>
