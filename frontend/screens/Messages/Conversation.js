@@ -275,11 +275,11 @@ export default function Conversation(props, {navigation}) {
                 )}
                 {item.from !== username && (
                     <TouchableOpacity onPress={() => handleToggleReaction(item)}>
-                        <Ionicons name="thumbs-up" size={20} color={item.reactions.includes(username) ? 'black' : 'grey'} />
+                        <Ionicons name="thumbs-up" size={15} color={item.reactions.includes(username) ? 'black' : 'grey'} />
                     </TouchableOpacity>
                 )}
                 {item.from === username && item.reactions.includes(otherUser) && (
-                    <Ionicons name="thumbs-up" size={20} color="black" />
+                    <Ionicons name="thumbs-up" size={15} color="black" />
                 )}
             </View>
         );
