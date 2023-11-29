@@ -9,12 +9,12 @@ export default async function handler(req, res) {
     /* Setup */
     const { database } = await connectToDatabase();
     const userCollection = database.collection("users");
-    console.log("made it to mail")
+    console.log("MADE IT TO CONFIRMATION MAIL")
 
     if (!req.body) {
         return res.status(400).json({
             success: false,
-            message: "Insufficient information for account creation."
+            message: "Error."
         })
     }
 
@@ -28,14 +28,14 @@ export default async function handler(req, res) {
         email: newUser.email,
         currentUser: req.body.currentUser
     }
-    const newToken = jwt.sign(jwtData, 'ourSecretKey', { expiresIn: '100m' });    
+    const newToken = jwt.sign(jwtData, 'ourSecretKey', { expiresIn: '30m' });    
     console.log(newToken)
 
      transporter.sendMail({
         from: 'boilermatchproj@gmail.com',
         to: newUser.email,
-        subject: 'Give rating permissions on BoilerMatch',
-        text: `Hi, please visit http://localhost:3000/api/user/permit/${newToken} to allow ${currentUser.username} to leave a rating on your account!` 
+        subject: 'New rating on your account!',
+        text: `Hi, we are emailing you to let you know that a user has left a rating on your account.` 
     }, function(error, info) {
         if (error) throw Error(error);
         console.log('Email Sent Successfully');
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     /* Send back success response if all is well */
     return res.status(201).json({
         success: true,
-        message: "Your account has been created!"
+        message: "Email sent"
     })
 }
 
@@ -59,6 +59,3 @@ const transporter = nodemailer.createTransport({
 });
   
   
-// TODO: Token generation should probably be encapsulated somewhere else
-const token = (tokenData) => { 
-}

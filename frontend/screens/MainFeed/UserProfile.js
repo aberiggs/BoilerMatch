@@ -173,9 +173,12 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
                   
 
-          {selectedUser.ratings.map((rating, index) => (
+          {selectedUser.ratings && selectedUser.ratings.length > 0 ? (
+          selectedUser.ratings.map((rating, index) => (
             <View key={index}>
-              <Text style={[styles.title,{color:theme.color}]}>{'\n'}Rating by a user</Text>
+              <Text style={[styles.title, { color: theme.color }]}>
+                {'\n'}Rating by a user
+              </Text>
               <Text style={[styles.subtitle, { color: theme.color }]}>
                 Usual bedtime: {rating.bedtime}
               </Text>
@@ -189,7 +192,10 @@ export default function userProfile(props) {
                 Noise level: {rating.noise}
               </Text>
             </View>
-          ))}
+          ))
+        ) : (
+          <Text style={styles.title}>No ratings</Text>
+          )}
           
 
 

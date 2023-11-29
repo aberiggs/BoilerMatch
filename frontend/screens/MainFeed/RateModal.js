@@ -28,7 +28,10 @@ export default function ManageRatings({visible, user, onClose}) {
     } else {
       //TODO: Error checking
       const res = await updateRatingsThroughApi();
-      closeRateModal();
+      const emailRes = await sendConfirmationEmail();
+      if(res && emailRes) {
+        closeRateModal();
+      }
     }
   }
 
@@ -37,9 +40,19 @@ export default function ManageRatings({visible, user, onClose}) {
     onClose();
   };
 
+  const sendConfirmationEmail = async() => {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/sendConfirmation', {
+    username: user
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
+    })
+    return response  }
+
   const updateRatingsThroughApi = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    console.log("RATING!")
     const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/rate', {
       token: tokenVal,
       bedtime: bedtime,
