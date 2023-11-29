@@ -9,7 +9,8 @@ const AwaitRateModal = ({ visible, username, currentUser, onClose }) => {
 
   const onRequest = () => {
     console.log('Request permission action');
-    requestPermission()
+    requestPermission();
+    closeAwaitModal();
   };
 
   const requestPermission = async () => {
