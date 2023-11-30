@@ -248,6 +248,39 @@ export default function Conversation(props, {navigation}) {
             // Handle the error as needed
         });
     };
+
+    const allowDeletion = (item) => {
+        if (item.from !== username) {
+            return false
+        }
+
+        let timeDiff = Math.abs(new Date() - Date.parse(item.timestamp))
+        timeDiff = Math.floor(timeDiff / 1000) // Seconds
+        timeDiff = Math.floor(timeDiff / 60) // Minutes
+
+        if (timeDiff >= 5) {
+            return false
+        }
+
+        return true
+    }
+
+    const deleteMessage = async (item) => {
+        console.log("Deleting", item)
+
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteMessage', {
+            token: tokenVal,
+            otherUser: otherUser,
+            timestamp: item.timestamp,
+        }).catch((error) => {
+            console.log("Couldn't delete message", error.response.data);
+            // Handle the error as needed
+        });
+
+        const updatedHistory = await fetchMessages()
+        setCurrentMessages(updatedHistory)
+    }
     
     const messageItem = ({ item }) => {
         const messageContainerStyle = item.from === username ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg;
@@ -257,6 +290,11 @@ export default function Conversation(props, {navigation}) {
         
         return (
             <View style={[messageContainerStyle]}>
+                {allowDeletion(item) &&
+                    <TouchableOpacity onPress={() => deleteMessage(item)}>
+                         <Ionicons name="remove-circle" size={20} color="red" />
+                    </TouchableOpacity>
+                }
                 <View style={messageBoxStyle}>
                     <Text style={conversationStyles.messageText}>{item.message}</Text>
                 </View>
@@ -281,6 +319,7 @@ export default function Conversation(props, {navigation}) {
                 {item.from === username && item.reactions.includes(otherUser) && (
                     <Ionicons name="thumbs-up" size={15} color="black" />
                 )}
+            
             </View>
         );
     };
@@ -299,13 +338,15 @@ export default function Conversation(props, {navigation}) {
                     <Text style={{fontSize: 24, color:theme.color}}>{otherUser}</Text>
                 </View>
                 
-                <View style={conversationStyles.buttonContainer}>
-                    <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
-                            <Text style={[conversationStyles.buttonText,{color:theme.color}]}>Unmatch</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
-                        <Text style={conversationStyles.buttonText}>Block</Text>
-                    </TouchableOpacity>
+                <View style={{width: '30%'}}>
+                    <View style={conversationStyles.buttonContainer}>
+                        <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
+                                <Text style={[conversationStyles.buttonText,{color:theme.color}]}>Unmatch</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
+                            <Text style={conversationStyles.buttonText}>Block</Text>
+                        </TouchableOpacity>
+                    </View>
  
                 </View>
             </View>
@@ -347,8 +388,9 @@ const conversationStyles = StyleSheet.create({
       alignSelf: "center"
     },
     button: {
-      width: "100%",
-      height: 40,
+      width: "80%",
+      paddingVertical: 10,
+      marginVertical: 5,
       backgroundColor: "gold",
       borderWidth: 1,
       borderRadius: 6,
@@ -365,7 +407,7 @@ const conversationStyles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'column', // Display buttons horizontally
         justifyContent: 'space-between', // You can change this to 'space-between' for different spacing
-        width: '20%',
+        width: '80%',
         padding: 10
     },
     convoContainer: {
