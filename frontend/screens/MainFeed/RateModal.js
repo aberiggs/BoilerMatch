@@ -11,9 +11,8 @@ import RNPickerSelect from "react-native-picker-select"
 
 
 
-export default function ManagePreferences({navigation}) {
+export default function ManageRatings({visible, user, onClose}) {
 
-  const [gender, setGender] = useState('');
   const [bedtime, setBedtime] = useState('');
   const [guest, setGuest] = useState('');
   const [clean, setClean] = useState('');
@@ -22,61 +21,45 @@ export default function ManagePreferences({navigation}) {
   const [submitMsgVisible, setSubmitMsgVisible] = useState(false);
   const theme = useContext(themeContext)
 
-  useEffect(() => {
-    setupInitialPrefs()
-  }, [])
-
-  const setupInitialPrefs = async() => {
-    const resData = await getInitialPrefs()
-    // No data or success is false
-    if (!resData || !resData.success) {
-      return
-    }
-
-    setGender(resData.preferences.gender)
-    setBedtime(resData.preferences.bedtime)
-    setGuest(resData.preferences.guest)
-    setClean(resData.preferences.clean)
-    setNoise(resData.preferences.noise)
-  }
-
-  const getInitialPrefs = async() => {
-    const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferences', {
-      token: tokenVal,
-    }).catch((error) => {
-      if (error.response) {
-        return error.response.data
-      }
-      return
-    })
-
-    return response.data
-  }
 
   const handleSubmit = async () => {
     if (!bedtime || !guest || !clean || !noise ){
       setErrMsgVisible(true);
     } else {
       //TODO: Error checking
-      const res = await updatePreferencesThroughApi();
-      setSubmitMsgVisible(true);
+      const res = await updateRatingsThroughApi();
+      const emailRes = await sendConfirmationEmail();
+      if(res && emailRes) {
+        closeRateModal();
+      }
     }
   }
 
-  const navigateToProfile = () => {
-    navigation.goBack()
-  }
 
-  const updatePreferencesThroughApi = async() => {
+  const closeRateModal = () => {
+    onClose();
+  };
+
+  const sendConfirmationEmail = async() => {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/sendConfirmation', {
+    username: user
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data
+      }
+      return
+    })
+    return response  }
+
+  const updateRatingsThroughApi = async() => {
     const tokenVal = await SecureStore.getItemAsync('token')
-    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/preferences/update', {
+    const response  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/rate', {
       token: tokenVal,
-      gender: gender,
       bedtime: bedtime,
       guest: guest,
       clean: clean,
-      noise: noise
+      noise: noise,
+      username: user
     }).catch((error) => {
       if (error.response) {
         return error.response.data
@@ -87,9 +70,15 @@ export default function ManagePreferences({navigation}) {
   }
 
   return (
-    <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
-      <ScrollView style={styles.scrollView}>
-        <Text style={[styles.subtitle, {color:theme.color}]}>What time would you prefer to go to bed:</Text>
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      
+    >
+        <View style={[styles.modalView]}>
+        <ScrollView style={styles.scrollView}>
+        <Text style={[styles.subtitle, {color:theme.color}]}>What time does this person usually go to bed:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select bedtime: ", value: null}}
           onValueChange={(value) => setBedtime(value)}
@@ -110,7 +99,7 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-        <Text style={[styles.subtitle, {color:theme.color}]}>How comfortable with having guests over:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>How often does this person have guests over:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select:", value: null}}
           onValueChange={(value) => setGuest(value)}
@@ -129,7 +118,7 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-        <Text style={[styles.subtitle, {color:theme.color}]}>On a scale of 1-5, how clean do you prefer your living space:</Text>
+        <Text style={[styles.subtitle, {color:theme.color}]}>On a scale of 1-5, how clean was this person:</Text>
         <RNPickerSelect
           placeholder={ {label: "Select cleanliness.", value: null}}
           onValueChange={(value) => setClean(value)}
@@ -149,7 +138,7 @@ export default function ManagePreferences({navigation}) {
             }
           }}
         />
-         <Text style={[styles.subtitle, {color:theme.color}]}>How comfortable are you with noise level?</Text>
+         <Text style={[styles.subtitle, {color:theme.color}]}>How loud was this person?</Text>
         <RNPickerSelect
           placeholder={ {label: "Select noise level:", value: null}}
           onValueChange={(value) => setNoise(value)}
@@ -170,61 +159,62 @@ export default function ManagePreferences({navigation}) {
           }}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Submit Ratings</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Submit ratings</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
-        <Text style={styles.buttonText}>Go Back to Profile</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={closeRateModal}>
+            <Text style={styles.buttonText}>Go Back to Profile</Text>
+            </TouchableOpacity>
 
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={errMsgVisible}
-          onRequestClose={() => {
-            setErrMsgVisible(!errMsgVisible);
-          }}
-        >
-           <View style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Please make sure all the fields are filled out.
-            </Text>
-            <Pressable
-              style={styles.modalButton}
-              onPress={() => setErrMsgVisible(!errMsgVisible)}
+            <Modal
+            animationType="slide"
+            transparent={true}
+            visible={errMsgVisible}
+            onRequestClose={() => {
+                setErrMsgVisible(!errMsgVisible);
+            }}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
-            </Pressable>
-          </View>
-        </Modal>
+            <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                Please make sure all the fields are filled out.
+                </Text>
+                <Pressable
+                style={styles.modalButton}
+                onPress={() => setErrMsgVisible(!errMsgVisible)}
+                >
+                <Text style={styles.modalButtonText}>OK</Text>
+                </Pressable>
+            </View>
+            </Modal>
 
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={submitMsgVisible}
-          onRequestClose={() => {
-            setSubmitMsgVisible(!submitMsgVisible);
-          }}
-        >
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Your information has been saved.
-            </Text>
-            <Pressable
-              style={styles.modalButton}
-              onPress={() => {
+            <Modal
+            animationType="slide"
+            transparent={true}
+            visible={submitMsgVisible}
+            onRequestClose={() => {
                 setSubmitMsgVisible(!submitMsgVisible);
-                navigateToProfile();
-              }}
+            }}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
-            </Pressable>
-          </View>
-        </Modal>
+            <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                Your information has been saved.
+                </Text>
+                <Pressable
+                style={styles.modalButton}
+                onPress={() => {
+                    setSubmitMsgVisible(!submitMsgVisible);
+                    navigateToProfile();
+                }}
+                >
+                <Text style={styles.modalButtonText}>OK</Text>
+                </Pressable>
+            </View>
+            </Modal>
 
-        </ScrollView>
-    </View>
+            </ScrollView>
+        </View>
+    </Modal>
 
     
   );
