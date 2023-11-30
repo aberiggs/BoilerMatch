@@ -17,7 +17,6 @@ export default function Comment(props, {navigation}) {
     const [upvoteCount, setUpvoteCount] = useState(post.upvoteCount ? post.upvoteCount : 0)
     const [upvoted, setUpvoted] = useState(post.upvoteUsers ? post.upvoteUsers.includes(props.currentUsername) : false)
     const [downvoted, setDownvoted] = useState(post.downvoteUsers ? post.downvoteUsers.includes(props.currentUsername) : false)
-    const [delCommentDetails, setDelCommentDetails] = useState('')
 
     const [username, setUsername] = useState()
 
@@ -63,11 +62,11 @@ export default function Comment(props, {navigation}) {
         setComments(res.data.comments)
     }
 
-    const deleteComment = async () => {
+    const deleteComment = async (delComment) => {
         const res = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/deleteComment', {
             id: post._id,
             username: username,
-            details: delCommentDetails, 
+            details: delComment, 
         }).catch(error => {
             console.log("Couldn't fetch comments")
             return null
@@ -80,7 +79,6 @@ export default function Comment(props, {navigation}) {
     
         const lastUpdated = timeSince(item.timestamp)
         const isCurrentUserComment = item.from == username
-        setDelCommentDetails(item.details);
 
         return (
           <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
@@ -89,7 +87,7 @@ export default function Comment(props, {navigation}) {
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => {
-                deleteComment();
+                deleteComment(item.details);
               }}>
                 <Ionicons
                     name={'trash-bin'}
