@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
 
+import {timeSince} from '../../utils/timeSince'
+
 import axios from "axios"
 
 export default function Comment(props, {navigation}) {
@@ -12,6 +14,9 @@ export default function Comment(props, {navigation}) {
 
     const [newComment, setNewComment] = useState('')
     const [comments, setComments] = useState(null)
+    const [upvoteCount, setUpvoteCount] = useState(post.upvoteCount ? post.upvoteCount : 0)
+    const [upvoted, setUpvoted] = useState(post.upvoteUsers ? post.upvoteUsers.includes(props.currentUsername) : false)
+    const [downvoted, setDownvoted] = useState(post.downvoteUsers ? post.downvoteUsers.includes(props.currentUsername) : false)
     const [delCommentDetails, setDelCommentDetails] = useState('')
 
     const [username, setUsername] = useState()
@@ -101,6 +106,38 @@ export default function Comment(props, {navigation}) {
         )
     }
 
+    const handleUpvote = async () => {
+        const newUpvoteVal = !upvoted
+        setUpvoted(newUpvoteVal)
+        setDownvoted(false)
+        updateVote(newUpvoteVal ? 1 : 0)
+      }
+      
+      const handleDownvote = () => {
+        const newDownvoteVal = !downvoted
+        setDownvoted(newDownvoteVal)
+        setUpvoted(false)
+        updateVote(newDownvoteVal ? -1 : 0)
+      }
+    
+      const updateVote = async (voteVal) => {
+        console.log(voteVal)
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/modifyVote', {
+          token: tokenVal,
+          vote: voteVal,
+          id: post._id,
+        }).catch(error => {
+          console.log("Error occurred while updating vote: ", error.response.data )
+        })
+    
+        if (response && response.data) {
+          const newUpvoteCount = response.data.upvoteCount
+          setUpvoteCount(newUpvoteCount)
+          props.getPost()
+        }
+      } 
+
     return(
         <SafeAreaView style={{height: '100%', width: '100%', backgroundColor:theme.background}}>
             <View style={[commentStyles.headingContainer, {backgroundColor:theme.background}]}>
@@ -116,13 +153,32 @@ export default function Comment(props, {navigation}) {
             </View>
 
             <View style={{paddingHorizontal: 15, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
-                    <Text style={{textDecorationLine: 'underline', fontSize: 15, color:theme.color}}>Posted by {post.user}</Text>
+                    <Text style={{textDecorationLine: 'underline', fontSize: 15, color:'gray'}}>@{post.user}</Text>
+            </View>
+
+            <View style={{paddingHorizontal: 15, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
+                    <Text style={{fontSize: 15, color:'gray'}}>{timeSince(post.timestamp)}</Text>
             </View>
 
             <View style={{paddingHorizontal: 15, paddingVertical: 10, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
                     <Text style={{fontSize: 18, color:theme.color}}>{post.details}</Text>
             </View>
 
+            <View style={{justifyContent: 'space-between', alignItems: 'center', width:'20%'}}>
+                <Pressable onPress={() => handleUpvote()}>
+                    <Ionicons name="chevron-up" size={46} color={upvoted ? 'gold' : theme.color}/>
+                </Pressable>
+        
+                <Text style={{fontSize: 20, color:theme.color}}>{upvoteCount}</Text>
+        
+                <Pressable onPress={() => handleDownvote()}>
+                    <Ionicons name="chevron-down" size={46} color={downvoted ? 'gold' : theme.color} />
+                </Pressable>
+            </View>
+            
+            <View style={{paddingHorizontal: 15, paddingVertical: 10, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
+                    <Text style={{textDecorationLine: 'underline', fontSize: 18, color:theme.color}}>Comments</Text>
+            </View>
             <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={[commentStyles.convoContainer, {backgroundColor:theme.background}]}>
                 <FlatList
                     style={commentStyles.chatScrollView}
@@ -247,7 +303,7 @@ const commentStyles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'left',
         width: '100%',
-        height: '5%',
+        height: '6%',
         alignItems: 'left',
         borderBottomWidth: 1,
         borderColor: 'gold',
