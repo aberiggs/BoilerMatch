@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Modal, Text, Button, StyleSheet, Pressable } from 'react-native';
 import axios from "axios"
+import * as SecureStore from 'expo-secure-store';
 
-const AwaitRateModal = ({ visible, username, currentUser, onClose }) => {
+const AwaitRateModal = ({ visible, username, onClose }) => {
   const closeAwaitModal = () => {
     onClose();
   };
@@ -14,9 +15,10 @@ const AwaitRateModal = ({ visible, username, currentUser, onClose }) => {
   };
 
   const requestPermission = async () => {
+    const tokenVal = await SecureStore.getItemAsync('token');
     const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getPermission', {
         username: username,
-        currentUser: currentUser
+        token: tokenVal
     }).catch((error) => {
       if (error.response) return error.response.data
     })

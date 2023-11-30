@@ -1,11 +1,12 @@
 
-import { StyleSheet, Text, View, Pressable, ScrollView, Image} from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView, Image, TouchableOpacity} from 'react-native';
 import React, {useState, useEffect, useRef, useContext} from 'react';
 import { Avatar } from '@rneui/themed';
 import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
+import { Ionicons,FontAwesome,MaterialIcons} from '@expo/vector-icons';
 import AwaitRateModal from './AwaitRateModal';
 import RateModal from './RateModal';
 
@@ -13,6 +14,7 @@ import RateModal from './RateModal';
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
   const carouselRef = useRef(null);
+  const [viewingSelf, setViewingSelf] = useState(false)
 
   const [awaitModalVisible, setAwaitModalVisible] = useState(false);
   const [rateModalVisible, setRateModalVisible] = useState(false);
@@ -50,8 +52,11 @@ export default function userProfile(props) {
 
   const selectedUser = props.user
   const selectedUsername = props.user.username
-  console.log("SELECTED: ", selectedUsername)
   const theme = useContext(themeContext)
+  const [userLiked, setUserLiked] = useState(false)
+  const [userBookmarked, setUserBookmarked] = useState(false)
+  const [userDisliked, setUserDisliked] = useState(false)
+  const [isBlocked,setIsBlocked] = useState(false)
 
 
   const isPermitted = async() => {
@@ -77,12 +82,52 @@ export default function userProfile(props) {
     carouselRef.current.snapToNext();
   };
 
-  // console.log("Backgroundtheme", theme.background);
-  // console.log("djkflsa",theme.color )
+
+  useEffect(() => {
+    getInteractionWithUser()
+  }, [props.visible]);
 
   useEffect(() => {
     getUserPhotos()
   }, []);
+  
+  const getInteractionWithUser = async() => {
+
+    const tokenVal = await SecureStore.getItemAsync('token');
+    response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getInteractionWithUser', {
+      token: tokenVal,
+      userShown: selectedUser.username
+
+    }
+    ).catch(error => {
+      console.log("Error occurred while getting users:", error)
+    })
+    console.log("HII")
+    console.log(response.data)
+    setViewingSelf(response.data.viewingSelf)
+
+    interaction = response.data.interaction
+    if (interaction != null){
+    setUserLiked(interaction.liked_or_disliked =="liked" || false)
+    
+    setUserDisliked(interaction.liked_or_disliked =="disliked" || false)
+
+    setUserBookmarked(interaction.bookmarked || false)
+    
+    setIsBlocked(interaction.didBlocking || false)
+  }
+  }
+  const unblockUser = async() => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportOtherUser/blockOtherUser', {
+      token: tokenVal,
+      userBlocked: selectedUser.username
+    }
+    ).catch(error => {
+      console.log("Error occurred while blocking users:", error)
+    })
+    setIsBlocked(!isBlocked)
+  }
 
   /* Gets the URI's for all user photos */
   const getUserPhotos = async () => {
@@ -120,12 +165,12 @@ export default function userProfile(props) {
       </View>
     );
 }
-
   return (
 
     <View style={[modalStyles.modalContainer,{backgroundColor:theme.background}]}>
+      
       <View style={modalStyles.modalContent}>
-        <ScrollView style={{width: '70%'}}>
+          <ScrollView style={{width: '70%'}}>
           <Avatar
             size='xlarge'
             rounded
@@ -133,7 +178,10 @@ export default function userProfile(props) {
             containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
             activeOpacity={0.8}
           />
+ { !isBlocked ? (
+        <View>
 
+       
           <Text style={[styles.subtitle,{color:theme.color}]}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.information.gender}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Grad Year: {selectedUser.information.graduation}</Text>
@@ -171,8 +219,6 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
-                  
-
           {selectedUser.ratings && selectedUser.ratings.length > 0 ? (
           selectedUser.ratings.map((rating, index) => (
             <View key={index}>
@@ -196,17 +242,62 @@ export default function userProfile(props) {
         ) : (
           <Text style={styles.title}>No ratings</Text>
           )}
+          </View>
+          
+          )
+          
+          :
+          <View>
+            <TouchableOpacity style={modalStyles.closeButton} onPress={unblockUser}>
+            <Text style={modalStyles.closeButtonText}>Unblock</Text>
+          </TouchableOpacity>
+            </View>}
+                  
+
+          
           
 
 
           <Text style={[styles.subtitle,{color:theme.color}]}> {}</Text>
 
-          <Pressable style={modalStyles.closeButton} onPress={rateOrAwaitDecision}>
-          <Text style={modalStyles.closeButtonText}>Rate User</Text>
-          </Pressable>
           <RateModal visible={rateModalVisible} user={selectedUser.username} onClose={closeRateModal}/>
-          <AwaitRateModal visible={awaitModalVisible} currentUser={props.currentUser} username={selectedUser.username} onClose={closeAwaitModal} />
+          <AwaitRateModal visible={awaitModalVisible} username={selectedUser.username} onClose={closeAwaitModal} />
         </ScrollView>
+        
+        { !viewingSelf && !isBlocked ? (
+        <View style={modalStyles.iconRow}>
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() =>{setUserLiked(!userLiked); setUserDisliked(false); props.handleLikePress(selectedUser)}}>
+          <Ionicons
+            name={userLiked ? 'heart' : 'heart-outline'} 
+            color={userLiked ? 'red' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() => {setUserBookmarked(!userBookmarked); props.handleBookmarkPressed(selectedUser)}}>
+          <Ionicons
+            name={userBookmarked ? 'bookmark' : 'bookmark-outline'} 
+            color={userBookmarked ? 'gold' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() => {setUserDisliked(!userDisliked); setUserLiked(false); props.handleDislikePress(selectedUser)}}>
+          <Ionicons
+            name={userDisliked ? 'heart-dislike' : 'heart-dislike-outline'} 
+            color={userDisliked? 'red' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={rateOrAwaitDecision}>
+        <MaterialIcons
+            name={'rate-review'} 
+            color={'grey'}
+            size={40}
+          />
+          </TouchableOpacity>
+      </View>
+        ):(<></>)}
+        
         <View style={modalStyles.closeButtonContainer}>
           
           <Pressable style={modalStyles.closeButton} onPress={props.closeModal}>
@@ -214,6 +305,7 @@ export default function userProfile(props) {
           </Pressable>
         </View>
       </View>
+     
     </View>
   );
 }
@@ -224,13 +316,21 @@ const modalStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 10,
-    backgroundColor: "white"
+    backgroundColor: "white",
   },
   modalContent: {
     flex: 'column', 
     width: '100%',
     height: '90%', 
     alignItems: 'center',
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    width: "60%"
+  },
+  iconContainer: {
+    paddingHorizontal: 5
   },
   closeButtonContainer: {
     flexDirection: 'column',
@@ -242,7 +342,7 @@ const modalStyles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
-    width: 'auto',
+    width: '60%',
     alignSelf: 'center',
     padding: 10
   },

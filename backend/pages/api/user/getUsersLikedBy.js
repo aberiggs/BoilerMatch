@@ -12,6 +12,8 @@ export default async function handler(req, res) {
   //const user = req.query.user;
 
   const token = req.body.token;
+  const gradYearFilter = req.body.gradYearFilter
+  const majorFilter = req.body.majorFilter
 
   const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
       if (err) {
@@ -22,7 +24,8 @@ export default async function handler(req, res) {
           return payload.username
       }
   });
-  
+  const excludedUsers = [...req.body.excludedUsers,currentUser]
+
 const usersLikedBy = await users.aggregate([
       {
         $lookup: {
@@ -48,8 +51,10 @@ const usersLikedBy = await users.aggregate([
           {InteractionsByUser: {$elemMatch: {userInteractedWith:currentUser, liked_or_disliked: "liked"}}},
           {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
           {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
-          {"username" : { $not: { $eq: currentUser} }},
-          {"discoverable": true}]
+          {"username" : { $nin: excludedUsers }},
+          {"discoverable": true},
+          gradYearFilter !== null ? { "information.graduation": gradYearFilter } : {},
+          majorFilter !== "" ? { "information.major": { $regex: new RegExp(majorFilter, 'i') }  } : {},]
       } },
       
       {
@@ -63,6 +68,9 @@ const usersLikedBy = await users.aggregate([
                 }
         },
       },
+      {$sample: {
+        size: 5
+      }}
     ]).toArray()
     
   // if (!user) {
