@@ -12,6 +12,9 @@ export default function Comment(props, {navigation}) {
 
     const [newComment, setNewComment] = useState('')
     const [comments, setComments] = useState(null)
+    const [delCommentDetails, setDelCommentDetails] = useState('')
+
+    const [username, setUsername] = useState()
 
     useEffect(() => {
         console.log("Initializing")
@@ -20,6 +23,7 @@ export default function Comment(props, {navigation}) {
     
     const initialize = async () => {
         fetchComments()
+        const usernameVal = setUsername(await SecureStore.getItemAsync('username'))
     }
 
     const createComment = async() => {
@@ -28,7 +32,6 @@ export default function Comment(props, {navigation}) {
         updatedComments.push(newComment)
         setComments(updatedComments)
 
-        const username = await SecureStore.getItemAsync('username')
         const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/createComment', {
           username: username,
           comment: newComment,
@@ -55,17 +58,45 @@ export default function Comment(props, {navigation}) {
         setComments(res.data.comments)
     }
 
+    const deleteComment = async () => {
+        const res = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/deleteComment', {
+            id: post._id,
+            username: username,
+            details: delCommentDetails, 
+        }).catch(error => {
+            console.log("Couldn't fetch comments")
+            return null
+        })
+
+        fetchComments()
+    }
+
     const CommentItem = ({item}) => {
     
-        const lastUpdated = "x days ago"
-    
+        const lastUpdated = timeSince(item.timestamp)
+        const isCurrentUserComment = item.from == username
+        setDelCommentDetails(item.details);
+
         return (
           <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
-            <Text style={{color: 'grey', fontWeight: "bold"}}>{item.from}</Text>
-              <Text style={[commentStyles.title, {color:theme.color}]}>{item.details}</Text>
-              <Text style={[styles.subtitle, {color:theme.color}]}>
-                <Text style={[commentStyles.infoLabel]}>{lastUpdated}</Text>
-              </Text>
+            <View style={{alignSelf: 'flex-end', marginTop: -5, position: 'absolute', backgroundColor:theme.background}}>
+            {isCurrentUserComment && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => {
+                deleteComment();
+              }}>
+                <Ionicons
+                    name={'trash-bin'}
+                    color={'red'}
+                    size={20}
+                />
+            </TouchableOpacity>
+          )}
+            </View>
+            <Text style={[commentStyles.title, {color:theme.color}]}>{item.details}</Text>
+            <Text style={{color: 'grey', fontWeight: "bold"}}>@{item.from}</Text>
+            <Text style={[commentStyles.infoLabel]}>{lastUpdated}</Text>
           </View>
         )
     }
@@ -264,5 +295,16 @@ const commentStyles = StyleSheet.create({
     infoLabel: {
         fontSize: 14,
         color: 'grey'
-    },  
+    },
+    deleteButton: {
+        width: "30%",
+        height: 30,
+        backgroundColor: "gold",
+        borderRadius: 6,
+        justifyContent: 'center',
+    },
+    deleteButtonText: {
+        fontSize: 12,
+        alignSelf: "center",
+    }
 });
