@@ -12,6 +12,8 @@ export default async function handler(req, res) {
   //const user = req.query.user;
 
   const token = req.body.token;
+  const gradYearFilter = req.body.gradYearFilter
+  const majorFilter = req.body.majorFilter
 
   const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
       if (err) {
@@ -49,7 +51,9 @@ const usersLikedBy = await users.aggregate([
           {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, didBlocking: true}}} },
           {InteractionsWithUser: {$not: {$elemMatch: {userInteracting:currentUser, gotBlocked: true}}} },
           {"username" : { $not: { $eq: currentUser} }},
-          {"discoverable": true}]
+          {"discoverable": true},
+          gradYearFilter !== null ? { "information.graduation": gradYearFilter } : {},
+          majorFilter !== "" ? { "information.major": { $regex: new RegExp(majorFilter, 'i') }  } : {},]
       } },
       
       {

@@ -21,7 +21,8 @@ export default async function handler(req, res) {
 //   }
 
 const token = req.body.token
-
+const gradYearFilter = req.body.gradYearFilter
+const majorFilter = req.body.majorFilter
 
 const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
     if (err) {
@@ -55,7 +56,9 @@ const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
             {"username" : { $not: { $eq: currentUser} }},
           {"information.gender": userInfo.information.gender},
           {"information.yearForRoommate": userInfo.information.yearForRoommate},
-            {"discoverable": true}
+            {"discoverable": true},
+            gradYearFilter !== null ? { "information.graduation": gradYearFilter } : {},
+            majorFilter !== "" ? { "information.major": { $regex: new RegExp(majorFilter, 'i') } } : {},
           ]
     }},
     {

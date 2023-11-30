@@ -4,7 +4,7 @@ const jwt = require( 'jsonwebtoken');
 
 //TODO Have not tested
 export default async function handler(req, res) {
-  console.log("Attempting to pull bookmarked users");
+  console.log("Attempting to pull blocked users");
 
   const { database } = await connectToDatabase();
   const users = database.collection("users")
@@ -19,8 +19,6 @@ export default async function handler(req, res) {
   //   });
   // }
   const token = req.body.token;
-  const gradYearFilter = req.body.gradYearFilter
-  const majorFilter = req.body.majorFilter
 
     const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
         if (err) {
@@ -33,13 +31,11 @@ export default async function handler(req, res) {
     });
 
   try {
-    const bookmarkedUsers = await users.aggregate([
+    const blockedUsers = await users.aggregate([
       {
         $match: {
             "discoverable": true,
-            "username": { $ne: currentUser },
-            ...(gradYearFilter !== null && { "information.graduation": gradYearFilter }),
-           ...(majorFilter !== "" && { "information.major": { $regex: new RegExp(majorFilter, 'i') } }),
+            "username": { $ne: currentUser }
         }
     },
     {
@@ -53,9 +49,7 @@ export default async function handler(req, res) {
                             $and: [
                                 { $eq: ["$userInteracting", currentUser] },
                                 { $eq: ["$userInteractedWith", "$$username"] },
-                                {  $eq: ["$bookmarked", true ]},
-                                {$ne: ["$didBlocking", true]},
-                                {$ne: ["$gotBlocked", true]},
+                                {  $eq: ["$didBlocking", true ]},
                             ]
                         }
                     }
@@ -71,11 +65,9 @@ export default async function handler(req, res) {
     },
 
     ]).toArray()
-    //console.log(bookmarkedUsers)
-   
     return res.status(200).json({
       success: true,
-      users: bookmarkedUsers,
+      users: blockedUsers,
       message: "Potential users found",
     });
   } catch (error) {

@@ -14,6 +14,7 @@ import { AppState } from 'react-native';
 import { useNotification } from '../../NotificationContext';
 import themeContext from '../../theme/themeContext';
 import { useNavigation } from '@react-navigation/native';
+import Collapsible from 'react-native-collapsible';
 
 
 //import { NotificationSettings } from "../Profile/ManageNotifications"
@@ -46,7 +47,7 @@ Notifications.setNotificationHandler({
 
 
 
-export default function MainFeed({navigation,checkForMatches}){
+export default function MainFeed({navigation,reloadChat}){
   const [usersLiked, setUsersLiked] = useState({});
   const [usersDisliked, setUsersDisliked] = useState({});
   const [usersBookmarked, setUsersBookmarked]= useState({});
@@ -66,6 +67,11 @@ export default function MainFeed({navigation,checkForMatches}){
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isNewSearch, setIsNewSearch] = useState(false);
   const [newSearch, setNewSearch] = useState([]);
+  const [filtering, setFiltering] = useState(false)
+  const [selectingMajor,setSelectingMajor] = useState(false)
+  const [selectingGradYear, setSelectingGradYear] = useState(false)
+  const [majorFilter, setMajorFilter] = useState("")
+  const [gradYearFilter, setGradYearFilter] = useState(null)
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
@@ -82,7 +88,7 @@ export default function MainFeed({navigation,checkForMatches}){
 
   useEffect(() => {
     handleRefreshFeed()
-  },[currentFeed]);
+  },[currentFeed,majorFilter,gradYearFilter]);
 
   const setTokenInSecureStore = async (token) => {
     await SecureStore.setItemAsync('token', token);
@@ -300,16 +306,19 @@ export default function MainFeed({navigation,checkForMatches}){
       ).catch(error => {
         console.log("Error creating conversation: ", error)
       })
+       reloadChat()
         setMatchPopUpUserShown(user)
         console.log("before usernotimatch")
         if(user.recieveNotifications) {
           console.log("usernotificationTOken", user.username)
         sendMatchNotification(user.notificationToken,username)
         }
+        
       }
     }
     else{
       setMatchPopUpUserShown(null)
+      reloadChat()
     }
 
       setUsersLiked((usersLiked) => ({
@@ -347,9 +356,6 @@ export default function MainFeed({navigation,checkForMatches}){
       //await schedulePushNotification(username)
       //commented out but this is how you send notifications to others
      // console.log("likenotifcation", token);
-
-    
-      checkForMatches()
   };
 
   const handleDislikePress = async(user) => {
@@ -388,8 +394,9 @@ export default function MainFeed({navigation,checkForMatches}){
           [user.username]: false,
         })
         )
+        reloadChat()
       }
-      checkForMatches()
+      
   };
 
   const handleBookmarkPressed = async(user) => {
@@ -491,7 +498,7 @@ export default function MainFeed({navigation,checkForMatches}){
           {user.information.major}
         </Text>
         <Text style={[styles.subtitle, {color:theme.color}]}>
-          <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Graduation Year:  </Text>
+          <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Graduation Date:  </Text>
           {user.information.graduation}
         </Text>
         
@@ -520,10 +527,15 @@ export default function MainFeed({navigation,checkForMatches}){
   };
 
   const fetchUsers = async (text) => {
-  
+    const tokenVal = await SecureStore.getItemAsync('token')
     
     // Make an API request to your database to search for users with similar names
-    axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${text}`).then((response) => {
+    axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${text}`,
+    {
+      headers: {
+        authorization: tokenVal
+      }
+    }).then((response) => {
       
       if (response.data.users.length > 0) {
         setSearchResults(response.data.users.map(user => user));
@@ -572,17 +584,19 @@ export default function MainFeed({navigation,checkForMatches}){
       print(response)
       if(currentFeed=="All"){
         response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMainFeedUsers', {
-        token: tokenVal
+        token: tokenVal,
+        gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
+        majorFilter: majorFilter
       }
       ).catch(error => {
         console.log("Error occured while getting main feed users:", error)
       })
-        
     }
     else if(currentFeed=="LikedBy"){
       response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getUsersLikedBy', {
-        token: tokenVal
-        
+        token: tokenVal,
+        gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
+        majorFilter: majorFilter
       }
       ).catch(error => {
         console.log("Error occurred while getting liked users:", error)
@@ -590,7 +604,9 @@ export default function MainFeed({navigation,checkForMatches}){
     }
     else{
       response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getBookmarkedUsers', {
-        token: tokenVal
+        token: tokenVal,
+        gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
+        majorFilter: majorFilter
         
       }
       ).catch(error => {
@@ -615,7 +631,7 @@ export default function MainFeed({navigation,checkForMatches}){
     setUsersDisliked(dislikedUsers)
     setDisplayedUsers(response.data.users)
 
-   
+
     }
 
 //   const renderModal = () => {
@@ -651,6 +667,17 @@ export default function MainFeed({navigation,checkForMatches}){
 //       return null;
 //     }
 // };  
+  gradDates=[
+    { label: "Fall 2024", value: "fall24" },
+    { label: "Spring 2025", value: "spring25" },
+    { label: "Fall 2025", value: "fall25" },
+    { label: "Spring 2026", value: "spring26" },
+    { label: "Fall 2026", value: "fall26" },
+    { label: "Spring 2027", value: "spring27" },
+    { label: "Fall 2027", value: "fall27" },
+    { label: "Spring 2028", value: "spring28" },
+    { label: "Fall 2028", value: "fall28" },
+  ]
     return(
       <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
         <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
@@ -691,10 +718,11 @@ export default function MainFeed({navigation,checkForMatches}){
               </View>
             )}
           </View>
+    
           <TouchableOpacity
             style={[styles.filterButton, currentFeed=="LikedBy"?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
             onPress={handleLikedByFeedPress}>
-            <Text style={styles.searchButtonText}>Liked Me </Text>
+            <Text style={styles.searchButtonText}>Liked Me</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.filterButton, currentFeed=="Bookmarked"?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
@@ -705,6 +733,50 @@ export default function MainFeed({navigation,checkForMatches}){
             size={15}
           />
           </TouchableOpacity>
+          <View>
+          <TouchableOpacity
+            style={[styles.filterCategoryButton,  majorFilter!=""||gradYearFilter!=null?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={()=>{setFiltering(!filtering);setSelectingMajor(majorFilter=="");setSelectingGradYear(gradYearFilter==null)} }>
+            <Text style={styles.searchButtonText}>Filters</Text>
+          </TouchableOpacity>
+          <View  style={styles.collapsibleContent}>
+          <Collapsible  collapsed={!filtering}>
+            <View >
+          <TouchableOpacity onPress={()=>setSelectingMajor(!selectingMajor)} style={[styles.filterCategory, majorFilter!=""?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}>
+            <Text>Major</Text>
+          </TouchableOpacity>
+          <Collapsible collapsed={selectingMajor}>
+          <TextInput
+              style={[styles.input, {color:theme.color}]}
+              placeholder="Enter"
+              placeholderTextColor='gray'
+              onChangeText={(text) => setMajorFilter(text)}
+          
+              value={majorFilter}
+              autoCapitalize="none"
+            />
+          </Collapsible>
+          <TouchableOpacity onPress={()=>setSelectingGradYear(!selectingGradYear)} style={[styles.filterCategory, gradYearFilter!=null?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}>
+            <Text>Graduation</Text>
+          </TouchableOpacity>
+          <Collapsible collapsed={selectingGradYear}>
+          {gradYearFilter==null?(gradDates.map((item,index)=>(
+          <TouchableOpacity onPress={()=>setGradYearFilter(item)} style={styles.filterCategory}>
+          <Text>{item.label}</Text>
+           </TouchableOpacity>
+          )))
+          :(
+            <TouchableOpacity onPress={()=>setGradYearFilter(null)} style={styles.filterCategory}>
+            <Text>{gradYearFilter.label}</Text>
+           </TouchableOpacity>
+          )
+          }
+          </Collapsible>
+          </View>
+          </Collapsible>
+          </View>
+          
+          </View>
         </View>
 
         
@@ -866,6 +938,7 @@ const styles = StyleSheet.create({
   },
   dropdownItem: {
     padding: 10,
+    backgroundColor:"white"
   },
   feedItem: {
    // Take up the entire available space
@@ -908,7 +981,7 @@ const styles = StyleSheet.create({
   ,
   input: { 
     height: 40, 
-    flex: 1,
+    backgroundColor:"white",
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
@@ -925,9 +998,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   filterButton: {
-   
     padding: 10,
     borderRadius: 5,
+  },
+  filterCategoryButton: {
+    paddingHorizontal:25,
+    padding: 10,
+    borderRadius: 5,
+  },
+  filterCategory:{
+   borderWidth:1,
+   padding:5,
+   borderRadius:5,
+   backgroundColor:"white"
   },
   searchButtonText: {
     color: 'gray', 
@@ -940,7 +1023,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
     zIndex: 1,
-    gap: 10
+    gap: 5
+  },
+  collapsibleContent: {
+    position: 'absolute',
+    top: 35,
+    left: 0,
+    right: 0,
+    borderRadius:5,
+    zIndex: 2,// Ensure it appears on top
+   // zIndex: 2, // Ensure it appears on top
+    
   },
   flatListContainer: {
     flex: 1, // Take up the remaining available space

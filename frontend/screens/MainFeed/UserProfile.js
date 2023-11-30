@@ -17,6 +17,8 @@ export default function userProfile(props) {
   const [userLiked, setUserLiked] = useState(false)
   const [userBookmarked, setUserBookmarked] = useState(false)
   const [userDisliked, setUserDisliked] = useState(false)
+  const [isBlocked,setIsBlocked] = useState(false)
+
   const goForward = () => {
     carouselRef.current.snapToNext();
   };
@@ -32,7 +34,6 @@ export default function userProfile(props) {
   
   const getInteractionWithUser = async() => {
 
-    console.log(selectedUser)
     const tokenVal = await SecureStore.getItemAsync('token');
     response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getInteractionWithUser', {
       token: tokenVal,
@@ -53,8 +54,22 @@ export default function userProfile(props) {
     setUserDisliked(interaction.liked_or_disliked =="disliked" || false)
 
     setUserBookmarked(interaction.bookmarked || false)
+    
+    setIsBlocked(interaction.didBlocking || false)
   }
   }
+  const unblockUser = async() => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportOtherUser/blockOtherUser', {
+      token: tokenVal,
+      userBlocked: selectedUser.username
+    }
+    ).catch(error => {
+      console.log("Error occurred while blocking users:", error)
+    })
+    setIsBlocked(!isBlocked)
+  }
+
   /* Gets the URI's for all user photos */
   const getUserPhotos = async () => {
     console.log(selectedUser)
@@ -91,12 +106,12 @@ export default function userProfile(props) {
       </View>
     );
 }
-
   return (
 
     <View style={[modalStyles.modalContainer,{backgroundColor:theme.background}]}>
+      
       <View style={modalStyles.modalContent}>
-        <ScrollView style={{width: '70%'}}>
+          <ScrollView style={{width: '70%'}}>
           <Avatar
             size='xlarge'
             rounded
@@ -104,7 +119,10 @@ export default function userProfile(props) {
             containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
             activeOpacity={0.8}
           />
+ { !isBlocked ? (
+        <View>
 
+       
           <Text style={[styles.subtitle,{color:theme.color}]}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.information.gender}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Grad Year: {selectedUser.information.graduation}</Text>
@@ -142,9 +160,17 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
-
+          </View>)
+          
+          :
+          <View>
+            <TouchableOpacity style={modalStyles.closeButton} onPress={unblockUser}>
+            <Text style={modalStyles.closeButtonText}>Unblock</Text>
+          </TouchableOpacity>
+            </View>}
         </ScrollView>
-        { !viewingSelf ? (
+        
+        { !viewingSelf && !isBlocked ? (
         <View style={modalStyles.iconRow}>
         <TouchableOpacity style={modalStyles.iconContainer} onPress={() =>{setUserLiked(!userLiked); setUserDisliked(false); props.handleLikePress(selectedUser)}}>
           <Ionicons
@@ -170,13 +196,14 @@ export default function userProfile(props) {
         </TouchableOpacity>
       </View>
         ):(<></>)}
-
+        
         <View style={modalStyles.closeButtonContainer}>
           <Pressable style={modalStyles.closeButton} onPress={props.closeModal}>
             <Text style={modalStyles.closeButtonText}>Close</Text>
           </Pressable>
         </View>
       </View>
+     
     </View>
   );
 }
@@ -187,7 +214,7 @@ const modalStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 10,
-    backgroundColor: "white"
+    backgroundColor: "white",
   },
   modalContent: {
     flex: 'column', 

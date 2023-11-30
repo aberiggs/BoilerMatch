@@ -1,5 +1,5 @@
 import React, { useEffect, useContext } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import themeContext from '../theme/themeContext';
@@ -44,20 +44,20 @@ export default function Landing({ navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
-      <Text style={[styles.title, { color: theme.textColor }]}>Welcome to Boiler Match!</Text>
+      <Text style={[styles.title, { color: theme.textColor }]}>Welcome to Boiler Match</Text>
+      <Image
+        source={require('../assets/purdue-pete-logo.png')} // Change the path accordingly
+        style={styles.logo}
+      />
       <Text style={[styles.subtitle, { color: theme.textColor }]}>
-        Let's find a roommate
+        Let's find a roommate!
       </Text>
 
-      <TouchableOpacity style={[styles.button, { backgroundColor: theme.primaryColor }]} onPress={handleLogin}>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Sign in</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: theme.secondaryColor }]}
-        onPress={handleRegister}
-      >
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
+
+        <Text onPress={handleRegister} style={styles.registerText}>Create a new account</Text>
     </View>
   );
 }
@@ -76,21 +76,32 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 20,
     marginBottom: 30,
     textAlign: 'center',
   },
   button: {
     width: '60%',
     height: 50,
-    borderRadius: 6,
+    borderRadius: 10,
     justifyContent: 'center',
     marginTop: 20,
+    backgroundColor:"gold"
   },
   buttonText: {
     fontSize: 18,
     alignSelf: 'center',
-    color: 'white',
+    color: 'black',
     fontWeight: 'bold',
   },
+  logo: {
+    width: "80%", 
+    height: "40%", 
+    marginBottom: 20,
+  },
+  registerText: {
+    fontSize: 15,
+    color: "#5C5C5C",
+    marginTop: 20
+  }
 });

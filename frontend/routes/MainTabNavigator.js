@@ -8,15 +8,12 @@ import { useState } from 'react';
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
-    const [checkForMatch, setCheckForMatch] = useState(false)
+    const [chatReloaded, setChatReloaded] = useState(false)
 
+    const reloadChat = () =>{
+      setChatReloaded(!chatReloaded)
 
-    const checkForMatches = () => {
-      // Update the externalChange state when an event occurs in this component
-      setCheckForMatch(!checkForMatch);
-      
-    };
-
+    }
    
     return (
     <Tab.Navigator screenOptions={({ route }) => ({
@@ -42,17 +39,20 @@ export default function MainTabNavigator() {
     >
       <Tab.Screen
         name="Main Feed"
-        options={{ tabBarBadge: checkForMatch ? 1 : null }} // Example of using the state for a badge
+       // options={{ tabBarBadge: checkForMatch ? 1 : null }} // Example of using the state for a badge
       >
-        {(props) => <MainFeed {...props} checkForMatches={checkForMatches} />}
+        {(props) => <MainFeed {...props} reloadChat={reloadChat}/>}
       </Tab.Screen>
       <Tab.Screen
         name="ChatList"
-        options={{ tabBarBadge: checkForMatch ? 1 : null }}
+        // options={{ tabBarBadge: checkForMatch ? 1 : null, unmountOnBlur: true}}
       >
-        {(props) => <ChatList {...props} checkForMatch={checkForMatch} />}
+        {(props) => <ChatList {...props} chatReloaded={chatReloaded} />}
       </Tab.Screen>
-      <Tab.Screen name="Profile" component={Profile} />
+      <Tab.Screen name="Profile"
+      >
+         {(props) => <Profile {...props}  reloadChat={reloadChat} />}
+      </Tab.Screen>
       
     </Tab.Navigator>
     )
