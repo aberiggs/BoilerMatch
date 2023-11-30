@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MainFeed from '../screens/MainFeed/MainFeed'
 import ChatList from '../screens/Messages/ChatList'
 import Profile from '../screens/Profile/Profile'
+import PostsFeed from '../screens/PostsFeed/PostsFeed'
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 
@@ -23,10 +24,11 @@ export default function MainTabNavigator() {
         
           if (route.name === "Main Feed") {
             iconName =  "ios-home"
-          } else if (route.name === "ChatList") {
+          } else if (route.name === "Messages") {
             iconName = "chatbubble"
-          }
-          else {
+          } else if (route.name === "Posts") {
+            iconName = "newspaper"
+          } else {
             iconName = "person";
           }
     
@@ -43,6 +45,9 @@ export default function MainTabNavigator() {
       >
         {(props) => <MainFeed {...props} reloadChat={reloadChat}/>}
       </Tab.Screen>
+
+      <Tab.Screen name="Posts" component={PostsFeed} />
+
       <Tab.Screen
         name="ChatList"
         // options={{ tabBarBadge: checkForMatch ? 1 : null, unmountOnBlur: true}}
@@ -53,7 +58,6 @@ export default function MainTabNavigator() {
       >
          {(props) => <Profile {...props}  reloadChat={reloadChat} />}
       </Tab.Screen>
-      
     </Tab.Navigator>
     )
 }

@@ -75,6 +75,8 @@ export default function MainFeed({navigation,reloadChat}){
   const [gradYearFilter, setGradYearFilter] = useState(null)
   const [loading, setLoading]  = useState(false)
   const [noMoreUsers, setNoMoreUsers] = useState(false)
+  const [currentUser, setCurrentUser] = useState(false);
+
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
@@ -96,6 +98,8 @@ export default function MainFeed({navigation,reloadChat}){
     await SecureStore.setItemAsync('token', token);
   };
 
+  
+
 
   useEffect(() => {
     // Define a separate async function to fetch the username
@@ -103,6 +107,7 @@ export default function MainFeed({navigation,reloadChat}){
       try {
         const userVal = await SecureStore.getItemAsync('username');
         setUsername(userVal);
+        setCurrentUser(userVal)
         //console.log("username in init", userVal); // Log the username here if needed
       } catch (error) {
         console.error("Error fetching username", error);
