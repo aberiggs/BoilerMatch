@@ -454,7 +454,7 @@ export default function ChatList({navigation,checkForMatch}) {
               data={displayedUsers} // Replace with your data array
               
               renderItem={({ item }) => ChatItem({item}) }
-              keyExtractor={(item) => item.username} // Replace with a unique key extractor
+              keyExtractor={(item) => item._id} // Replace with a unique key extractor
               horizontal={false}
               contentContainerStyle={styles.flatListContent}
             />
