@@ -3,7 +3,6 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { SearchBar } from 'react-native-elements';
 import axios from "axios"
-import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
 import RNPickerSelect from "react-native-picker-select"
 
@@ -21,12 +20,10 @@ export default function PostsFeed({navigation}) {
   
 
   useEffect(() => {
-    console.log("Initializing")
     initialize()
   },[])
 
   useEffect (() => {
-    console.log(postsToLoad)
     // If we aren't currently trying to fetch any posts
     if (postsToLoad === 0) {
       // Increase the number of posts to fetch
@@ -43,7 +40,6 @@ export default function PostsFeed({navigation}) {
   }
 
   const fetchPosts = async () => {
-    console.log("Fetching... ", postsToLoad);
     const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getPostList', {
       params: {
         fetchAmount: postsToLoad,
@@ -76,13 +72,12 @@ export default function PostsFeed({navigation}) {
   }
 
   const incrementPosts = () => {
-    console.log("Incrementing posts")
     const additionalPostCount = 4
     setPostsToLoad(postsToLoad + additionalPostCount)
   }
 
   const refreshPosts = () => {
-    console.log("Refreshing posts")
+    setPosts(null)
     setPostsToLoad(0)
   }
 

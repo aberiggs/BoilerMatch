@@ -50,6 +50,7 @@ function PostItem (props) {
     const [upvoteCount, setUpvoteCount] = useState(item.upvoteCount ? item.upvoteCount : 0)
     const [upvoted, setUpvoted] = useState(item.upvoteUsers ? item.upvoteUsers.includes(props.currentUsername) : false)
     const [downvoted, setDownvoted] = useState(item.downvoteUsers ? item.downvoteUsers.includes(props.currentUsername) : false)
+    const [postHidden, setPostHidden] = useState(item.upvoteCount <= -1)
   
     const isCurrentUserPost = item.user == props.currentUsername;
     const lastUpdated = timeSince(item.timestamp)
@@ -125,7 +126,6 @@ function PostItem (props) {
     }
   
     const updateVote = async (voteVal) => {
-      console.log(voteVal)
       const tokenVal = await SecureStore.getItemAsync('token')
       const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/modifyVote', {
         token: tokenVal,
@@ -152,25 +152,36 @@ function PostItem (props) {
         </Modal>
         <DeletePostModal visible={deletePostModalVisible} post={item} onClose={() => {setDeletePostModalVisible(false); props.fetchPosts() }} />
         <View style={{flexGrow: 1}}>
-          <TouchableOpacity style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handlePostPress(item)}>
-            <Text style={[feedStyles.title, {color:theme.color}]}>{item.title}</Text>
-            <Text style={feedStyles.username}>@{item.user}</Text>
-            <Text style={feedStyles.username}>{categoryDisplayed}</Text>
-            <Text style={[styles.subtitle, {color:theme.color}]}>
-              <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
-            </Text>
-  
-            {isCurrentUserPost && (
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => {
-                  setDeletePostModalVisible(true);
-                }}
-              >
-                <Text style={styles.deleteButtonText}>Delete post</Text>
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity> 
+          { postHidden ?
+            <View style={{}}>
+              <Text style={feedStyles.title}>This post has been hidden.</Text>
+              <TouchableOpacity style={{paddingVertical: 10}} onPress={() => {setPostHidden(false)}}><Text style={[feedStyles.title, {color: 'gray'}]}>Show Post</Text></TouchableOpacity>
+            </View>
+            
+            :
+
+            <TouchableOpacity style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handlePostPress(item)}>
+              <Text style={[feedStyles.title, {color:theme.color}]}>{item.title}</Text>
+              <Text style={feedStyles.username}>@{item.user}</Text>
+              <Text style={feedStyles.username}>{categoryDisplayed}</Text>
+              <Text style={[styles.subtitle, {color:theme.color}]}>
+                <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
+              </Text>
+    
+              {isCurrentUserPost && (
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => {
+                    setDeletePostModalVisible(true);
+                  }}
+                >
+                  <Text style={styles.deleteButtonText}>Delete post</Text>
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity> 
+        
+          }
+
         </View>
   
         <View style={{justifyContent: 'space-between', alignItems: 'center', width:'20%'}}>
