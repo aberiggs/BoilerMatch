@@ -1,6 +1,7 @@
-import { StyleSheet, View, Modal, FlatList, Text, TouchableOpacity, RefreshControl, Pressable, ScrollView } from 'react-native';
+import { StyleSheet, View, Modal, FlatList, Text, TextInput, TouchableOpacity, RefreshControl, Pressable, ScrollView } from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { SearchBar } from 'react-native-elements';
 import axios from "axios"
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
@@ -15,6 +16,8 @@ export default function PostsFeed({navigation}) {
   const [posts, setPosts] = useState(null)
   const [filterCategory, setFilterCategory] = useState('')
   const [postsToLoad, setPostsToLoad] = useState(0)
+  const [search, setSearch] = useState('')
+  const [searched, setSearched] = useState(false)
   
 
   useEffect(() => {
@@ -30,7 +33,9 @@ export default function PostsFeed({navigation}) {
       incrementPosts()
       return
     }
-    fetchPosts()
+    if (!searched) {
+      fetchPosts()
+    }
   },[postsToLoad])
 
   const initialize = async () => {
@@ -56,6 +61,20 @@ export default function PostsFeed({navigation}) {
     setPosts(res.data.postList);
   };
 
+  const searchPosts = async () => {
+    const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/searchPosts', {
+      params: {
+        fetchAmount: postsToLoad,
+        keyword: search,
+      }
+    }).catch(error => {
+      console.log("Error occurred while fetching posts: ", error);
+    });
+
+    setPosts(res.data.postList)
+
+  }
+
   const incrementPosts = () => {
     console.log("Incrementing posts")
     const additionalPostCount = 4
@@ -80,6 +99,7 @@ export default function PostsFeed({navigation}) {
 
   return(
     <View style={styles.container}>
+      <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
       <RNPickerSelect
           placeholder={ {label: "Filter posts by category", value: null}}
           onValueChange={(value) => handleFilterCategory(value)}
@@ -91,7 +111,37 @@ export default function PostsFeed({navigation}) {
           ]}
           style={pickerSelectStyles}
       />
+
+      <TextInput
+          style={[styles.input, {color:theme.color}]}
+          placeholder="Search for a post"
+          placeholderTextColor='gray'
+        
+          onChangeText={(text) => {
+            setSearch(text);
+          }}
+
+          onSubmitEditing={() => {setSearched(true), searchPosts()}}
+          autoCapitalize="none"
+      />
       
+        {searched && (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => {
+                  setSearched(false);
+                  fetchPosts();
+                }}>
+
+                <Ionicons
+                    name={'close-circle-outline'}
+                    color={'red'}
+                    size={20}
+                />
+              </TouchableOpacity>
+        )}
+      </View>
+
       <ScrollView
         extraData={posts}
         style={{width: '100%'}}
@@ -132,6 +182,15 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       height: '100%'
     },
+    input: { 
+      height: 40, 
+      flex: 1,
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+      padding: 10,
+      marginRight: 0,
+    },
     postsListContainer: {
         width: '100%',
         padding: 20,
@@ -168,16 +227,25 @@ const styles = StyleSheet.create({
       elevation: 2,
     },
     deleteButton: {
-    width: "30%",
+    width: "5%",
     height: 30,
-    backgroundColor: "gold",
+    backgroundColor: "white",
     borderRadius: 6,
     justifyContent: 'center',
     },
     deleteButtonText: {
     fontSize: 12,
     alignSelf: "center",
-    }
+    },
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: 'white',
+      padding: 20,
+      zIndex: 1,
+      gap: 10
+    },
 })
 
 const feedStyles = StyleSheet.create({
@@ -201,14 +269,14 @@ const feedStyles = StyleSheet.create({
   infoLabel: {
     fontSize: 14,
     color: 'grey'
-  },  
+  },
 })
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     fontSize: 16,
     marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     marginHorizontal: 20,
     borderWidth: 1,
     borderColor: 'grey', // Set the color of the border
