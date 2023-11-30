@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 
-import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList } from 'react-native';
+import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList,ActivityIndicator } from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Ionicons,FontAwesome} from '@expo/vector-icons';
 import axios from "axios"
@@ -71,8 +71,10 @@ export default function MainFeed({navigation,reloadChat}){
   const [selectingMajor,setSelectingMajor] = useState(false)
   const [selectingGradYear, setSelectingGradYear] = useState(false)
   const [majorFilter, setMajorFilter] = useState("")
+  const [currMajorInput, setCurrMajorInput] = useState("")
   const [gradYearFilter, setGradYearFilter] = useState(null)
-
+  const [loading, setLoading]  = useState(false)
+  const [noMoreUsers, setNoMoreUsers] = useState(false)
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
@@ -87,8 +89,8 @@ export default function MainFeed({navigation,reloadChat}){
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
 
   useEffect(() => {
-    handleRefreshFeed()
-  },[currentFeed,majorFilter,gradYearFilter]);
+    handleRefreshFeed(false)
+  },[currentFeed,gradYearFilter,majorFilter]);
 
   const setTokenInSecureStore = async (token) => {
     await SecureStore.setItemAsync('token', token);
@@ -319,6 +321,17 @@ export default function MainFeed({navigation,reloadChat}){
     else{
       setMatchPopUpUserShown(null)
       reloadChat()
+      if(isUserLiked.data.liked == true){
+        await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
+          params: {
+            token: tokenVal,
+            userBlocked: user.username,
+          }
+        }).catch(error => {
+          console.log("Error occurred while blocking users - deleting messages:", error);
+        });
+        
+      }
     }
 
       setUsersLiked((usersLiked) => ({
@@ -394,7 +407,26 @@ export default function MainFeed({navigation,reloadChat}){
           [user.username]: false,
         })
         )
-        reloadChat()
+       
+        const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
+          token: tokenVal,
+          userShown: user.username,
+        }
+        ).catch(error => {
+          console.log("error occurred while liking user:", error)
+        })
+          if(isUserLiked.data.liked == true){
+            await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
+              params: {
+                token: tokenVal,
+                userBlocked: user.username,
+              }
+            }).catch(error => {
+              console.log("Error occurred while blocking users - deleting messages:", error);
+            });
+            reloadChat()
+      }
+      
       }
       
   };
@@ -409,7 +441,6 @@ export default function MainFeed({navigation,reloadChat}){
         console.log("Error occurred while bookmarking users:", error)
       })
       let bookmarked = true
-      //console.log(response)
       if(response.data.user_added == null){
         bookmarked = true
       }
@@ -437,8 +468,7 @@ export default function MainFeed({navigation,reloadChat}){
 
   const onRefresh = async() => {
     setRefreshing(true);
-    handleRefreshFeed();
-    // ... Fetch data ...
+    handleRefreshFeed(false);
     setRefreshing(false);
   };
 
@@ -547,13 +577,6 @@ export default function MainFeed({navigation,reloadChat}){
     });
   };
 
-  // useEffect(() => {
-  //   if (selectedUser) {
-  //     setSearchResult([selectedUser]);
-  //   } else {
-  //     setSearchResult([]);
-  //   }
-  // }, [selectedUser]);
   
   const handleSearchListButtonPress = (value,index) => {
     setSelectedUser(value);
@@ -570,7 +593,23 @@ export default function MainFeed({navigation,reloadChat}){
    }
 
 
-  const handleRefreshFeed = async() => {
+
+  const handleRefreshFeed = async(scrolledDown) => {
+      if(loading){
+        return
+      }
+        let prevDisplayedUsers = []
+        let prevLikedUsers = {}
+        let prevDislikedUsers = {}
+        let prevBookmarkedUsers = {}
+      if(scrolledDown){
+         prevDisplayedUsers = [...displayedUsers]
+         prevLikedUsers = {...usersLiked}
+         prevDislikedUsers = {...usersDisliked}
+         prevBookmarkedUsers = {...usersBookmarked}
+        setLoading(true)
+      }
+      excludedUsers = prevDisplayedUsers.map(user=>user.username)
       const tokenVal = await SecureStore.getItemAsync('token')
       let response = null
 
@@ -580,13 +619,12 @@ export default function MainFeed({navigation,reloadChat}){
       ).catch(error => {
         console.log("Error occured while undisliking users:", error)
       })
-
-      print(response)
       if(currentFeed=="All"){
         response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMainFeedUsers', {
         token: tokenVal,
         gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
-        majorFilter: majorFilter
+        majorFilter: majorFilter,
+        excludedUsers: excludedUsers
       }
       ).catch(error => {
         console.log("Error occured while getting main feed users:", error)
@@ -596,7 +634,8 @@ export default function MainFeed({navigation,reloadChat}){
       response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getUsersLikedBy', {
         token: tokenVal,
         gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
-        majorFilter: majorFilter
+        majorFilter: majorFilter,
+        excludedUsers: excludedUsers
       }
       ).catch(error => {
         console.log("Error occurred while getting liked users:", error)
@@ -606,8 +645,8 @@ export default function MainFeed({navigation,reloadChat}){
       response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getBookmarkedUsers', {
         token: tokenVal,
         gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
-        majorFilter: majorFilter
-        
+        majorFilter: majorFilter,
+        excludedUsers: excludedUsers
       }
       ).catch(error => {
         console.log("Error occurred while getting liked users:", error)
@@ -625,48 +664,32 @@ export default function MainFeed({navigation,reloadChat}){
       result[user.username] = user.interaction.length > 0 && "liked_or_disliked" in user.interaction[0] ? user.interaction[0].liked_or_disliked== "disliked": false;
       return result;
     }, {});
-   // setUsersBookmarked({})
-    setUsersBookmarked(bookmarkedUsers)
-    setUsersLiked(likedUsers)
-    setUsersDisliked(dislikedUsers)
-    setDisplayedUsers(response.data.users)
+  
 
+    if(scrolledDown){
+      if(response.data.users.length == 0){
+        setNoMoreUsers(true)
+      }
+      else{
+         setUsersBookmarked({...prevBookmarkedUsers,...bookmarkedUsers})
+         setUsersLiked({...prevLikedUsers,...likedUsers})
+         setUsersDisliked({...prevDislikedUsers,...dislikedUsers})
+         setDisplayedUsers([...prevDisplayedUsers, ...response.data.users]);
+         setNoMoreUsers(false)
+      }
+      setLoading(false)
+    }
+    else{
+      
+        setUsersBookmarked(bookmarkedUsers)
+        setUsersLiked(likedUsers)
+        setUsersDisliked(dislikedUsers)
+        setDisplayedUsers(response.data.users);
+        setNoMoreUsers(false)
 
     }
+  }
 
-//   const renderModal = () => {
-//     if (searchResult) {
-//       return (
-//         <Modal
-//           animationType="slide"
-//           transparent={false}
-//           visible={isModalVisible}
-//         >
-//           <UserProfile user={selectedUser} closeModal={() => setIsModalVisible(false)}/>
-//         </Modal>
-//       );
-//     }  else if (userNotFound) {
-//       return (
-//         <Modal
-//           animationType="slide"
-//           transparent={false}
-//           visible={userNotFound}
-//         >
-//           <View style={modalStyles.modalContainer}>
-//             <View style={modalStyles.modalContent}>
-//               <Text>User not found</Text>
-//               <View style={modalStyles.closeButtonContainer}>
-//                 <Button title="Close" onPress={toggleUser} />
-//               </View>
-//             </View>
-//           </View>
-//         </Modal>
-//       );
-//     }
-//     else {
-//       return null;
-//     }
-// };  
   gradDates=[
     { label: "Fall 2024", value: "fall24" },
     { label: "Spring 2025", value: "spring25" },
@@ -678,6 +701,24 @@ export default function MainFeed({navigation,reloadChat}){
     { label: "Spring 2028", value: "spring28" },
     { label: "Fall 2028", value: "fall28" },
   ]
+  const renderFooter = () => {
+    if(loading && !noMoreUsers){
+      return(
+      <View style={{ paddingVertical: 20 }}>
+        <ActivityIndicator animating size="large" />
+      </View>
+      )
+    }
+    else{
+      if(noMoreUsers){
+        return (<Text>No more users, check again soon for more</Text>)
+      }
+      else{
+        return null
+      }
+    }
+   
+  };
     return(
       <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
         <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
@@ -703,7 +744,7 @@ export default function MainFeed({navigation,reloadChat}){
                 data={searchResults}
                 keyExtractor={(item) => item._id}
                 renderItem={({item,index }) => (
-                  <TouchableOpacity
+                  <TouchableOpacity key={index}
                     //value={searchTerm}
                     onPress={() => handleSearchListButtonPress(item,index)}
                     //activeOpacity={0.7} // You can adjust this value
@@ -746,22 +787,22 @@ export default function MainFeed({navigation,reloadChat}){
             <Text>Major</Text>
           </TouchableOpacity>
           <Collapsible collapsed={selectingMajor}>
-          <TextInput
+         { !selectingMajor?(<TextInput
               style={[styles.input, {color:theme.color}]}
               placeholder="Enter"
               placeholderTextColor='gray'
-              onChangeText={(text) => setMajorFilter(text)}
-          
-              value={majorFilter}
+              onChangeText={(text) => setCurrMajorInput(text)}
+              onBlur={() => setMajorFilter(currMajorInput)}
+              value={currMajorInput}
               autoCapitalize="none"
-            />
+            />):(<></>)}
           </Collapsible>
           <TouchableOpacity onPress={()=>setSelectingGradYear(!selectingGradYear)} style={[styles.filterCategory, gradYearFilter!=null?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}>
             <Text>Graduation</Text>
           </TouchableOpacity>
           <Collapsible collapsed={selectingGradYear}>
           {gradYearFilter==null?(gradDates.map((item,index)=>(
-          <TouchableOpacity onPress={()=>setGradYearFilter(item)} style={styles.filterCategory}>
+          <TouchableOpacity key={index} onPress={()=>setGradYearFilter(item)} style={styles.filterCategory}>
           <Text>{item.label}</Text>
            </TouchableOpacity>
           )))
@@ -800,6 +841,9 @@ export default function MainFeed({navigation,reloadChat}){
                   onRefresh={onRefresh}
                 />
               }
+              onEndReached={() => handleRefreshFeed(true)}
+              onEndReachedThreshold={0}
+              ListFooterComponent={renderFooter}
             />
           ) : (
             <ScrollView
