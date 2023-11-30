@@ -75,11 +75,28 @@ export default function ManageInformation({navigation}) {
     setMajor(text);
   };
 
+  const badWords = ["fuck", "shit", "slut", "whore", "cunt", "bitch", "dick", "pussy"]
+
+  const checkBad = () => {
+    const first = firstName.toLowerCase()
+    const last = lastName.toLowerCase()
+    
+    for (let i = 0; i < badWords.length; i++) {
+      if (first.includes(badWords[i]) || last.includes(badWords[i])) {
+        return false
+      }
+    }
+
+    return true
+  }
+
   const handleSubmit = async () => {
     // If not all the fields filled out then send error message
     if ( !firstName || !lastName || !yearForRoommate || !gender || !graduation || !major || !race ||
       !pets || !religion || !politicalViews || !sleepingHabits || !drinkingHabits) {
       setErrMsgVisible(true);
+    } else if (!checkBad()) {
+      alert("Make sure your names are appropriate!")
     } else {
       const res = updateInformationThroughApi();
       // TODO: Error checking
