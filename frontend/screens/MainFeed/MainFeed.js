@@ -112,15 +112,16 @@ export default function MainFeed({navigation,checkForMatches}){
 
   //NotificationSettings()
   console.log("notificationsEnabled: ", notificationsEnabled);
+  /*
   useEffect(() => {
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      if (notificationsEnabled) {
         setNotification(notification);
-      }
     });
+    
   
     // Other notification handling code
   }, [notificationsEnabled]);
+  */
 
   //console.log("notification Listener", notificationsEnabled);
 
@@ -161,6 +162,7 @@ export default function MainFeed({navigation,checkForMatches}){
     // Step 1: Get the push token
     const pushToken = await registerForPushNotificationsAsync();
     setExpoPushToken(pushToken);
+    console.log(pushToken)
     // Step 2: Get the 'hasNoti' value
     const tokenVal = await SecureStore.getItemAsync('token');
     const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNoti', {
@@ -195,9 +197,13 @@ export default function MainFeed({navigation,checkForMatches}){
   useEffect( () => {
     //console.log("usename", username)
     //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    
     notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
+      if (false){
       setNotification(notification);
+      }
     });
+    
     //console.log("abakk")
     responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
       console.log("response", response);
@@ -232,7 +238,6 @@ export default function MainFeed({navigation,checkForMatches}){
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, [username]);
-  
   /*
   useEffect(() => {
   const updateNotificationsThroughApi = async() => {

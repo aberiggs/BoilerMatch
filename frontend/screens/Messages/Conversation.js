@@ -1,5 +1,5 @@
-import { useEffect, useState, useContext } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList, Modal } from 'react-native';
+import { useEffect, useState, useContext, useRef } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList, Modal, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModal component
@@ -10,8 +10,9 @@ import UnmatchModal from './UnmatchModal'; // Import the ReportBlockModal compon
 import themeContext from '../../theme/themeContext';
 import UserProfile from '../MainFeed/UserProfile'
 
-
+//FIX THE enablednotificaitons to be in sync with the othe stuff
 import axios from "axios"
+import { enableExperimentalWebImplementation } from 'react-native-gesture-handler';
 
 export default function Conversation(props, {navigation}) {
     const [currentMessages, setCurrentMessages] = useState(null)
@@ -24,6 +25,8 @@ export default function Conversation(props, {navigation}) {
     const [otherUserKey, setOtherUserKey] = useState(null)
     const [isUserModalVisible,setIsUserModalVisible] = useState(false);
     const [selectedUser, setSelectedUser] = useState('');
+    const [enabledNotifications, setEnabledNotifications] = useState(true)
+    const isAlertDisplayedRef = useRef(false)
 
     const openUnmatchModal = () => {
         setUnmatchModalVisible(true);
@@ -48,9 +51,88 @@ export default function Conversation(props, {navigation}) {
       const handleCloseUserModal = () => {
         setIsUserModalVisible(false);
       };
+      const notiThroughApi = async() => {
+        console.log("NOTI THROUGH API")
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notiOtherUser', {
+          token: tokenVal,
+          userNoNoti: otherUser,
+          setting: enabledNotifications
+        }
+        ).catch(error => {
+          console.log("Error occurred while blocking users:", error)
+        
+        })
+       // console.log(response)
+    }
+
+    useEffect(() => { 
+        const myNoti = async () => {
+            try {
+                const tokenVal = await SecureStore.getItemAsync('token');
+                const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/fetchMyNotiPref', {
+                    params: {
+                        token: tokenVal,
+                        userNoNoti: otherUser,
+                    },
+                });
+                console.log("myNoti response: ", response.data.valid);
+                if (response) {
+                setEnabledNotifications(response.data.valid);
+                }
+            } catch (error) {
+                console.log("Error occurred while fetching notification preferences:", error);
+            }
+        };
+    
+        myNoti();
+    }, []); // Remove enabledNotifications from the dependency array to avoid unnecessary re-renders
+    
+    
+    const handleSwitchToggle = async (value) => {
+        if (isAlertDisplayedRef.current) {
+            return; // If an alert is displayed, don't toggle the switch
+          }
+          const tokenVal = await SecureStore.getItemAsync('token')
+          const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/fetchNotiPref', {
+            params: {
+                token: tokenVal,
+                userNoNoti: otherUser,
+              }
+        }).catch(error => {
+            console.log("Couldn't fetch messages")
+            isAlertDisplayedRef.current = true;
+            Alert.alert('Unable to update notifications', null, [
+            
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    isAlertDisplayedRef.current = false;
+                    console.log(isAlertDisplayedRef.current)
+                    // Reset the temporary state to the previous value
+                   //console.log("tempnoti", temporaryNotificationsEnabled)
+                    setEnabledNotifications((prevState) => !prevState);
+                    //setNotificationsEnabled(temporaryNotificationsEnabled);
+                    //console.log("tempnoti after", temporaryNotificationsEnabled)
+                  },
+                },
+                ]);
+        })
+          
+        console.log("handleSwitch value", value);
+        setEnabledNotifications(value);
+    };
+    
+    useEffect(() => {
+        console.log("after setting in toggle", enabledNotifications);
+        notiThroughApi(); // Call your API function here or use useEffect for better control
+    }, [enabledNotifications]);
+    
+    
 
     const otherUser = props.otherUser
     const user = props.user
+    //console.log("conversations props", props.enabled)
 
     useEffect(() => {
         initialize();
@@ -59,7 +141,7 @@ export default function Conversation(props, {navigation}) {
     
       //fetchUser(otherUser)
 
-    console.log("otherUserKey", props)
+    //console.log("otherUserKey", props)
     const initialize = async () => {
         const userVal = await SecureStore.getItemAsync('username')
         setUsername(userVal)
@@ -76,6 +158,7 @@ export default function Conversation(props, {navigation}) {
             }
         }
     }
+
 
     
 
@@ -124,7 +207,21 @@ export default function Conversation(props, {navigation}) {
             console.log("No response for sending message")
             return false
         }
+
+        const valid = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/fetchNotiPref', {
+            params: {
+                token: tokenVal,
+                userNoNoti: otherUser,
+              }
+        }
+        ).catch(error => {
+          console.log("Error occurred while blocking users:", error)
+        })
+        console.log("valid: ", valid.data.valid)
+        console.log("enabledNoti", enabledNotifications)
+        if (valid.data.valid){
         await sendMessageNotification()
+        }
         setNewMessage('')
     }
 
@@ -191,7 +288,12 @@ export default function Conversation(props, {navigation}) {
             }
           }
 
-        console.log(notifData)
+       // console.log(notifData)
+
+        
+
+        
+        
 
         const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
           headers: {
@@ -204,7 +306,7 @@ export default function Conversation(props, {navigation}) {
           console.log("Sending message failed: ", err)
         })
   
-        console.log(res.data)
+        //console.log(res.data)
       }
 
     
@@ -248,6 +350,7 @@ export default function Conversation(props, {navigation}) {
                 </View>
                 <TouchableOpacity onPress={() => handleUserItemClick(props.otherUserItem)}>
                 <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color }}>
+                    
                 <Avatar
                         size={110}
                         rounded
@@ -261,8 +364,24 @@ export default function Conversation(props, {navigation}) {
                 <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color}}>
                     <Text style={{fontSize: 24, color:theme.color}}>{otherUser}</Text>
                 </View>
-                
                 <View style={conversationStyles.buttonContainer}>
+                    
+                <Switch
+                    value={enabledNotifications}
+                    onValueChange={(value) => {
+                        handleSwitchToggle(value)
+                        Alert.alert(`You ${(enabledNotifications) ? 'will not' : 'will'} recieve notifications from ${otherUser}`, null, [
+                            {
+                              text: 'OK',
+                              onPress: () => {
+                                // Reset the temporary state to the previous value
+                              },
+                            },
+                            ]);
+                    }}
+                    disabled={isAlertDisplayedRef.current}
+
+                    ></Switch>
                     <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
                             <Text style={[conversationStyles.buttonText,{color:theme.color}]}>Unmatch</Text>
                     </TouchableOpacity>

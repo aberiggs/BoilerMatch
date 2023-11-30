@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import Conversation from './Conversation';
-import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Pressable, ScrollView, FlatList } from 'react-native';
+import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Pressable, ScrollView, FlatList, Switch } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios"
@@ -39,9 +39,12 @@ export default function ChatList({navigation,checkForMatch}) {
 
     const [selecetedUserkey, setselectedUserKey] = useState(null);
 
+    const [isEnabled, setIsEnabled] = useState(false);
+
+    const [disabledUsers, setDisabledUsers] = useState([]);
+    const [boolArray, setBoolArray] = useState({});
 
 
-    
 
     useEffect(() => {
       initialize()
@@ -63,12 +66,15 @@ export default function ChatList({navigation,checkForMatch}) {
       // console.log(response.data)
       if (response.data.users.length > 0) {
         const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-        console.log("INITIALIZED SORTED USERS", sortedUsers)
+        //console.log("INITIALIZED SORTED USERS", sortedUsers)
         const usernames = sortedUsers.map(user => user.otherUser.username);
         fetchUnreadMessages(usernames);
       }
     }
     
+    const handleSwitchToggle = () => {
+      setIsEnabled((prev) => !prev);
+    };
     
     const fetchSearchMessages = async (text) => {
       try {
@@ -109,7 +115,7 @@ export default function ChatList({navigation,checkForMatch}) {
       }
     };
 
-    console.log("SEARCH RESULTS", searchResults)
+    //console.log("SEARCH RESULTS", searchResults)
 
     const dataFromSearch = searchResults.map(item => ({
       users: [item.userOne, item.userTwo],
@@ -142,19 +148,19 @@ export default function ChatList({navigation,checkForMatch}) {
       // console.log(response.data)
       if (response.data.users.length > 0) {
         const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-        console.log("SORTED USERS: ", sortedUsers)
+       // console.log("SORTED USERS: ", sortedUsers)
         setDisplayedUsers(sortedUsers);
       }
     }
     
-
+    //console.log("isEnabled", displayedUsers.map((user) => user.otherUser.username));
     const ConversationModal = () => {
       return (
         <Modal
           animationType="slide"
           transparent={false}
           visible={chatOpened}>
-            <Conversation otherUser={selectedUser} otherUserItem={selecetedUserkey} onClose={() => setChatOpened(false)}/>
+            <Conversation otherUser={selectedUser} otherUserItem={selecetedUserkey} enabled={isEnabled} onClose={() => setChatOpened(false)}/>
         </Modal>
       )
     }
@@ -188,69 +194,22 @@ export default function ChatList({navigation,checkForMatch}) {
       // ... Fetch data ...
       setRefreshing(false);
     };
-
-  //   useEffect(() => {
-  //     console.log(" ")
-  //     console.log("TEST INITIALIZEEEEEE -------------------")
-  //     console.log(" ")
-  //     initialize()
-  //   },[])
-
-  //   const initialize = async () => {
-  //     const tokenVal = await SecureStore.getItemAsync('token')
-  
-  //     const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMatchesForUser', {
-  //       token: tokenVal
-  //     }
-  //     ).catch(error => {
-  //       console.log("Error occurred while pulling users", error)
-  //     })
-  //     // console.log(response.data)
-  //     if (response.data.users.length > 0) {
-  //       const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-  //       console.log("SORTED USERS: ", sortedUsers)
-  //       setDisplayedUsers(sortedUsers);
-        
-  //       // Extract usernames and lastUpdated times and store them in an array
-  //       const usersAndUpdates = sortedUsers.map(user => ({
-  //         username: user.otherUser.username,
-  //         lastUpdated: user.lastUpdated
-  //       }));
-
-  //       console.log("USERS AND UPDATES", usersAndUpdates)
-        
-  //       // Set the array in state
-  //       setOtherUsersAndUpdates(usersAndUpdates);
-  //     }
-      
-  //     let continueFetching = true
-  //     let messageList = currentMessages
-  //     console.log("CONTINUE FETCHING")
-  //     while (continueFetching) {
-  //         messageList = await fetchUnreadMessages(otherUsersAndUpdates, messageList)
-  //         setCurrentMessages(messageList)
-  //         if (!messageList) {
-  //             console.log("No message list")
-  //             continueFetching = false
-  //         }
-  //     }
-  // }
+   // console.log("bools", displayedUsers.map((user) => user.otherUser.recieveNotifications))
+    //console.log("boolArray", boolArray)
     
-    //iter 1
+   // console.log("disabledUsers", disabledUsers)
     const fetchUnreadMessages = async (otherUsernames) => {
-      console.log("Fetching - unread message from conversation")
+      //console.log("Fetching - unread message from conversation")
       
       const tokenVal = await SecureStore.getItemAsync('token');
     
       const unreadMessagesListTemp = [];
-      // Remove duplicates and get unique usernames.
-      //const uniqueUsernames = Array.from(new Set(otherUsernames.map(usernameData => usernameData.username)));
-      //console.log("UNIQUE USERNAMES", uniqueUsernames)
 
-      console.log(otherUsernames)
+      //console.log(otherUsernames)
+      
     
       for (const username of otherUsernames) {
-        console.log("UNIQUE USERNAME", username)
+        //console.log("UNIQUE USERNAME", username)
         let matchingEntry = unreadMessagesList.find(entry => entry.username === username);
         if (!matchingEntry) {
           matchingEntry = { unreadMessagescount: 0 }; // Default value when no matching entry is found
@@ -271,28 +230,16 @@ export default function ChatList({navigation,checkForMatch}) {
         username: username,
         unreadMessagesCount: response.data.unreadMessagesCount
         });
-        console.log("UNREAD TEMP     ", unreadMessagesListTemp)
+        //console.log("UNREAD TEMP     ", unreadMessagesListTemp)
         //return response.data
       }
       setUnreadMessagesList(unreadMessagesListTemp)
     };
 
-    console.log()
-    console.log("UNREAD MESSAGES LIST", unreadMessagesList)
-    console.log()
+   // console.log()
+   // console.log("UNREAD MESSAGES LIST", unreadMessagesList)
+    //console.log()
 
-    // console.log("UNREAD MESSAGES COUNT", unreadMessagesList)
-
-    // // Initialize unreadMessagesList after setting the state
-    // useEffect(() => {
-    //   fetchUnreadMessages(otherUsersAndUpdates, unreadMessagesList);
-    // }, [otherUsersAndUpdates]);
-    
-    // fetchUnreadMessages(otherUsersAndUpdates)
-    //console.log("OTHER USERS", otherUsersAndUpdates)
-    //console.log("UNREAD MESSAGES COUNT", unreadMessagesList)
-    //fetchUnreadMessages(otherUsersAndUpdates)
-    //console.log("NEW FUNCTION: ", unreadMessagesList)
 
     const formatTimestamp = (timestamp) => {
       const date = new Date(timestamp);
@@ -349,10 +296,8 @@ export default function ChatList({navigation,checkForMatch}) {
     const ChatItem = ({ item }) => (
       <TouchableOpacity style={[feedStyles.iconContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => {handleChatPress(item.otherUser); }}>
         <View style={[styles.chatItem, {backgroundColor:theme.backgroundColor}]}>
-
-          
-          
           <View style={{flexDirection: 'row', alignItems: 'center', }}>
+          
             <Avatar
                 size={100} 
                 rounded
@@ -363,6 +308,7 @@ export default function ChatList({navigation,checkForMatch}) {
               />
             { <Text style={[feedStyles.name, {color:theme.color}]}>{item.otherUser.information.firstName} {item.otherUser.information.lastName}</Text> }
             { <Text style={feedStyles.time}>{formatTimestamp(item.lastUpdated)} </Text> }
+            
             {unreadMessagesList.map((user) => {
             if (user.username === item.otherUser.username && user.unreadMessagesCount !== 0) {
               return (
@@ -379,37 +325,6 @@ export default function ChatList({navigation,checkForMatch}) {
       </TouchableOpacity>
     );
 
-    // MODAL FOR DISPLAYING USERS FANCY... DOESN'T WORK THO
-    // //console.log(displayedUsers)
-    // const SearchMessagesDropdown = ({ data }) => {
-    //   return (
-    //     <Modal
-    //       animationType="slide"
-    //       transparent={true}
-    //       visible={isDropdownVisible}
-    //     >
-    //       <View style={styles.dropdownContainer}>
-    //         {/* <Text> HELLO </Text> */}
-    //         <FlatList
-    //           data={data}
-    //           renderItem={({ item }) => (
-    //             <TouchableOpacity
-    //               style={styles.dropdownItem}
-    //               onPress={() => {
-    //                 // Handle the item selection (e.g., navigate to the selected message)
-    //                 // You can pass the selected message to the parent component if needed.
-    //                 // onClose();
-    //               }}
-    //             >
-    //               <Text>{item.message}</Text>
-    //             </TouchableOpacity>
-    //           )}
-    //           //keyExtractor={(item) => item.id.toString()} // Replace with your unique key
-    //         />
-    //       </View>
-    //     </Modal>
-    //   );
-    // };
     
   
   
@@ -461,7 +376,6 @@ export default function ChatList({navigation,checkForMatch}) {
           {displayedUsers.length > 0 ? (
             <FlatList
               data={displayedUsers} // Replace with your data array
-              
               renderItem={({ item }) => ChatItem({item}) }
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
               horizontal={false}
