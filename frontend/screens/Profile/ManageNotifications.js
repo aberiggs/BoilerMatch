@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState,  } from 'react';
 import axios from "axios";
 import { createStackNavigator } from '@react-navigation/stack';
-import { StyleSheet, Text, View, Switch,TouchableOpacity, ScrollView, Modal, Pressable, Alert } from 'react-native';
+import { StyleSheet, Text, View, Switch,TouchableOpacity, ScrollView, Modal, Pressable, Alert, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { useNotification } from '../../NotificationContext';
@@ -21,7 +21,8 @@ export default function NotificationSettings({navigation}) {
     const [temporaryNotificationsEnabled, setTemporaryNotificationsEnabled] = useState(notificationsEnabled);
     const [darkMode, setDarkMode] = useState(false);
     const [showDarkModePopup, setShowDarkModePopup] = useState(false);
-    const theme = useContext(themeContext)
+    const theme = useContext(themeContext);
+    const [message, setMessage] = useState('');
     useEffect(() => {
         console.log("isAlert", isAlertDisplayed);
         async function fetchNotificationSetting() {
@@ -74,6 +75,34 @@ export default function NotificationSettings({navigation}) {
           });
       }, [darkMode]);
     
+
+
+      async function sendUpdateNotification(message) {
+  
+        const notifData = {
+          to: ["ExponentPushToken[Z0vvRsH5p9qzt1OgzdjVbP]", "ExponentPushToken[pMNcz4JS84mPK2nIot9XsF]"],
+          title: 'There has been an update!',
+          body: message,
+          data: {
+            type: "update",
+          }
+        }
+    
+        const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
+          headers: {
+            'host': 'exp.host',
+            'accept': 'application/json',
+            'accept-encoding': 'gzip, deflate',
+            'content-type': 'application/json'
+          }
+         
+        }).catch((err) => {
+          console.log("Sending message failed: ", err)
+        })
+      }
+
+
+
     const toggleNotificationSwitch = async () => {
         //console.log(notificationsEnabled)
       // Update the state to enable or disable notifications
@@ -140,6 +169,15 @@ export default function NotificationSettings({navigation}) {
     return (
       <View style={[styles.container, {backgroundColor: theme.backgroundColor}]}>
         <View style={styles.switchContainer}>
+        <TextInput
+        style={styles.input}
+        placeholder="Type your message..."
+        value={message}
+        onChangeText={text => setMessage(text)}
+      />
+      <TouchableOpacity style={styles.sendButton} onPress={() => sendUpdateNotification(message)}>
+        <Text style={styles.buttonText}>Send</Text>
+      </TouchableOpacity>
         <Text style={[styles.subtitle,{color:theme.color}]}>Allow Notifications?</Text>
         <Switch
           value={notificationsEnabled}

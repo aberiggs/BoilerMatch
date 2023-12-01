@@ -19,65 +19,29 @@ export default async function handler(req, res) {
         }
     });
 
-    console.log(currentUser)
-    console.log(req.body.userBlocked)
-
     try {
       // Query the database for potential user suggestions based on the search term
       
       const userBlocked1 = await interactions.findOneAndUpdate(
         {
-          "userInteracting": req.body.userBlocked,
-          "userInteractedWith": currentUser,
+          "userInteracting": currentUser,
+          "userInteractedWith": req.body.userNoNoti,
       },
       [{
-        $set: {
-            gotBlocked: {
-                $cond: {
-                    if: { $eq: ["$gotBlocked", true] },
-                    then: false,
-                    else: true,
-                }
-            }
-        }
-    }],
+          $set: {allowNoti: req.body.setting}
+      }],
       {
-          upsert: true,
-          new: true
+        returnDocument: 'after'
       }
       ); 
-
-      const userBlocked2 = await interactions.findOneAndUpdate(
-        {
-          "userInteracting": currentUser,
-          "userInteractedWith": req.body.userBlocked,
-      },
-      [{
-        $set: {
-            didBlocking: {
-                $cond: {
-                    if: { $eq: ["$didBlocking", true] },
-                    then: false,
-                    else: true,
-                }
-            },
-        }
-    }],
-      {
-          upsert: true,
-          new: true
-      }
-      );
       
 
       console.log(userBlocked1)
-      console.log(userBlocked2)
   
       return res.status(200).json({
         success: true,
-        userBlocked1: userBlocked1,
-        userBlocked2: userBlocked2,
-        message: "User blocked",
+        userBlocked1: userBlocked1.value,
+        message: "User noti changed",
       });
     } catch (error) {
       console.error("Error while trying to block potential user:", error);

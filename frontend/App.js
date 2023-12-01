@@ -4,8 +4,11 @@ import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/
 import { createStackNavigator } from '@react-navigation/stack';
 import Landing from './screens/Landing'
 import Register from './screens/LoginRegister/Register'
-import Login from './screens/LoginRegister/Login'
+
+import Login from './screens/LoginRegister/Login';
+import registerNNPushToken from 'native-notify';
 import Getstarted from './screens/LoginRegister/Getstarted'
+
 
 import MainTabNavigator from './routes/MainTabNavigator';
 
@@ -43,6 +46,7 @@ import ReadReceiptsOptions from './screens/Settings/ReadReceiptsOptions'
 const Stack = createStackNavigator();
 
 export default function App() {
+ registerNNPushToken(14978, 'oHiP8zGvD4x4Y9I0PfDVNr');
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkMode, setDarkMode] = useState(false)

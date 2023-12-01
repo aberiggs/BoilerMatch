@@ -124,16 +124,17 @@ export default function MainFeed({navigation,reloadChat}){
     //  console.log("notiSettings: ", notificationsEnabled)
 
   //NotificationSettings()
-
+  console.log("notificationsEnabled: ", notificationsEnabled);
+  /*
   useEffect(() => {
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      if (notificationsEnabled) {
         setNotification(notification);
-      }
     });
+    
   
     // Other notification handling code
   }, [notificationsEnabled]);
+  */
 
   //console.log("notification Listener", notificationsEnabled);
 
@@ -215,6 +216,7 @@ useEffect(() => {
     // Step 1: Get the push token
     const pushToken = await registerForPushNotificationsAsync();
     setExpoPushToken(pushToken);
+    console.log(pushToken)
     // Step 2: Get the 'hasNoti' value
     const tokenVal = await SecureStore.getItemAsync('token');
     const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getNoti', {
@@ -249,9 +251,13 @@ useEffect(() => {
   useEffect( () => {
     //console.log("usename", username)
     //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    
     notificationListener.current = Notifications.addNotificationReceivedListener(async (notification) => {
+      if (false){
       setNotification(notification);
+      }
     });
+    
     //console.log("abakk")
     responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
       console.log("response", response);
@@ -269,9 +275,12 @@ useEffect(() => {
       }).catch((error) => {
           console.log(error.response.data)
       })
-    } else {
+      // navigate the notification
+    } else if (ans === "update") {
+      navigation.navigate("Settings");
+    }
+    else {
       navigation.navigate("ChatList");
-
     }
     
       console.log(response);

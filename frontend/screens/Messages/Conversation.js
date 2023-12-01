@@ -1,16 +1,20 @@
-import { useEffect, useState, useContext } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList } from 'react-native';
+import { useEffect, useState, useContext, useRef } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, KeyboardAvoidingView, Pressable, Alert, FlatList, Modal, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import ReportBlockModal from './ReportBlockModal'; // Import the ReportBlockModal component
+import { Avatar } from '@rneui/themed';
 
 import UnmatchModal from './UnmatchModal'; // Import the ReportBlockModal component
 
 import themeContext from '../../theme/themeContext';
+import UserProfile from '../MainFeed/UserProfile'
 import { useReadReceipts } from '../../ReadReceiptsContext';
 
 
+//FIX THE enablednotificaitons to be in sync with the othe stuff
 import axios from "axios"
+import { enableExperimentalWebImplementation } from 'react-native-gesture-handler';
 
 export default function Conversation(props, {navigation}) {
     const [currentMessages, setCurrentMessages] = useState(null)
@@ -21,6 +25,11 @@ export default function Conversation(props, {navigation}) {
 
     const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
     const [UnmatchModalVisible, setUnmatchModalVisible] = useState(false);
+    const [otherUserKey, setOtherUserKey] = useState(null)
+    const [isUserModalVisible,setIsUserModalVisible] = useState(false);
+    const [selectedUser, setSelectedUser] = useState('');
+    const [enabledNotifications, setEnabledNotifications] = useState(true)
+    const isAlertDisplayedRef = useRef(false)
 
     const openUnmatchModal = () => {
         setUnmatchModalVisible(true);
@@ -37,13 +46,105 @@ export default function Conversation(props, {navigation}) {
     const closeReportBlockModal = () => {
         setReportBlockModalVisible(false);
     };
+    const handleUserItemClick = (user) => {
+        setSelectedUser(user);
+        setIsUserModalVisible(true);
+        console.log("Touched");
+      };
+      const handleCloseUserModal = () => {
+        setIsUserModalVisible(false);
+      };
+      const notiThroughApi = async() => {
+        console.log("NOTI THROUGH API")
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/notiOtherUser', {
+          token: tokenVal,
+          userNoNoti: otherUser,
+          setting: enabledNotifications
+        }
+        ).catch(error => {
+          console.log("Error occurred while blocking users:", error)
+        
+        })
+       // console.log(response)
+    }
+
+    useEffect(() => { 
+        const myNoti = async () => {
+            try {
+                const tokenVal = await SecureStore.getItemAsync('token');
+                const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/fetchMyNotiPref', {
+                    params: {
+                        token: tokenVal,
+                        userNoNoti: otherUser,
+                    },
+                });
+                console.log("myNoti response: ", response.data.valid);
+                if (response) {
+                setEnabledNotifications(response.data.valid);
+                }
+            } catch (error) {
+                console.log("Error occurred while fetching notification preferences:", error);
+            }
+        };
+    
+        myNoti();
+    }, []); // Remove enabledNotifications from the dependency array to avoid unnecessary re-renders
+    
+    
+    const handleSwitchToggle = async (value) => {
+        if (isAlertDisplayedRef.current) {
+            return; // If an alert is displayed, don't toggle the switch
+          }
+          const tokenVal = await SecureStore.getItemAsync('token')
+          const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/fetchNotiPref', {
+            params: {
+                token: tokenVal,
+                userNoNoti: otherUser,
+              }
+        }).catch(error => {
+            console.log("Couldn't fetch messages")
+            isAlertDisplayedRef.current = true;
+            Alert.alert('Unable to update notifications', null, [
+            
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    isAlertDisplayedRef.current = false;
+                    console.log(isAlertDisplayedRef.current)
+                    // Reset the temporary state to the previous value
+                   //console.log("tempnoti", temporaryNotificationsEnabled)
+                    setEnabledNotifications((prevState) => !prevState);
+                    //setNotificationsEnabled(temporaryNotificationsEnabled);
+                    //console.log("tempnoti after", temporaryNotificationsEnabled)
+                  },
+                },
+                ]);
+        })
+          
+        console.log("handleSwitch value", value);
+        setEnabledNotifications(value);
+    };
+    
+    useEffect(() => {
+        console.log("after setting in toggle", enabledNotifications);
+        notiThroughApi(); // Call your API function here or use useEffect for better control
+    }, [enabledNotifications]);
+    
+    
 
     const otherUser = props.otherUser
+    const user = props.user
+    //console.log("conversations props", props.enabled)
 
     useEffect(() => {
-        initialize()
+        initialize();
     },[])
+    
+    
+      //fetchUser(otherUser)
 
+    //console.log("otherUserKey", props)
     const initialize = async () => {
         const userVal = await SecureStore.getItemAsync('username')
         setUsername(userVal)
@@ -60,6 +161,9 @@ export default function Conversation(props, {navigation}) {
             }
         }
     }
+
+
+    
 
     const fetchMessages = async (previousMessages) => {
         const tokenVal = await SecureStore.getItemAsync('token')
@@ -114,7 +218,21 @@ export default function Conversation(props, {navigation}) {
             console.log("No response for sending message")
             return false
         }
+
+        const valid = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/fetchNotiPref', {
+            params: {
+                token: tokenVal,
+                userNoNoti: otherUser,
+              }
+        }
+        ).catch(error => {
+          console.log("Error occurred while blocking users:", error)
+        })
+        console.log("valid: ", valid.data.valid)
+        console.log("enabledNoti", enabledNotifications)
+        if (valid.data.valid){
         await sendMessageNotification()
+        }
         setNewMessage('')
     }
 
@@ -181,7 +299,12 @@ export default function Conversation(props, {navigation}) {
             }
           }
 
-        console.log(notifData)
+       // console.log(notifData)
+
+        
+
+        
+        
 
         const res = await axios.post('https://exp.host/--/api/v2/push/send', notifData, {
           headers: {
@@ -194,7 +317,7 @@ export default function Conversation(props, {navigation}) {
           console.log("Sending message failed: ", err)
         })
   
-        console.log(res.data)
+        //console.log(res.data)
       }
     
     //   const handleReaction = (message) => {
@@ -286,8 +409,6 @@ export default function Conversation(props, {navigation}) {
         const messageContainerStyle = item.from === username ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg;
         const messageBoxStyle = item.from === username ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox;
         const isCurrentUser = item.from === username;
-        const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
-        
         return (
             <View style={[messageContainerStyle]}>
                 {allowDeletion(item) &&
@@ -324,6 +445,7 @@ export default function Conversation(props, {navigation}) {
         );
     };
 
+    //console.log("otherUser", otherUser);
     return(
         <SafeAreaView style={{height: '100%', width: '100%', backgroundColor:theme.background}}>
             <View style={[conversationStyles.headingContainer, {backgroundColor:theme.background}]}>
@@ -332,25 +454,59 @@ export default function Conversation(props, {navigation}) {
                         <Ionicons name="chevron-back" size={30} color="gold" />
                     </Pressable>
                 </View>
+                <TouchableOpacity onPress={() => handleUserItemClick(props.otherUserItem)}>
+                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color }}>
+                    
+                <Avatar
+                        size={110}
+                        rounded
+                        source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + otherUser + '.jpg'}}
+                        containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
+                        activeOpacity={0.8}
+                    />
                 
-                
+                </View>
+                </TouchableOpacity>
                 <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color}}>
                     <Text style={{fontSize: 24, color:theme.color}}>{otherUser}</Text>
                 </View>
-                
-                <View style={{width: '30%'}}>
-                    <View style={conversationStyles.buttonContainer}>
-                        <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
-                                <Text style={[conversationStyles.buttonText,{color:theme.color}]}>Unmatch</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
-                            <Text style={conversationStyles.buttonText}>Block</Text>
-                        </TouchableOpacity>
-                    </View>
+                <View style={conversationStyles.buttonContainer}>
+                    
+                <Switch
+                    value={enabledNotifications}
+                    onValueChange={(value) => {
+                        handleSwitchToggle(value)
+                        Alert.alert(`You ${(enabledNotifications) ? 'will not' : 'will'} recieve notifications from ${otherUser}`, null, [
+                            {
+                              text: 'OK',
+                              onPress: () => {
+                                // Reset the temporary state to the previous value
+                              },
+                            },
+                            ]);
+                    }}
+                    disabled={isAlertDisplayedRef.current}
+
+                    ></Switch>
+                    <TouchableOpacity style={conversationStyles.button} onPress={openUnmatchModal}>
+                            <Text style={[conversationStyles.buttonText,{color:theme.color}]}>Unmatch</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
+                        <Text style={conversationStyles.buttonText}>Block</Text>
+                    </TouchableOpacity>
+
  
                 </View>
             </View>
-
+            {selectedUser && (
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={isUserModalVisible}
+          >
+            <UserProfile user={selectedUser} closeModal={handleCloseUserModal}/>
+          </Modal>
+        )}
             <KeyboardAvoidingView behavior={'padding'} removeClippedSubview={false} style={[conversationStyles.convoContainer, {backgroundColor:theme.background}]}>
                 <FlatList
                     style={[conversationStyles.chatScrollView, {backgroundColor:theme.backgroundColor}]}

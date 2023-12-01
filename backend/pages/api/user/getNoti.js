@@ -17,11 +17,6 @@ export default async function handler(req, res) {
         })
         
     }
-    const updatedData = {
-        $set: {
-            recieveNotifications: req.body.recieveNotifications
-        }
-    }
     const tokenData = jwt.verify(req.query.token, 'MY_SECRET', (err, payload) => {
         if (err) {
             return res.status(400).json({
