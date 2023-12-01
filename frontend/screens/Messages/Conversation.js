@@ -80,8 +80,11 @@ export default function Conversation(props, {navigation}) {
                     },
                 });
                 console.log("myNoti response: ", response.data.valid);
-                if (response) {
+                if (response.data.valid != null) {
                 setEnabledNotifications(response.data.valid);
+                }
+                else {
+                    setEnabledNotifications(true);
                 }
             } catch (error) {
                 console.log("Error occurred while fetching notification preferences:", error);
