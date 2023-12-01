@@ -9,6 +9,8 @@ import UnmatchModal from './UnmatchModal'; // Import the ReportBlockModal compon
 
 import themeContext from '../../theme/themeContext';
 import UserProfile from '../MainFeed/UserProfile'
+import { useReadReceipts } from '../../ReadReceiptsContext';
+
 
 //FIX THE enablednotificaitons to be in sync with the othe stuff
 import axios from "axios"
@@ -19,6 +21,7 @@ export default function Conversation(props, {navigation}) {
     const [newMessage, setNewMessage] = useState('')
     const [username, setUsername] = useState(null)
     const theme = useContext(themeContext)
+    const { readReceiptsEnabled, setReadReceiptsEnabled } = useReadReceipts();
 
     const [reportBlockModalVisible, setReportBlockModalVisible] = useState(false);
     const [UnmatchModalVisible, setUnmatchModalVisible] = useState(false);
@@ -179,8 +182,16 @@ export default function Conversation(props, {navigation}) {
         }
 
         //console.log(response.data)
+        // if (response.data.messages) {
+        //     return response.data.messages
+        // }
         if (response.data.messages) {
-            return response.data.messages
+            // Initialize the reactions property for each message
+            const messagesWithReactions = response.data.messages.map((msg) => ({
+                ...msg,
+                reactions: msg.reactions || [],
+            }));
+            return messagesWithReactions;
         }
         return null
 
@@ -188,7 +199,7 @@ export default function Conversation(props, {navigation}) {
 
     const sendMessage = async () => {
         console.log("Sending Message")
-        const messageObj = {from: username, message: newMessage}
+        const messageObj = {from: username, message: newMessage, reactions: []}
         const updatedMessages = (currentMessages ? currentMessages : [])
         updatedMessages.push(messageObj)
         setCurrentMessages(updatedMessages)
@@ -308,17 +319,103 @@ export default function Conversation(props, {navigation}) {
   
         //console.log(res.data)
       }
+    
+    //   const handleReaction = (message) => {
+    //     const updatedMessages = currentMessages.map((msg) => {
+    //         if (msg === message) {
+    //             if (msg.reactions.includes(username)) {
+    //                 msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
+    //             } else {
+    //                 msg.reactions.push(username); // Add reaction
+    //             }
+    //         }
+    //         return msg;
+    //     });
+    
+    //     setCurrentMessages(updatedMessages);
+    // };
 
+    // const handleUndoReaction = (message) => {
+    //     const updatedMessages = currentMessages.map((msg) => {
+    //         if (msg === message) {
+    //             msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
+    //         }
+    //         return msg;
+    //     });
+    
+    //     setCurrentMessages(updatedMessages);
+    // };
+
+    const handleToggleReaction = async (item) => {
+        const updatedMessages = currentMessages.map((msg) => {
+            if (msg === item) {
+                if (msg.reactions.includes(username)) {
+                    msg.reactions = msg.reactions.filter((user) => user !== username); // Remove reaction
+                } else {
+                    msg.reactions.push(username); // Add reaction
+                }
+            }
+            return msg;
+        });
+    
+        setCurrentMessages(updatedMessages);
+
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/updateReaction', {
+            token: tokenVal,
+            otherUser: otherUser,
+            timestamp: item.timestamp,
+            reactions: item.reactions.includes(username) ? [username] : [],
+        }).catch((error) => {
+            console.log("Couldn't update reaction status:", error.response.data);
+            // Handle the error as needed
+        });
+    };
+
+    const allowDeletion = (item) => {
+        if (item.from !== username) {
+            return false
+        }
+
+        let timeDiff = Math.abs(new Date() - Date.parse(item.timestamp))
+        timeDiff = Math.floor(timeDiff / 1000) // Seconds
+        timeDiff = Math.floor(timeDiff / 60) // Minutes
+
+        if (timeDiff >= 5) {
+            return false
+        }
+
+        return true
+    }
+
+    const deleteMessage = async (item) => {
+        console.log("Deleting", item)
+
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteMessage', {
+            token: tokenVal,
+            otherUser: otherUser,
+            timestamp: item.timestamp,
+        }).catch((error) => {
+            console.log("Couldn't delete message", error.response.data);
+            // Handle the error as needed
+        });
+
+        const updatedHistory = await fetchMessages()
+        setCurrentMessages(updatedHistory)
+    }
     
     const messageItem = ({ item }) => {
         const messageContainerStyle = item.from === username ? conversationStyles.currentUserMsg : conversationStyles.otherUserMsg;
         const messageBoxStyle = item.from === username ? conversationStyles.currentUserMessageBox : conversationStyles.otherUserMessageBox;
         const isCurrentUser = item.from === username;
-        const timeStampStyle = isCurrentUser ? conversationStyles.timestampRight : conversationStyles.timestampLeft;
-
-       
         return (
             <View style={[messageContainerStyle]}>
+                {allowDeletion(item) &&
+                    <TouchableOpacity onPress={() => deleteMessage(item)}>
+                         <Ionicons name="remove-circle" size={20} color="red" />
+                    </TouchableOpacity>
+                }
                 <View style={messageBoxStyle}>
                     <Text style={conversationStyles.messageText}>{item.message}</Text>
                 </View>
@@ -327,7 +424,7 @@ export default function Conversation(props, {navigation}) {
                         {formatTimestamp(item.timestamp)}
                     </Text>
                 </View>
-                {item.from === username && item.read && (
+                {readReceiptsEnabled && item.from === username && item.read && (
                     <View>
                         <Text style={conversationStyles.readReceiptText}>
                             {/* {formatTimestamp(item.readTime)} - R */}
@@ -335,6 +432,15 @@ export default function Conversation(props, {navigation}) {
                         </Text>
                     </View>
                 )}
+                {item.from !== username && (
+                    <TouchableOpacity onPress={() => handleToggleReaction(item)}>
+                        <Ionicons name="thumbs-up" size={15} color={item.reactions.includes(username) ? 'black' : 'grey'} />
+                    </TouchableOpacity>
+                )}
+                {item.from === username && item.reactions.includes(otherUser) && (
+                    <Ionicons name="thumbs-up" size={15} color="black" />
+                )}
+            
             </View>
         );
     };
@@ -388,6 +494,7 @@ export default function Conversation(props, {navigation}) {
                     <TouchableOpacity style={conversationStyles.button} onPress={openReportBlockModal}>
                         <Text style={conversationStyles.buttonText}>Block</Text>
                     </TouchableOpacity>
+
  
                 </View>
             </View>
@@ -437,8 +544,9 @@ const conversationStyles = StyleSheet.create({
       alignSelf: "center"
     },
     button: {
-      width: "100%",
-      height: 40,
+      width: "80%",
+      paddingVertical: 10,
+      marginVertical: 5,
       backgroundColor: "gold",
       borderWidth: 1,
       borderRadius: 6,
@@ -455,7 +563,7 @@ const conversationStyles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'column', // Display buttons horizontally
         justifyContent: 'space-between', // You can change this to 'space-between' for different spacing
-        width: '20%',
+        width: '80%',
         padding: 10
     },
     convoContainer: {

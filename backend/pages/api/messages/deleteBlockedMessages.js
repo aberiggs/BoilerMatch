@@ -13,11 +13,10 @@ export default async function handler(req, res) {
         console.log("NOOOOOOO")
         return res.status(400).json({
             success: false,
-            message: "Insufficient information to send message."
+            message: "Insufficient information to delete message."
         })
     }
 
-    console.log("HERE1")
     /* Authenticate the user */
     const tokenData = jwt.verify(req.query.token, 'MY_SECRET', (err, payload) => {
         if (err) {

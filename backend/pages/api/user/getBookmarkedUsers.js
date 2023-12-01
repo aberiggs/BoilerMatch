@@ -19,6 +19,8 @@ export default async function handler(req, res) {
   //   });
   // }
   const token = req.body.token;
+  const gradYearFilter = req.body.gradYearFilter
+  const majorFilter = req.body.majorFilter
 
     const currentUser = jwt.verify(token, 'MY_SECRET', (err, payload) => {
         if (err) {
@@ -29,13 +31,15 @@ export default async function handler(req, res) {
             return payload.username
         }
     });
-
+  const excludedUsers = [...req.body.excludedUsers,currentUser]
   try {
     const bookmarkedUsers = await users.aggregate([
       {
         $match: {
             "discoverable": true,
-            "username": { $ne: currentUser }
+            "username" : { $nin: excludedUsers },
+            ...(gradYearFilter !== null && { "information.graduation": gradYearFilter }),
+           ...(majorFilter !== "" && { "information.major": { $regex: new RegExp(majorFilter, 'i') } }),
         }
     },
     {
@@ -65,6 +69,9 @@ export default async function handler(req, res) {
           interaction: { $size: 1}
         }
     },
+    {$sample: {
+      size: 5
+    }}
 
     ]).toArray()
     //console.log(bookmarkedUsers)

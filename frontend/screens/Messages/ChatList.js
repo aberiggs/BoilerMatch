@@ -12,7 +12,7 @@ import themeContext from '../../theme/themeContext';
 
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function ChatList({navigation,checkForMatch}) {
+export default function ChatList({navigation,chatReloaded}) {
 
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
@@ -128,13 +128,13 @@ export default function ChatList({navigation,checkForMatch}) {
 
     useEffect(() => {
       handleRefreshFeed()
-    },[checkForMatch]);
+    },[chatReloaded]);
 
-    useFocusEffect(
-      React.useCallback(() => {
-        handleRefreshFeed();
-      }, [])
-    );
+    // useFocusEffect(
+    //   React.useCallback(() => {
+    //     handleRefreshFeed();
+    //   }, [])
+    // );
    
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
@@ -151,6 +151,15 @@ export default function ChatList({navigation,checkForMatch}) {
        // console.log("SORTED USERS: ", sortedUsers)
         setDisplayedUsers(sortedUsers);
       }
+      else{
+        setDisplayedUsers([])
+      }
+    }
+    
+    const handleChatClosed = () => {
+      setChatOpened(false)
+      handleRefreshFeed()
+      console.log("chatClosed")
     }
     
     //console.log("isEnabled", displayedUsers.map((user) => user.otherUser.username));
@@ -205,11 +214,8 @@ export default function ChatList({navigation,checkForMatch}) {
     
       const unreadMessagesListTemp = [];
 
-      //console.log(otherUsernames)
-      
-    
       for (const username of otherUsernames) {
-        //console.log("UNIQUE USERNAME", username)
+
         let matchingEntry = unreadMessagesList.find(entry => entry.username === username);
         if (!matchingEntry) {
           matchingEntry = { unreadMessagescount: 0 }; // Default value when no matching entry is found
@@ -227,8 +233,8 @@ export default function ChatList({navigation,checkForMatch}) {
           //return null
         }
         unreadMessagesListTemp.push({
-        username: username,
-        unreadMessagesCount: response.data.unreadMessagesCount
+          username: username,
+          unreadMessagesCount: response.data.unreadMessagesCount
         });
         //console.log("UNREAD TEMP     ", unreadMessagesListTemp)
         //return response.data
@@ -236,9 +242,6 @@ export default function ChatList({navigation,checkForMatch}) {
       setUnreadMessagesList(unreadMessagesListTemp)
     };
 
-   // console.log()
-   // console.log("UNREAD MESSAGES LIST", unreadMessagesList)
-    //console.log()
 
 
     const formatTimestamp = (timestamp) => {
@@ -377,7 +380,7 @@ export default function ChatList({navigation,checkForMatch}) {
             <FlatList
               data={displayedUsers} // Replace with your data array
               renderItem={({ item }) => ChatItem({item}) }
-              keyExtractor={(item) => item.username} // Replace with a unique key extractor
+              keyExtractor={(item) => item._id} // Replace with a unique key extractor
               horizontal={false}
               contentContainerStyle={styles.flatListContent}
             />
