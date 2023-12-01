@@ -11,8 +11,12 @@ import AwaitRateModal from './AwaitRateModal';
 import RateModal from './RateModal';
 
 
+import PostsList from '../PostsFeed/PostsList'
+
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
+  const [posts, setPosts] = useState(null)
+
   const carouselRef = useRef(null);
   const [viewingSelf, setViewingSelf] = useState(false)
 
@@ -48,7 +52,6 @@ export default function userProfile(props) {
     setRateModalVisible(false);
   };
 
-  
 
   const selectedUser = props.user
   const selectedUsername = props.user.username
@@ -78,17 +81,13 @@ export default function userProfile(props) {
      
   }
 
-  const goForward = () => {
-    carouselRef.current.snapToNext();
-  };
-
-
   useEffect(() => {
     getInteractionWithUser()
   }, [props.visible]);
 
   useEffect(() => {
     getUserPhotos()
+    getUserPosts()
   }, []);
   
   const getInteractionWithUser = async() => {
@@ -102,7 +101,6 @@ export default function userProfile(props) {
     ).catch(error => {
       console.log("Error occurred while getting users:", error)
     })
-    console.log("HII")
     console.log(response.data)
     setViewingSelf(response.data.viewingSelf)
 
@@ -127,6 +125,25 @@ export default function userProfile(props) {
       console.log("Error occurred while blocking users:", error)
     })
     setIsBlocked(!isBlocked)
+  }
+
+  const getUserPosts = async () => {
+    console.log("Loading posts for ", selectedUser.username)
+    const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getUsersPosts', {
+      params: {
+        user: selectedUser.username
+      }
+    }).catch(error => {
+      console.log("Error occurred while fetching posts: ", error);
+    });
+  
+    // Fails to fetch data
+    if (!res || !res.data || !res.data.postList) {
+      return;
+    }
+  
+    console.log("Posts found", res.data.postList)
+    setPosts(res.data.postList);
   }
 
   /* Gets the URI's for all user photos */
@@ -170,7 +187,7 @@ export default function userProfile(props) {
     <View style={[modalStyles.modalContainer,{backgroundColor:theme.background}]}>
       
       <View style={modalStyles.modalContent}>
-          <ScrollView style={{width: '70%'}}>
+          <ScrollView style={{width: '100%'}}>
           <Avatar
             size='xlarge'
             rounded
@@ -179,9 +196,8 @@ export default function userProfile(props) {
             activeOpacity={0.8}
           />
  { !isBlocked ? (
-        <View>
+        <View style={{width: '70%', alignSelf: 'center'}}>
 
-       
           <Text style={[styles.subtitle,{color:theme.color}]}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.information.gender}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Grad Year: {selectedUser.information.graduation}</Text>
@@ -198,14 +214,6 @@ export default function userProfile(props) {
               renderItem={this._renderItem}
             />
           </View>
-
-          <Text style={[styles.title,{color:theme.color}]}>{'\n'}Information</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Political Views: {selectedUser.information.politicalViews}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Pets: {selectedUser.information.pets}</Text>
-          
 
           <Text style={[styles.title,{color:theme.color}]}>{'\n'}Housing Information</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Housing: {selectedUser.housingInformation.housing}</Text>
@@ -247,13 +255,14 @@ export default function userProfile(props) {
           )
           
           :
-          <View>
+          <View style={{width: '70%', alignSelf: 'center'}}>
             <TouchableOpacity style={modalStyles.closeButton} onPress={unblockUser}>
-            <Text style={modalStyles.closeButtonText}>Unblock</Text>
-          </TouchableOpacity>
-            </View>}
+              <Text style={modalStyles.closeButtonText}>Unblock</Text>
+            </TouchableOpacity>
+          </View>}
                   
 
+          <PostsList posts={posts} fetchPosts={getUserPosts} />
           
           
 

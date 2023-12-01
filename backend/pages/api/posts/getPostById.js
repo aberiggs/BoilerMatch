@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
+const { ObjectId } = require("mongodb")
 
 export default async function handler(req, res) {
     console.log("Attempting to get a users posts")
@@ -7,26 +8,20 @@ export default async function handler(req, res) {
     const { database } = await connectToDatabase();
     const postsCollection = database.collection("posts");
 
-    if (!req.query || !req.query.user) {
+    if (!req.query || !req.query.id) {
         return res.status(400).json({
             success: false,
             message: "Insufficient information to get a users posts."
         })
     }
 
-    const user = req.query.user
-    console.log("Querying posts for", user)
-    const query = {user: user }
 
-    const sort = {timestamp: -1}
-
-    const postList = await postsCollection.find(query).sort(sort).toArray()
-    console.log(postList)
+    const post = await postsCollection.findOne({_id: new ObjectId(req.query.id)})
 
 
     return res.status(200).json({
         success: true,
-        postList: postList
+        post: post
     })
 
 

@@ -1,51 +1,45 @@
-import { StyleSheet, View, Modal, FlatList, Text, TouchableOpacity, RefreshControl, Pressable } from 'react-native';
+import { StyleSheet, View, Modal, FlatList, Text, TextInput, TouchableOpacity, RefreshControl, Pressable, ScrollView } from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { SearchBar } from 'react-native-elements';
 import axios from "axios"
-import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
 import RNPickerSelect from "react-native-picker-select"
 
 import CreatePostModal from './CreatePostModal'; 
-import DeletePostModal from './DeletePostModal';
-import Post from './Post';
-
-import {timeSince} from '../../utils/timeSince'
+import PostsList from './PostsList'
 
 export default function PostsFeed({navigation}) {
   const theme = useContext(themeContext)
   const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
-  const [selectedPost, setSelectedPost] = useState('')
-  const [username, setUsername] = useState(null)
   const [posts, setPosts] = useState(null)
   const [filterCategory, setFilterCategory] = useState('')
   const [postsToLoad, setPostsToLoad] = useState(0)
+  const [search, setSearch] = useState('')
+  const [searched, setSearched] = useState(false)
   
 
   useEffect(() => {
-    console.log("Initializing")
     initialize()
   },[])
 
   useEffect (() => {
-    console.log(postsToLoad)
     // If we aren't currently trying to fetch any posts
     if (postsToLoad === 0) {
       // Increase the number of posts to fetch
       incrementPosts()
       return
     }
-    fetchPosts()
+    if (!searched) {
+      fetchPosts()
+    }
   },[postsToLoad])
 
   const initialize = async () => {
-    const userVal = await SecureStore.getItemAsync('username')
-    setUsername(userVal)
     incrementPosts()
   }
 
   const fetchPosts = async () => {
-    console.log("Fetching... ", postsToLoad);
     const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getPostList', {
       params: {
         fetchAmount: postsToLoad,
@@ -63,25 +57,44 @@ export default function PostsFeed({navigation}) {
     setPosts(res.data.postList);
   };
 
+  const searchPosts = async () => {
+    const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/searchPosts', {
+      params: {
+        fetchAmount: postsToLoad,
+        keyword: search,
+      }
+    }).catch(error => {
+      console.log("Error occurred while fetching posts: ", error);
+    });
+
+    setPosts(res.data.postList)
+
+  }
+
   const incrementPosts = () => {
-    console.log("Incrementing posts")
     const additionalPostCount = 4
     setPostsToLoad(postsToLoad + additionalPostCount)
   }
 
   const refreshPosts = () => {
-    console.log("Refreshing posts")
+    setPosts(null)
     setPostsToLoad(0)
   }
 
   const handleFilterCategory = (value) => {
     setFilterCategory(value);
-    fetchPosts()
   }
 
+  const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
+    const paddingToBottom = 20;
+    return layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom;
+  };
+
+
   return(
-    
     <View style={styles.container}>
+      <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
       <RNPickerSelect
           placeholder={ {label: "Filter posts by category", value: null}}
           onValueChange={(value) => handleFilterCategory(value)}
@@ -92,21 +105,57 @@ export default function PostsFeed({navigation}) {
             { label: "MISC", value: "misc" },
           ]}
           style={pickerSelectStyles}
-      /> 
-      <FlatList
-        style={styles.postsListContainer}
-        data={posts}
+      />
+
+      <TextInput
+          style={[styles.input, {color:theme.color}]}
+          placeholder="Search for a post"
+          placeholderTextColor='gray'
         
-        renderItem={({ item }) => <PostItem post={item} currentUsername={username} fetchPosts={fetchPosts}/> }
-        keyExtractor={(item) => {return item._id}} 
-        horizontal={false}
-        onEndReached={() => incrementPosts()}
+          onChangeText={(text) => {
+            setSearch(text);
+          }}
+
+          onSubmitEditing={() => {setSearched(true), searchPosts()}}
+          autoCapitalize="none"
+      />
+      
+        {searched && (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => {
+                  setSearched(false);
+                  fetchPosts();
+                }}>
+
+                <Ionicons
+                    name={'close-circle-outline'}
+                    color={'red'}
+                    size={20}
+                />
+              </TouchableOpacity>
+        )}
+      </View>
+
+      <ScrollView
+        extraData={posts}
+        style={{width: '100%'}}
+        onScroll={({nativeEvent}) => {
+          if (isCloseToBottom(nativeEvent)) {
+            incrementPosts()
+          }
+        }}
+        scrollEventThrottle={400}
+
         refreshControl={
           <RefreshControl
             onRefresh={() => {refreshPosts()}}
           />
         }
-      />
+      >
+        <PostsList posts={posts} fetchPosts={fetchPosts}/>
+      </ScrollView>
+
       <View style={styles.bottomContainer}>
           <TouchableOpacity style={styles.button} onPress={() => setCreatePostModalVisible(true)}>
               <Text style={styles.buttonText}>
@@ -120,119 +169,6 @@ export default function PostsFeed({navigation}) {
 
 }
 
-function PostItem (props) {
-  const item = props.post
-  const theme = useContext(themeContext)
-  const [postOpened, setPostOpened] = useState(false) 
-  const [deletePostModalVisible, setDeletePostModalVisible] = useState(false);
-  const [upvoteCount, setUpvoteCount] = useState(item.upvoteCount ? item.upvoteCount : 0)
-  const [upvoted, setUpvoted] = useState(item.upvoteUsers ? item.upvoteUsers.includes(props.currentUsername) : false)
-  const [downvoted, setDownvoted] = useState(item.downvoteUsers ? item.downvoteUsers.includes(props.currentUsername) : false)
-
-  const isCurrentUserPost = item.user == props.currentUsername;
-  const lastUpdated = timeSince(item.timestamp)
-
-  let categoryDisplayed = ''
-  if (item.category == "housing") {
-    categoryDisplayed = "Housing";
-  } else if (item.category == "roommateSearching") {
-    categoryDisplayed = "Roommate searching";
-  } else if (item.category == "misc") {
-    categoryDisplayed = "MISC"
-  }
-
-  const PostModal = () => {
-    return (
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={postOpened}>
-          <Post post={item} onClose={() => setPostOpened(false)}/>
-      </Modal>
-    )
-  }
-
-  const handlePostPress = async (post) => {
-    if (post) {
-      setPostOpened(true)
-    } else {
-      console.log("User is undefined");
-    }
-  };
-  
-  const handleUpvote = async () => {
-    const newUpvoteVal = !upvoted
-    setUpvoted(newUpvoteVal)
-    setDownvoted(false)
-    updateVote(newUpvoteVal ? 1 : 0)
-  }
-  
-  const handleDownvote = () => {
-    const newDownvoteVal = !downvoted
-    setDownvoted(newDownvoteVal)
-    setUpvoted(false)
-    updateVote(newDownvoteVal ? -1 : 0)
-  }
-
-  const updateVote = async (voteVal) => {
-    console.log(voteVal)
-    const tokenVal = await SecureStore.getItemAsync('token')
-    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/modifyVote', {
-      token: tokenVal,
-      vote: voteVal,
-      id: item._id,
-    }).catch(error => {
-      console.log("Error occurred while updating vote: ", error.response.data )
-    })
-
-    if (response && response.data) {
-      const newUpvoteCount = response.data.upvoteCount
-      setUpvoteCount(newUpvoteCount)
-    }
-  } 
-  
-  return (
-    <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
-      <PostModal />
-      <DeletePostModal visible={deletePostModalVisible} post={item} onClose={() => {setDeletePostModalVisible(false); props.fetchPosts() }} />
-      <View style={{flexGrow: 1}}>
-        <TouchableOpacity style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]} onPress={() => handlePostPress(item)}>
-          <Text style={[feedStyles.title, {color:theme.color}]}>{item.title}</Text>
-          <Text style={feedStyles.username}>@{item.user}</Text>
-          <Text style={feedStyles.username}>{categoryDisplayed}</Text>
-          <Text style={[styles.subtitle, {color:theme.color}]}>
-            <Text style={[feedStyles.infoLabel]}>{lastUpdated}</Text>
-          </Text>
-
-          {isCurrentUserPost && (
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => {
-                setDeletePostModalVisible(true);
-              }}
-            >
-              <Text style={styles.deleteButtonText}>Delete post</Text>
-            </TouchableOpacity>
-          )}
-        </TouchableOpacity> 
-      </View>
-
-      <View style={{justifyContent: 'space-between', alignItems: 'center', width:'20%'}}>
-        <Pressable onPress={() => handleUpvote()}>
-          <Ionicons name="chevron-up" size={46} color={upvoted ? 'gold' : theme.color}/>
-        </Pressable>
-
-        <Text style={{fontSize: 20, color:theme.color}}>{upvoteCount}</Text>
-
-        <Pressable onPress={() => handleDownvote()}>
-          <Ionicons name="chevron-down" size={46} color={downvoted ? 'gold' : theme.color} />
-        </Pressable>
-      </View>
-      
-    </View>
-  )
-}
-
 const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -240,6 +176,15 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       height: '100%'
+    },
+    input: { 
+      height: 40, 
+      flex: 1,
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+      padding: 10,
+      marginRight: 0,
     },
     postsListContainer: {
         width: '100%',
@@ -277,16 +222,25 @@ const styles = StyleSheet.create({
       elevation: 2,
     },
     deleteButton: {
-    width: "30%",
+    width: "5%",
     height: 30,
-    backgroundColor: "gold",
+    backgroundColor: "white",
     borderRadius: 6,
     justifyContent: 'center',
     },
     deleteButtonText: {
     fontSize: 12,
     alignSelf: "center",
-    }
+    },
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: 'white',
+      padding: 20,
+      zIndex: 1,
+      gap: 10
+    },
 })
 
 const feedStyles = StyleSheet.create({
@@ -310,14 +264,14 @@ const feedStyles = StyleSheet.create({
   infoLabel: {
     fontSize: 14,
     color: 'grey'
-  },  
+  },
 })
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     fontSize: 16,
     marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     marginHorizontal: 20,
     borderWidth: 1,
     borderColor: 'grey', // Set the color of the border

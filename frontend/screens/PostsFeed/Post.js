@@ -14,6 +14,11 @@ export default function Comment(props, {navigation}) {
 
     const [newComment, setNewComment] = useState('')
     const [comments, setComments] = useState(null)
+    const [upvoteCount, setUpvoteCount] = useState(post.upvoteCount ? post.upvoteCount : 0)
+    const [upvoted, setUpvoted] = useState(post.upvoteUsers ? post.upvoteUsers.includes(props.currentUsername) : false)
+    const [downvoted, setDownvoted] = useState(post.downvoteUsers ? post.downvoteUsers.includes(props.currentUsername) : false)
+
+    const [username, setUsername] = useState()
 
     useEffect(() => {
         console.log("Initializing")
@@ -22,6 +27,7 @@ export default function Comment(props, {navigation}) {
     
     const initialize = async () => {
         fetchComments()
+        const usernameVal = setUsername(await SecureStore.getItemAsync('username'))
     }
 
     const createComment = async() => {
@@ -30,7 +36,6 @@ export default function Comment(props, {navigation}) {
         updatedComments.push(newComment)
         setComments(updatedComments)
 
-        const username = await SecureStore.getItemAsync('username')
         const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/createComment', {
           username: username,
           comment: newComment,
@@ -57,18 +62,79 @@ export default function Comment(props, {navigation}) {
         setComments(res.data.comments)
     }
 
+    const deleteComment = async (delComment) => {
+        const res = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/deleteComment', {
+            id: post._id,
+            username: username,
+            details: delComment, 
+        }).catch(error => {
+            console.log("Couldn't fetch comments")
+            return null
+        })
+
+        fetchComments()
+    }
+
     const CommentItem = ({item}) => {
     
         const lastUpdated = timeSince(item.timestamp)
-    
+        const isCurrentUserComment = item.from == username
+
         return (
           <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
+            <View style={{alignSelf: 'flex-end', marginTop: -5, position: 'absolute', backgroundColor:theme.background}}>
+            {isCurrentUserComment && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => {
+                deleteComment(item.details);
+              }}>
+                <Ionicons
+                    name={'trash-bin'}
+                    color={'red'}
+                    size={20}
+                />
+            </TouchableOpacity>
+          )}
+            </View>
             <Text style={[commentStyles.title, {color:theme.color}]}>{item.details}</Text>
             <Text style={{color: 'grey', fontWeight: "bold"}}>@{item.from}</Text>
             <Text style={[commentStyles.infoLabel]}>{lastUpdated}</Text>
           </View>
         )
     }
+
+    const handleUpvote = async () => {
+        const newUpvoteVal = !upvoted
+        setUpvoted(newUpvoteVal)
+        setDownvoted(false)
+        updateVote(newUpvoteVal ? 1 : 0)
+      }
+      
+      const handleDownvote = () => {
+        const newDownvoteVal = !downvoted
+        setDownvoted(newDownvoteVal)
+        setUpvoted(false)
+        updateVote(newDownvoteVal ? -1 : 0)
+      }
+    
+      const updateVote = async (voteVal) => {
+        console.log(voteVal)
+        const tokenVal = await SecureStore.getItemAsync('token')
+        const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/modifyVote', {
+          token: tokenVal,
+          vote: voteVal,
+          id: post._id,
+        }).catch(error => {
+          console.log("Error occurred while updating vote: ", error.response.data )
+        })
+    
+        if (response && response.data) {
+          const newUpvoteCount = response.data.upvoteCount
+          setUpvoteCount(newUpvoteCount)
+          props.getPost()
+        }
+      } 
 
     return(
         <SafeAreaView style={{height: '100%', width: '100%', backgroundColor:theme.background}}>
@@ -94,6 +160,18 @@ export default function Comment(props, {navigation}) {
 
             <View style={{paddingHorizontal: 15, paddingVertical: 10, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
                     <Text style={{fontSize: 18, color:theme.color}}>{post.details}</Text>
+            </View>
+
+            <View style={{justifyContent: 'space-between', alignItems: 'center', width:'20%'}}>
+                <Pressable onPress={() => handleUpvote()}>
+                    <Ionicons name="chevron-up" size={46} color={upvoted ? 'gold' : theme.color}/>
+                </Pressable>
+        
+                <Text style={{fontSize: 20, color:theme.color}}>{upvoteCount}</Text>
+        
+                <Pressable onPress={() => handleDownvote()}>
+                    <Ionicons name="chevron-down" size={46} color={downvoted ? 'gold' : theme.color} />
+                </Pressable>
             </View>
             
             <View style={{paddingHorizontal: 15, paddingVertical: 10, width: '90%', alignItems: 'left', justifyContent: 'left', color:theme.color}}>
@@ -271,5 +349,16 @@ const commentStyles = StyleSheet.create({
     infoLabel: {
         fontSize: 14,
         color: 'grey'
-    },  
+    },
+    deleteButton: {
+        width: "30%",
+        height: 30,
+        backgroundColor: "gold",
+        borderRadius: 6,
+        justifyContent: 'center',
+    },
+    deleteButtonText: {
+        fontSize: 12,
+        alignSelf: "center",
+    }
 });
