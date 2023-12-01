@@ -137,6 +137,10 @@ export default function Profile({navigation,reloadChat}){
       navigation.navigate('BlockedUsers',{reloadChat:reloadChat});
     }
 
+
+    const navigateToReadReceiptsOptions = () => {
+      navigation.navigate('ReadReceiptsOptions');
+    };
   
    const handleLogout = async () => {     
         const tokenVal = await SecureStore.getItemAsync('token');
@@ -215,6 +219,10 @@ export default function Profile({navigation,reloadChat}){
 
           <TouchableOpacity style={styles.button} onPress={navigateToBlockedUsers}>
           <Text style={styles.buttonText}>Blocked Users</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.button} onPress={navigateToReadReceiptsOptions}>
+          <Text style={styles.buttonText}>Read Receipt Options</Text>
           </TouchableOpacity>
 
           <Pressable style={styles.button} onPress={handleLogout}>

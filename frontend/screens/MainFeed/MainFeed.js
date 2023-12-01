@@ -149,6 +149,47 @@ export default function MainFeed({navigation,reloadChat}){
     };
   }, []);
 
+// Assuming the following function is part of a React component and is used within a useEffect hook
+useEffect(() => {
+  const fetchReadReceiptsData = async () => {
+    const updateReadReceiptsThroughApi = async (readReceiptsEnabled) => {
+      const tokenVal = await SecureStore.getItemAsync('token');
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/readReceipts', {
+        token: tokenVal,
+        readReceiptsEnabled: readReceiptsEnabled,
+      }).catch((error) => {
+        if (error.response) {
+          return error.response.data;
+        }
+        return;
+      });
+
+      return response;
+    };
+
+    const tokenVal = await SecureStore.getItemAsync('token');
+    const response = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getReadReceiptsSettings', {
+      params: {
+        token: tokenVal,
+      }
+    }).catch((error) => {
+      if (error.response) {
+        return error.response.data;
+      }
+    });
+
+    if (response && response.data) {
+      var readReceiptsResponse = response.data.readReceiptsEnabled;
+    }
+
+    const updateResponse = await updateReadReceiptsThroughApi(readReceiptsResponse);
+    console.log(updateResponse);
+  };
+
+  // Call the fetchData function when the component mounts
+  fetchReadReceiptsData();
+}, []);
+
   
 
   useEffect(() => {

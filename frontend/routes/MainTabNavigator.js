@@ -49,7 +49,7 @@ export default function MainTabNavigator() {
       <Tab.Screen name="Posts" component={PostsFeed} />
 
       <Tab.Screen
-        name="ChatList"
+        name="Messages"
         // options={{ tabBarBadge: checkForMatch ? 1 : null, unmountOnBlur: true}}
       >
         {(props) => <ChatList {...props} chatReloaded={chatReloaded} />}
