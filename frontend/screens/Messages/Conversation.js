@@ -454,23 +454,23 @@ export default function Conversation(props, {navigation}) {
                         <Ionicons name="chevron-back" size={30} color="gold" />
                     </Pressable>
                 </View>
-                <TouchableOpacity onPress={() => handleUserItemClick(props.otherUserItem)}>
-                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color }}>
-                    
-                <Avatar
-                        size={110}
-                        rounded
-                        source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + otherUser + '.jpg'}}
-                        containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
-                        activeOpacity={0.8}
-                    />
                 
+                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color }}>
+                    <TouchableOpacity onPress={() => handleUserItemClick(props.otherUserItem)}>
+                    <Avatar
+                            size={80}
+                            rounded
+                            source={{uri: 'https://boilermatch.blob.core.windows.net/pfp/' + otherUser + '.jpg'}}
+                            containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
+                            activeOpacity={0.8}
+                        />
+                    
+                
+                    </TouchableOpacity>
+                
+                    <Text style={{fontSize: 24, color:theme.color, paddingBottom: 6}}>{otherUser}</Text>
                 </View>
-                </TouchableOpacity>
-                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color}}>
-                    <Text style={{fontSize: 24, color:theme.color}}>{otherUser}</Text>
-                </View>
-                <View style={conversationStyles.buttonContainer}>
+                <View style={{width: '30%', alignItems: 'center', justifyContent: 'center', color:theme.color }}>
                     
                 <Switch
                     value={enabledNotifications}
