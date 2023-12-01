@@ -75,14 +75,14 @@ export default function ReportBlockModal({ visible, onClose , onCloseConversatio
       console.log("Error occurred while blocking users:", error)
     })
     console.log(response)
-    const response2 = await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
-      params: {
-        token: tokenVal,
-        userBlocked: otherUsername,
-      }
-    }).catch(error => {
-      console.log("Error occurred while blocking users - deleting messages:", error);
-    });
+    // const response2 = await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
+    //   params: {
+    //     token: tokenVal,
+    //     userBlocked: otherUsername,
+    //   }
+    // }).catch(error => {
+    //   console.log("Error occurred while blocking users - deleting messages:", error);
+    // });
     
     console.log(response2)
 

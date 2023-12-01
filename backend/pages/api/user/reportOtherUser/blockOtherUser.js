@@ -20,6 +20,9 @@ export default async function handler(req, res) {
         }
     });
 
+    console.log(currentUser)
+    console.log(req.body.userBlocked)
+
     try {
       // Query the database for potential user suggestions based on the search term
       
@@ -29,8 +32,16 @@ export default async function handler(req, res) {
           "userInteractedWith": currentUser,
       },
       [{
-          $set: {gotBlocked: true}
-      }],
+        $set: {
+            gotBlocked: {
+                $cond: {
+                    if: { $eq: ["$gotBlocked", true] },
+                    then: false,
+                    else: true,
+                }
+            }
+        }
+    }],
       {
           upsert: true,
           new: true
@@ -43,8 +54,16 @@ export default async function handler(req, res) {
           "userInteractedWith": req.body.userBlocked,
       },
       [{
-          $set: {didBlocking: true}
-      }],
+        $set: {
+            didBlocking: {
+                $cond: {
+                    if: { $eq: ["$didBlocking", true] },
+                    then: false,
+                    else: true,
+                }
+            },
+        }
+    }],
       {
           upsert: true,
           new: true

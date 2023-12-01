@@ -11,7 +11,7 @@ import themeContext from '../../theme/themeContext';
 import * as SecureStore from 'expo-secure-store';
 
 
-export default function Profile({navigation}){
+export default function Profile({navigation,reloadChat}){
   const [username, setUsername] = useState("")
   const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/')
   const [discoverability, setDiscoverability] = useState(false)
@@ -130,6 +130,13 @@ export default function Profile({navigation}){
     const navigateToManagePreferenceRankings = () => {
       navigation.navigate('ManagePreferenceRankings');
     };
+
+    
+    const navigateToBlockedUsers = () => {
+
+      navigation.navigate('BlockedUsers',{reloadChat:reloadChat});
+    }
+
   
    const handleLogout = async () => {     
         const tokenVal = await SecureStore.getItemAsync('token');
@@ -206,8 +213,8 @@ export default function Profile({navigation}){
           <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={navigateToManageNotifications}>
-          <Text style={styles.buttonText}>Notifications/Other</Text>
+          <TouchableOpacity style={styles.button} onPress={navigateToBlockedUsers}>
+          <Text style={styles.buttonText}>Blocked Users</Text>
           </TouchableOpacity>
 
           <Pressable style={styles.button} onPress={handleLogout}>
