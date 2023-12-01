@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 
-import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList } from 'react-native';
+import {StyleSheet, Text, View,TouchableOpacity,TextInput, Modal, Button, Image, Platform, ScrollView, FlatList,ActivityIndicator } from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Ionicons,FontAwesome} from '@expo/vector-icons';
 import axios from "axios"
@@ -14,6 +14,7 @@ import { AppState } from 'react-native';
 import { useNotification } from '../../NotificationContext';
 import themeContext from '../../theme/themeContext';
 import { useNavigation } from '@react-navigation/native';
+import Collapsible from 'react-native-collapsible';
 
 
 //import { NotificationSettings } from "../Profile/ManageNotifications"
@@ -46,7 +47,7 @@ Notifications.setNotificationHandler({
 
 
 
-export default function MainFeed({navigation,checkForMatches}){
+export default function MainFeed({navigation,reloadChat}){
   const [usersLiked, setUsersLiked] = useState({});
   const [usersDisliked, setUsersDisliked] = useState({});
   const [usersBookmarked, setUsersBookmarked]= useState({});
@@ -66,6 +67,15 @@ export default function MainFeed({navigation,checkForMatches}){
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isNewSearch, setIsNewSearch] = useState(false);
   const [newSearch, setNewSearch] = useState([]);
+  const [filtering, setFiltering] = useState(false)
+  const [selectingMajor,setSelectingMajor] = useState(false)
+  const [selectingGradYear, setSelectingGradYear] = useState(false)
+  const [majorFilter, setMajorFilter] = useState("")
+  const [currMajorInput, setCurrMajorInput] = useState("")
+  const [gradYearFilter, setGradYearFilter] = useState(null)
+  const [loading, setLoading]  = useState(false)
+  const [noMoreUsers, setNoMoreUsers] = useState(false)
+  const [currentUser, setCurrentUser] = useState(false);
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
@@ -81,12 +91,14 @@ export default function MainFeed({navigation,checkForMatches}){
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
 
   useEffect(() => {
-    handleRefreshFeed()
-  },[currentFeed]);
+    handleRefreshFeed(false)
+  },[currentFeed,gradYearFilter,majorFilter]);
 
   const setTokenInSecureStore = async (token) => {
     await SecureStore.setItemAsync('token', token);
   };
+
+  
 
 
   useEffect(() => {
@@ -95,6 +107,7 @@ export default function MainFeed({navigation,checkForMatches}){
       try {
         const userVal = await SecureStore.getItemAsync('username');
         setUsername(userVal);
+        setCurrentUser(userVal)
         //console.log("username in init", userVal); // Log the username here if needed
       } catch (error) {
         console.error("Error fetching username", error);
@@ -313,7 +326,7 @@ useEffect(() => {
       })
 
       //Update returns what the data previously look like so if there was no interaction
-      //we set to true and if there was an interaction we said liked to the reciprocal
+      //we set to true and if there was an interaction we set liked to the reciprocal
       let liked = true
       
       if(response.data.user_added == null){
@@ -322,8 +335,6 @@ useEffect(() => {
       else{
         liked = !(response.data.user_added.liked_or_disliked == "liked")
       }
-      if(liked == true){
-
       const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
         token: tokenVal,
         userShown: user.username,
@@ -331,7 +342,7 @@ useEffect(() => {
       ).catch(error => {
         console.log("error occurred while liking user:", error)
       })
-   
+      if(liked == true){
       if(isUserLiked.data.liked == true){
         console.log("tokenval", tokenVal);
        // console.log(res.data.userLiked)
@@ -343,12 +354,29 @@ useEffect(() => {
       ).catch(error => {
         console.log("Error creating conversation: ", error)
       })
+       reloadChat()
         setMatchPopUpUserShown(user)
         console.log("before usernotimatch")
         if(user.recieveNotifications) {
           console.log("usernotificationTOken", user.username)
         sendMatchNotification(user.notificationToken,username)
         }
+        
+      }
+    }
+    else{
+      setMatchPopUpUserShown(null)
+      reloadChat()
+      if(isUserLiked.data.liked == true){
+        await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
+          params: {
+            token: tokenVal,
+            userBlocked: user.username,
+          }
+        }).catch(error => {
+          console.log("Error occurred while blocking users - deleting messages:", error);
+        });
+        
       }
     }
 
@@ -357,6 +385,13 @@ useEffect(() => {
         [user.username]: liked,
       })
       )
+      if(liked && usersDisliked[user.username]){
+        setUsersDisliked((usersDisliked) => ({
+          ...usersDisliked,
+          [user.username]: false,
+        })
+        )
+      }
       
       console.log("user", user.username);
       console.log("user noties", user.recieveNotifications)
@@ -369,15 +404,8 @@ useEffect(() => {
       });
       
       //tokenVal = await SecureStore.getItemAsync('token')
-      const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
-        token: tokenVal,
-        userShown: user.username,
-      }
-      ).catch(error => {
-        console.log("error occurred while liking user:", error)
-      })
       if (ans && ans.data && ans.data.notificationToken) {
-        token = ans.data.notificationToken;
+        const token = ans.data.notificationToken;
         console.log("other user", token);
        
         if (user.recieveNotifications && liked && !isUserLiked.data.liked) {
@@ -386,18 +414,7 @@ useEffect(() => {
       }
       //await schedulePushNotification(username)
       //commented out but this is how you send notifications to others
-      console.log("likenotifcation", token);
-
-      
-      if(liked && usersDisliked[user.username]){
-        setUsersDisliked((usersDisliked) => ({
-          ...usersDisliked,
-          [user.username]: false,
-        })
-        )
-      }
-    
-      checkForMatches()
+     // console.log("likenotifcation", token);
   };
 
   const handleDislikePress = async(user) => {
@@ -421,7 +438,9 @@ useEffect(() => {
       else{
         disliked = !(response.data.user_added.liked_or_disliked == "disliked")
       }
-
+      if(disliked){
+        setMatchPopUpUserShown(null)
+      }
       setUsersDisliked((usersDisliked) => ({
         ...usersDisliked,
         [user.username]: disliked,
@@ -434,8 +453,28 @@ useEffect(() => {
           [user.username]: false,
         })
         )
+       
+        const isUserLiked  = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/isUserLiked`, {
+          token: tokenVal,
+          userShown: user.username,
+        }
+        ).catch(error => {
+          console.log("error occurred while liking user:", error)
+        })
+          if(isUserLiked.data.liked == true){
+            await axios.delete(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/messages/deleteBlockedMessages', {
+              params: {
+                token: tokenVal,
+                userBlocked: user.username,
+              }
+            }).catch(error => {
+              console.log("Error occurred while blocking users - deleting messages:", error);
+            });
+            reloadChat()
       }
-      checkForMatches()
+      
+      }
+      
   };
 
   const handleBookmarkPressed = async(user) => {
@@ -448,7 +487,6 @@ useEffect(() => {
         console.log("Error occurred while bookmarking users:", error)
       })
       let bookmarked = true
-      //console.log(response)
       if(response.data.user_added == null){
         bookmarked = true
       }
@@ -467,6 +505,7 @@ useEffect(() => {
   const handleUserItemClick = (user) => {
     setSelectedUser(user);
     setIsUserModalVisible(true);
+
   };
   
   const handleCloseUserModal = () => {
@@ -475,11 +514,11 @@ useEffect(() => {
 
   const onRefresh = async() => {
     setRefreshing(true);
-    handleRefreshFeed();
-    // ... Fetch data ...
+    handleRefreshFeed(false);
     setRefreshing(false);
   };
 
+  
   const FeedItem = ({ user }) => (
     <View style={[styles.feedItem, {backgroundColor:theme.background}]}>
       <Avatar
@@ -493,7 +532,7 @@ useEffect(() => {
       <View style={styles.iconRow}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleLikePress(user)}>
           <Ionicons
-            name={usersLiked[user.username] ? 'heart' : 'heart-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={usersLiked[user.username] ? 'heart' : 'heart-outline'} 
             color={usersLiked[user.username] ? 'red' : 'gray'}
             size={40}
           />
@@ -503,14 +542,14 @@ useEffect(() => {
         <View style={{flexDirection:"row"}}>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleUserItemClick(user)}>
           <Ionicons
-            name={'information-circle-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={'information-circle-outline'} 
             color={'gray'}
             size={40}
           />
         </TouchableOpacity>
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleBookmarkPressed(user)}>
           <Ionicons
-            name={usersBookmarked[user.username] ? 'bookmark' : 'bookmark-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={usersBookmarked[user.username] ? 'bookmark' : 'bookmark-outline'} 
             color={usersBookmarked[user.username] ? 'gold' : 'gray'}
             size={40}
           />
@@ -519,12 +558,11 @@ useEffect(() => {
 
         <TouchableOpacity style={feedStyles.iconContainer} onPress={() => handleDislikePress(user)}>
           <Ionicons
-            name={usersDisliked[user.username] ? 'heart-dislike' : 'heart-dislike-outline'} // Use 'heart' for filled heart and 'heart-o' for outline heart
+            name={usersDisliked[user.username] ? 'heart-dislike' : 'heart-dislike-outline'} 
             color={usersDisliked[user.username] ? 'red' : 'gray'}
             size={40}
           />
         </TouchableOpacity>
-        
       </View>
 
       <View style={[feedStyles.infoContainer, {backgroundColor:theme.backgroundColor}]}>
@@ -536,7 +574,7 @@ useEffect(() => {
           {user.information.major}
         </Text>
         <Text style={[styles.subtitle, {color:theme.color}]}>
-          <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Graduation Year:  </Text>
+          <Text style={[feedStyles.infoLabel, {color:theme.color}]}>Graduation Date:  </Text>
           {user.information.graduation}
         </Text>
         
@@ -565,10 +603,15 @@ useEffect(() => {
   };
 
   const fetchUsers = async (text) => {
-  
+    const tokenVal = await SecureStore.getItemAsync('token')
     
     // Make an API request to your database to search for users with similar names
-    axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${text}`).then((response) => {
+    axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + `/api/user/search/${text}`,
+    {
+      headers: {
+        authorization: tokenVal
+      }
+    }).then((response) => {
       
       if (response.data.users.length > 0) {
         setSearchResults(response.data.users.map(user => user));
@@ -580,17 +623,11 @@ useEffect(() => {
     });
   };
 
-  useEffect(() => {
-    if (selectedUser) {
-      setSearchResult([selectedUser]);
-    } else {
-      setSearchResult([]);
-    }
-  }, [selectedUser]);
   
   const handleSearchListButtonPress = (value,index) => {
     setSelectedUser(value);
-    toggleModal()
+    setIsUserModalVisible(true)
+   
   };
       
   
@@ -602,7 +639,23 @@ useEffect(() => {
    }
 
 
-  const handleRefreshFeed = async() => {
+
+  const handleRefreshFeed = async(scrolledDown) => {
+      if(loading){
+        return
+      }
+        let prevDisplayedUsers = []
+        let prevLikedUsers = {}
+        let prevDislikedUsers = {}
+        let prevBookmarkedUsers = {}
+      if(scrolledDown){
+         prevDisplayedUsers = [...displayedUsers]
+         prevLikedUsers = {...usersLiked}
+         prevDislikedUsers = {...usersDisliked}
+         prevBookmarkedUsers = {...usersBookmarked}
+        setLoading(true)
+      }
+      excludedUsers = prevDisplayedUsers.map(user=>user.username)
       const tokenVal = await SecureStore.getItemAsync('token')
       let response = null
 
@@ -612,21 +665,23 @@ useEffect(() => {
       ).catch(error => {
         console.log("Error occured while undisliking users:", error)
       })
-
-      print(response)
       if(currentFeed=="All"){
         response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getMainFeedUsers', {
-        token: tokenVal
+        token: tokenVal,
+        gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
+        majorFilter: majorFilter,
+        excludedUsers: excludedUsers
       }
       ).catch(error => {
         console.log("Error occured while getting main feed users:", error)
       })
-        
     }
     else if(currentFeed=="LikedBy"){
       response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getUsersLikedBy', {
-        token: tokenVal
-        
+        token: tokenVal,
+        gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
+        majorFilter: majorFilter,
+        excludedUsers: excludedUsers
       }
       ).catch(error => {
         console.log("Error occurred while getting liked users:", error)
@@ -634,8 +689,10 @@ useEffect(() => {
     }
     else{
       response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getBookmarkedUsers', {
-        token: tokenVal
-        
+        token: tokenVal,
+        gradYearFilter: gradYearFilter!=null?gradYearFilter.value: null,
+        majorFilter: majorFilter,
+        excludedUsers: excludedUsers
       }
       ).catch(error => {
         console.log("Error occurred while getting liked users:", error)
@@ -653,48 +710,61 @@ useEffect(() => {
       result[user.username] = user.interaction.length > 0 && "liked_or_disliked" in user.interaction[0] ? user.interaction[0].liked_or_disliked== "disliked": false;
       return result;
     }, {});
-   // setUsersBookmarked({})
-    setUsersBookmarked(bookmarkedUsers)
-    setUsersLiked(likedUsers)
-    setUsersDisliked(dislikedUsers)
-    setDisplayedUsers(response.data.users)
+  
 
+    if(scrolledDown){
+      if(response.data.users.length == 0){
+        setNoMoreUsers(true)
+      }
+      else{
+         setUsersBookmarked({...prevBookmarkedUsers,...bookmarkedUsers})
+         setUsersLiked({...prevLikedUsers,...likedUsers})
+         setUsersDisliked({...prevDislikedUsers,...dislikedUsers})
+         setDisplayedUsers([...prevDisplayedUsers, ...response.data.users]);
+         setNoMoreUsers(false)
+      }
+      setLoading(false)
+    }
+    else{
+      
+        setUsersBookmarked(bookmarkedUsers)
+        setUsersLiked(likedUsers)
+        setUsersDisliked(dislikedUsers)
+        setDisplayedUsers(response.data.users);
+        setNoMoreUsers(false)
+
+    }
+  }
+
+  gradDates=[
+    { label: "Fall 2024", value: "fall24" },
+    { label: "Spring 2025", value: "spring25" },
+    { label: "Fall 2025", value: "fall25" },
+    { label: "Spring 2026", value: "spring26" },
+    { label: "Fall 2026", value: "fall26" },
+    { label: "Spring 2027", value: "spring27" },
+    { label: "Fall 2027", value: "fall27" },
+    { label: "Spring 2028", value: "spring28" },
+    { label: "Fall 2028", value: "fall28" },
+  ]
+  const renderFooter = () => {
+    if(loading && !noMoreUsers){
+      return(
+      <View style={{ paddingVertical: 20 }}>
+        <ActivityIndicator animating size="large" />
+      </View>
+      )
+    }
+    else{
+      if(noMoreUsers){
+        return (<Text>No more users, check again soon for more</Text>)
+      }
+      else{
+        return null
+      }
+    }
    
-    }
-
-  const renderModal = () => {
-    if (searchResult) {
-      return (
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={isModalVisible}
-        >
-          <UserProfile user={selectedUser} closeModal={() => setIsModalVisible(false)}/>
-        </Modal>
-      );
-    }  else if (userNotFound) {
-      return (
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={userNotFound}
-        >
-          <View style={modalStyles.modalContainer}>
-            <View style={modalStyles.modalContent}>
-              <Text>User not found</Text>
-              <View style={modalStyles.closeButtonContainer}>
-                <Button title="Close" onPress={toggleUser} />
-              </View>
-            </View>
-          </View>
-        </Modal>
-      );
-    }
-    else {
-      return null;
-    }
-};  
+  };
     return(
       <View style={[styles.container, {backgroundColor:theme.backgroundColor}]}>
         <View style={[styles.topBar, {backgroundColor:theme.backgroundColor}]}>
@@ -720,7 +790,7 @@ useEffect(() => {
                 data={searchResults}
                 keyExtractor={(item) => item._id}
                 renderItem={({item,index }) => (
-                  <TouchableOpacity
+                  <TouchableOpacity key={index}
                     //value={searchTerm}
                     onPress={() => handleSearchListButtonPress(item,index)}
                     //activeOpacity={0.7} // You can adjust this value
@@ -735,10 +805,11 @@ useEffect(() => {
               </View>
             )}
           </View>
+    
           <TouchableOpacity
             style={[styles.filterButton, currentFeed=="LikedBy"?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
             onPress={handleLikedByFeedPress}>
-            <Text style={styles.searchButtonText}>Liked Me </Text>
+            <Text style={styles.searchButtonText}>Liked Me</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.filterButton, currentFeed=="Bookmarked"?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
@@ -749,21 +820,56 @@ useEffect(() => {
             size={15}
           />
           </TouchableOpacity>
+          <View>
+          <TouchableOpacity
+            style={[styles.filterCategoryButton,  majorFilter!=""||gradYearFilter!=null?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}
+            onPress={()=>{setFiltering(!filtering);setSelectingMajor(majorFilter=="");setSelectingGradYear(gradYearFilter==null)} }>
+            <Text style={styles.searchButtonText}>Filters</Text>
+          </TouchableOpacity>
+          <View  style={styles.collapsibleContent}>
+          <Collapsible  collapsed={!filtering}>
+            <View >
+          <TouchableOpacity onPress={()=>setSelectingMajor(!selectingMajor)} style={[styles.filterCategory, majorFilter!=""?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}>
+            <Text>Major</Text>
+          </TouchableOpacity>
+          <Collapsible collapsed={selectingMajor}>
+         { !selectingMajor?(<TextInput
+              style={[styles.input, {color:theme.color}]}
+              placeholder="Enter"
+              placeholderTextColor='gray'
+              onChangeText={(text) => setCurrMajorInput(text)}
+              onBlur={() => setMajorFilter(currMajorInput)}
+              value={currMajorInput}
+              autoCapitalize="none"
+            />):(<></>)}
+          </Collapsible>
+          <TouchableOpacity onPress={()=>setSelectingGradYear(!selectingGradYear)} style={[styles.filterCategory, gradYearFilter!=null?{backgroundColor:"gold"}:{backgroundColor: "#d9d9d9"}]}>
+            <Text>Graduation</Text>
+          </TouchableOpacity>
+          <Collapsible collapsed={selectingGradYear}>
+          {gradYearFilter==null?(gradDates.map((item,index)=>(
+          <TouchableOpacity key={index} onPress={()=>setGradYearFilter(item)} style={styles.filterCategory}>
+          <Text>{item.label}</Text>
+           </TouchableOpacity>
+          )))
+          :(
+            <TouchableOpacity onPress={()=>setGradYearFilter(null)} style={styles.filterCategory}>
+            <Text>{gradYearFilter.label}</Text>
+           </TouchableOpacity>
+          )
+          }
+          </Collapsible>
+          </View>
+          </Collapsible>
+          </View>
+          
+          </View>
         </View>
 
         
-        {selectedUser && (
-          <Modal
-            animationType="slide"
-            transparent={false}
-            visible={isUserModalVisible}
-          >
-            <UserProfile user={selectedUser} closeModal={handleCloseUserModal}/>
-          </Modal>
-        )}
 
     
-       {renderModal()}
+       {/* {renderModal()} */}
         
         <MatchPopUp matchedUser={matchPopUpUserShown} hideMatchPopUp={hideMatchPopUp} navigation={navigation}/>
 
@@ -781,6 +887,9 @@ useEffect(() => {
                   onRefresh={onRefresh}
                 />
               }
+              onEndReached={() => handleRefreshFeed(true)}
+              onEndReachedThreshold={0}
+              ListFooterComponent={renderFooter}
             />
           ) : (
             <ScrollView
@@ -791,6 +900,13 @@ useEffect(() => {
             </ScrollView>
           )}
         </View>
+        <Modal
+            animationType="slide"
+            transparent={false}
+            visible={isUserModalVisible}
+          >
+            <UserProfile visible={isUserModalVisible} user={selectedUser} closeModal={handleCloseUserModal} handleLikePress={handleLikePress} handleBookmarkPressed={handleBookmarkPressed} handleDislikePress={handleDislikePress}/>
+          </Modal>
       </View>
   );
     }
@@ -912,6 +1028,7 @@ const styles = StyleSheet.create({
   },
   dropdownItem: {
     padding: 10,
+    backgroundColor:"white"
   },
   feedItem: {
    // Take up the entire available space
@@ -954,7 +1071,7 @@ const styles = StyleSheet.create({
   ,
   input: { 
     height: 40, 
-    flex: 1,
+    backgroundColor:"white",
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
@@ -971,9 +1088,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   filterButton: {
-   
     padding: 10,
     borderRadius: 5,
+  },
+  filterCategoryButton: {
+    paddingHorizontal:25,
+    padding: 10,
+    borderRadius: 5,
+  },
+  filterCategory:{
+   borderWidth:1,
+   padding:5,
+   borderRadius:5,
+   backgroundColor:"white"
   },
   searchButtonText: {
     color: 'gray', 
@@ -986,7 +1113,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
     zIndex: 1,
-    gap: 10
+    gap: 5
+  },
+  collapsibleContent: {
+    position: 'absolute',
+    top: 35,
+    left: 0,
+    right: 0,
+    borderRadius:5,
+    zIndex: 2,// Ensure it appears on top
+   // zIndex: 2, // Ensure it appears on top
+    
   },
   flatListContainer: {
     flex: 1, // Take up the remaining available space

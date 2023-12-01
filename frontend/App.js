@@ -16,7 +16,7 @@ import Profile from './screens/Profile/Profile';
 import ManagePreferences from './screens/Profile/ManagePreferences';
 import ManagePreferenceRankings from './screens/Profile/RankPreferences';
 import ManagePhotos from './screens/Profile/ManagePhotos';
-
+import BlockedUsers from './screens/Profile/BlockedUsers';
 import ForgotPassword from './screens/LoginRegister/ForgotPassword';
 import PinVerify from './screens/LoginRegister/PinVerify';
 import ResetPassword from './screens/LoginRegister/ResetPassword';
@@ -116,6 +116,10 @@ export default function App() {
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
         }}/>
         <Stack.Screen name="ManagePhotos" component={ManagePhotos} />
+        <Stack.Screen name="BlockedUsers" component={BlockedUsers}  options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+
         <Stack.Screen name="ReadReceiptsOptions" component={ReadReceiptsOptions} />
       </Stack.Navigator>
     </NavigationContainer>

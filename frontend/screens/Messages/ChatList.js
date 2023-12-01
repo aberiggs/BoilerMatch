@@ -12,7 +12,7 @@ import themeContext from '../../theme/themeContext';
 
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function ChatList({navigation,checkForMatch}) {
+export default function ChatList({navigation,chatReloaded}) {
 
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
@@ -115,13 +115,13 @@ export default function ChatList({navigation,checkForMatch}) {
 
     useEffect(() => {
       handleRefreshFeed()
-    },[checkForMatch]);
+    },[chatReloaded]);
 
-    useFocusEffect(
-      React.useCallback(() => {
-        handleRefreshFeed();
-      }, [])
-    );
+    // useFocusEffect(
+    //   React.useCallback(() => {
+    //     handleRefreshFeed();
+    //   }, [])
+    // );
    
     const handleRefreshFeed = async() => {
       const tokenVal = await SecureStore.getItemAsync('token')
@@ -138,6 +138,15 @@ export default function ChatList({navigation,checkForMatch}) {
         console.log("SORTED USERS: ", sortedUsers)
         setDisplayedUsers(sortedUsers);
       }
+      else{
+        setDisplayedUsers([])
+      }
+    }
+    
+    const handleChatClosed = () => {
+      setChatOpened(false)
+      handleRefreshFeed()
+      console.log("chatClosed")
     }
 
     const ConversationModal = () => {
@@ -146,7 +155,7 @@ export default function ChatList({navigation,checkForMatch}) {
           animationType="slide"
           transparent={false}
           visible={chatOpened}>
-            <Conversation otherUser={selectedUser} onClose={() => setChatOpened(false)}/>
+            <Conversation otherUser={selectedUser} onClose={handleChatClosed}/>
         </Modal>
       )
     }
@@ -444,7 +453,7 @@ export default function ChatList({navigation,checkForMatch}) {
               data={displayedUsers} // Replace with your data array
               
               renderItem={({ item }) => ChatItem({item}) }
-              keyExtractor={(item) => item.username} // Replace with a unique key extractor
+              keyExtractor={(item) => item._id} // Replace with a unique key extractor
               horizontal={false}
               contentContainerStyle={styles.flatListContent}
             />

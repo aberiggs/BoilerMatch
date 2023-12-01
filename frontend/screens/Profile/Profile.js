@@ -11,7 +11,7 @@ import themeContext from '../../theme/themeContext';
 import * as SecureStore from 'expo-secure-store';
 
 
-export default function Profile({navigation}){
+export default function Profile({navigation,reloadChat}){
   const [username, setUsername] = useState("")
   const [profilePic, setProfilePic] = useState('https://boilermatch.blob.core.windows.net/pfp/')
   const [discoverability, setDiscoverability] = useState(false)
@@ -131,6 +131,13 @@ export default function Profile({navigation}){
       navigation.navigate('ManagePreferenceRankings');
     };
 
+    
+    const navigateToBlockedUsers = () => {
+
+      navigation.navigate('BlockedUsers',{reloadChat:reloadChat});
+    }
+
+
     const navigateToReadReceiptsOptions = () => {
       navigation.navigate('ReadReceiptsOptions');
     };
@@ -210,6 +217,10 @@ export default function Profile({navigation}){
           <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.button} onPress={navigateToBlockedUsers}>
+          <Text style={styles.buttonText}>Blocked Users</Text>
+          </TouchableOpacity>
+          
           <TouchableOpacity style={styles.button} onPress={navigateToReadReceiptsOptions}>
           <Text style={styles.buttonText}>Read Receipt Options</Text>
           </TouchableOpacity>
