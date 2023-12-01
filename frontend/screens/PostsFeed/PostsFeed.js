@@ -23,6 +23,10 @@ export default function PostsFeed({navigation}) {
     initialize()
   },[])
 
+  useEffect(() => {
+    fetchPosts()
+  },[filterCategory])
+
   useEffect (() => {
     // If we aren't currently trying to fetch any posts
     if (postsToLoad === 0) {
