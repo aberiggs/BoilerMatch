@@ -53,7 +53,6 @@ export default function userProfile(props) {
   };
 
 
-  const carouselRef = useRef(null);
   const selectedUser = props.user
   const selectedUsername = props.user.username
   const theme = useContext(themeContext)
@@ -102,7 +101,6 @@ export default function userProfile(props) {
     ).catch(error => {
       console.log("Error occurred while getting users:", error)
     })
-    console.log("HII")
     console.log(response.data)
     setViewingSelf(response.data.viewingSelf)
 
@@ -189,7 +187,7 @@ export default function userProfile(props) {
     <View style={[modalStyles.modalContainer,{backgroundColor:theme.background}]}>
       
       <View style={modalStyles.modalContent}>
-          <ScrollView style={{width: '70%'}}>
+          <ScrollView style={{width: '100%'}}>
           <Avatar
             size='xlarge'
             rounded
@@ -198,7 +196,7 @@ export default function userProfile(props) {
             activeOpacity={0.8}
           />
  { !isBlocked ? (
-        <View>
+        <View style={{width: '70%', alignSelf: 'center'}}>
 
           <Text style={[styles.subtitle,{color:theme.color}]}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.information.gender}</Text>
@@ -257,14 +255,16 @@ export default function userProfile(props) {
           )
           
           :
-          <View>
+          <View style={{width: '70%', alignSelf: 'center'}}>
             <TouchableOpacity style={modalStyles.closeButton} onPress={unblockUser}>
-            <Text style={modalStyles.closeButtonText}>Unblock</Text>
-          </TouchableOpacity>
-            </View>}
+              <Text style={modalStyles.closeButtonText}>Unblock</Text>
+            </TouchableOpacity>
+          </View>}
                   
 
-           <PostsList posts={posts} fetchPosts={getUserPosts} />
+          <PostsList posts={posts} fetchPosts={getUserPosts} />
+          
+          
 
 
           <Text style={[styles.subtitle,{color:theme.color}]}> {}</Text>
