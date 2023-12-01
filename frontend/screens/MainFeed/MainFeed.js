@@ -15,8 +15,8 @@ import { useNotification } from '../../NotificationContext';
 import themeContext from '../../theme/themeContext';
 import { useNavigation } from '@react-navigation/native';
 import Collapsible from 'react-native-collapsible';
-
-
+import { LogBox } from 'react-native';
+LogBox.ignoreAllLogs();
 //import { NotificationSettings } from "../Profile/ManageNotifications"
 
 

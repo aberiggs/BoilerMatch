@@ -544,7 +544,7 @@ const conversationStyles = StyleSheet.create({
       alignSelf: "center"
     },
     button: {
-      width: "80%",
+      width: "50%",
       paddingVertical: 10,
       marginVertical: 5,
       backgroundColor: "gold",

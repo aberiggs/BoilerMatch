@@ -11,6 +11,8 @@ import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
 
 import { useFocusEffect } from '@react-navigation/native';
+import { LogBox } from 'react-native';
+LogBox.ignoreAllLogs();
 
 export default function ChatList({navigation,chatReloaded}) {
 
