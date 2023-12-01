@@ -58,7 +58,7 @@ const MatchPopUp = ({navigation,matchedUser, hideMatchPopUp}) => {
           <Text style={styles.modalText}>You Matched With {matchedUser.information.firstName} {matchedUser.information.lastName}!</Text>
           <Pressable
             style={[styles.button]}
-            onPress={() => {hideMatchPopUp(); navigation.navigate("ChatList");}}>
+            onPress={() => {hideMatchPopUp(); navigation.navigate("Messages");}}>
             <Text style={styles.textStyle}>Start Chatting</Text>
           </Pressable>
         </View>

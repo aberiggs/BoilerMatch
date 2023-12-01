@@ -130,6 +130,7 @@ export default function ChatList({navigation,chatReloaded}) {
 
     useEffect(() => {
       handleRefreshFeed()
+      
     },[chatReloaded]);
 
     // useFocusEffect(
@@ -152,6 +153,7 @@ export default function ChatList({navigation,chatReloaded}) {
         const sortedUsers = response.data.users.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
        // console.log("SORTED USERS: ", sortedUsers)
         setDisplayedUsers(sortedUsers);
+        
       }
       else{
         setDisplayedUsers([])
@@ -171,7 +173,7 @@ export default function ChatList({navigation,chatReloaded}) {
           animationType="slide"
           transparent={false}
           visible={chatOpened}>
-            <Conversation otherUser={selectedUser} otherUserItem={selecetedUserkey} enabled={isEnabled} onClose={() => setChatOpened(false)}/>
+            <Conversation otherUser={selectedUser} otherUserItem={selecetedUserkey} enabled={isEnabled} onClose={() => handleChatClosed()}/>
         </Modal>
       )
     }

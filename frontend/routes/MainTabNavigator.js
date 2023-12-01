@@ -9,11 +9,10 @@ import { useState } from 'react';
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
-    const [chatReloaded, setChatReloaded] = useState(false)
+    const [chatReloaded, setChatReloaded] = useState(0)
 
     const reloadChat = () =>{
-      setChatReloaded(!chatReloaded)
-
+      setChatReloaded(prevState=>!prevState)
     }
    
     return (

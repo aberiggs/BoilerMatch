@@ -89,6 +89,14 @@ export default function MainFeed({navigation,reloadChat}){
 
   //variables for match pop up
   const [matchPopUpUserShown,setMatchPopUpUserShown] = useState(null)
+  
+  const scrollViewRef = useRef(null);
+
+  const scrollToTop = () => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToOffset({ offset: 0 });
+    }
+  };
 
   useEffect(() => {
     handleRefreshFeed(false)
@@ -280,7 +288,7 @@ useEffect(() => {
       navigation.navigate("Settings");
     }
     else {
-      navigation.navigate("ChatList");
+      navigation.navigate("Messages");
     }
     
       console.log(response);
@@ -641,10 +649,14 @@ useEffect(() => {
       
   
   const handleLikedByFeedPress = () => {
+    
     setCurrentFeed(currentFeed=="LikedBy"?"All":"LikedBy")
+    scrollToTop()
    }
    const handleBookmarkFeedPress = () => {
+    
     setCurrentFeed(currentFeed=="Bookmarked"?"All":"Bookmarked")
+    scrollToTop()
    }
 
 
@@ -885,6 +897,7 @@ useEffect(() => {
         <View style={[styles.flatListContainer, {backgroundColor:theme.backgroundColor}]}>
           {displayedUsers.length > 0 ? (
             <FlatList
+            ref={scrollViewRef}
               data={displayedUsers} // Replace with your data array
               renderItem={({ item }) => <FeedItem user={item} onLikePress={handleLikePress}/>}
               keyExtractor={(item) => item.username} // Replace with a unique key extractor
@@ -901,7 +914,7 @@ useEffect(() => {
               ListFooterComponent={renderFooter}
             />
           ) : (
-            <ScrollView
+            <ScrollView 
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
               <Text style={[styles.noMatchesText, {color:theme.color}]}>
                 You have no potential matches. Consider adjusting your preferences to gain a broader suggestion of users

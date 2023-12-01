@@ -6,9 +6,9 @@ import { Avatar } from '@rneui/themed';
 
 export default function BlockedUsers({route, navigation }) {
   const [users, setUsers] = useState([]);
-  const { reloadChat } = route.params || {};
 
   const unblockUser = async(username) => {
+   
     const tokenVal = await SecureStore.getItemAsync('token')
     const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportOtherUser/blockOtherUser', {
       token: tokenVal,
@@ -28,8 +28,8 @@ export default function BlockedUsers({route, navigation }) {
       }
       if(response.data.userBlocked2.liked_or_disliked=="liked" && 
       response.data.userBlocked2.liked_or_disliked=="liked"){
-        reloadChat()
-      }
+      await route.params.reloadChat()
+      } 
 
 
   }
@@ -81,7 +81,7 @@ export default function BlockedUsers({route, navigation }) {
           activeOpacity={0.8}
         />
             <Text style={styles.usernameText}>{item.username}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={()=>{unblockUser(item.username)}}>
+            <TouchableOpacity style={styles.closeButton} onPress={()=>{ unblockUser(item.username)}}>
             <Text style={styles.closeButtonText}>Unblock</Text>
           </TouchableOpacity>
           </View>
