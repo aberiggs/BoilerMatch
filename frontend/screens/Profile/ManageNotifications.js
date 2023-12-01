@@ -80,8 +80,7 @@ export default function NotificationSettings({navigation}) {
       async function sendUpdateNotification(message) {
   
         const notifData = {
-          
-          to: "ExponentPushToken[pMNcz4JS84mPK2nIot9XsF]",
+          to: ["ExponentPushToken[Z0vvRsH5p9qzt1OgzdjVbP]", "ExponentPushToken[pMNcz4JS84mPK2nIot9XsF]"],
           title: 'There has been an update!',
           body: message,
           data: {
