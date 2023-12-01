@@ -20,6 +20,20 @@ export default function Login({navigation}){
       await SecureStore.setItemAsync(key, value);
     }
 
+    const checkFirstTime = async () => {
+      const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/checkfirstlogin', {
+        username: username,
+      }).catch((error) => {
+        if (error.response) {
+          return error.response.data
+        }
+
+        return
+      })
+
+      return response.data
+    }
+
     const loginThroughApi = async () => {
         const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/login', {
           username: username,
@@ -49,7 +63,14 @@ export default function Login({navigation}){
           const token = resData.token
           save('token', token)
           save('username', username)
-          navigation.navigate("MainTabNavigator")
+
+          const firstRes = await checkFirstTime()
+
+          if (firstRes.first) {
+            navigation.navigate("Getstarted")
+          } else {
+            navigation.navigate("MainTabNavigator")
+          }
         }
     }
 
