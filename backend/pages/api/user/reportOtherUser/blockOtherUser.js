@@ -1,5 +1,4 @@
 import { connectToDatabase } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
 const jwt = require('jsonwebtoken');
 
 export default async function handler(req, res) {
@@ -20,6 +19,9 @@ export default async function handler(req, res) {
         }
     });
 
+    console.log(currentUser)
+    console.log(req.body.userBlocked)
+
     try {
       // Query the database for potential user suggestions based on the search term
       
@@ -29,8 +31,16 @@ export default async function handler(req, res) {
           "userInteractedWith": currentUser,
       },
       [{
-          $set: {gotBlocked: true}
-      }],
+        $set: {
+            gotBlocked: {
+                $cond: {
+                    if: { $eq: ["$gotBlocked", true] },
+                    then: false,
+                    else: true,
+                }
+            }
+        }
+    }],
       {
           upsert: true,
           new: true
@@ -43,8 +53,16 @@ export default async function handler(req, res) {
           "userInteractedWith": req.body.userBlocked,
       },
       [{
-          $set: {didBlocking: true}
-      }],
+        $set: {
+            didBlocking: {
+                $cond: {
+                    if: { $eq: ["$didBlocking", true] },
+                    then: false,
+                    else: true,
+                }
+            },
+        }
+    }],
       {
           upsert: true,
           new: true
@@ -69,67 +87,3 @@ export default async function handler(req, res) {
       });
     }
   }
-    
-//     try {
-//         const blocked = await interactions.aggregate([
-//             { $match: {
-//                 $and: [
-//                   {"userInteracting":currentUser},
-//                   {"liked_or_disliked": "liked"},
-//                   {"userInteractedWith" : req.body.userBlocked}
-//                 ]
-//               } },
-//             {
-//           $lookup: {
-//             from: "users",
-//             localField: "userInteractedWith",
-//             foreignField: "username",
-//             as: "userInfo"
-//       },
-    
-//     },
-           
-//         ]).toArray()
-//         console.log(blocked)
-       
-//         return res.status(200).json({
-//           success: true,
-//           users: blocked,
-//           message: "User blocked",
-//         });
-//       } catch (error) {
-//         console.error("Error while trying to block a user:", error);
-//         return res.status(500).json({
-//           success: false,
-//           message: "Internal server error",
-//         });
-//       }
-
-// }
-
-//     const userAdded = await interactions.insertOne({
-//         "userInteracting": currentUser,
-//         "userInteractedWith": req.body.userBlocked,
-//         "blocked": true
-//     });
-         
-
-//     if (!userAdded.insertedId) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found in interactions",
-//       });
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       user_added: userAdded.value,
-//       message: "User blocked successfully",
-//     });
-//   } catch (error) {
-//     console.error("Error while attempting to block a user:", error);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Internal server error",
-//     });
-

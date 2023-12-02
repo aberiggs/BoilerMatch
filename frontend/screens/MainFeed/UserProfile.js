@@ -1,18 +1,24 @@
 
-import { StyleSheet, Text, View, Pressable, ScrollView, Image} from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView, Image, TouchableOpacity} from 'react-native';
 import React, {useState, useEffect, useRef, useContext} from 'react';
 import { Avatar } from '@rneui/themed';
 import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store';
 import themeContext from '../../theme/themeContext';
+import { Ionicons,FontAwesome,MaterialIcons} from '@expo/vector-icons';
 import AwaitRateModal from './AwaitRateModal';
 import RateModal from './RateModal';
 
 
+import PostsList from '../PostsFeed/PostsList'
+
 export default function userProfile(props) {
   const [userPhotos, setUserPhotos] = useState([]);
+  const [posts, setPosts] = useState(null)
+
   const carouselRef = useRef(null);
+  const [viewingSelf, setViewingSelf] = useState(false)
 
   const [awaitModalVisible, setAwaitModalVisible] = useState(false);
   const [rateModalVisible, setRateModalVisible] = useState(false);
@@ -46,12 +52,14 @@ export default function userProfile(props) {
     setRateModalVisible(false);
   };
 
-  
 
   const selectedUser = props.user
   const selectedUsername = props.user.username
-  console.log("SELECTED: ", selectedUsername)
   const theme = useContext(themeContext)
+  const [userLiked, setUserLiked] = useState(false)
+  const [userBookmarked, setUserBookmarked] = useState(false)
+  const [userDisliked, setUserDisliked] = useState(false)
+  const [isBlocked,setIsBlocked] = useState(false)
 
 
   const isPermitted = async() => {
@@ -73,16 +81,70 @@ export default function userProfile(props) {
      
   }
 
-  const goForward = () => {
-    carouselRef.current.snapToNext();
-  };
-
-  // console.log("Backgroundtheme", theme.background);
-  // console.log("djkflsa",theme.color )
+  useEffect(() => {
+    getInteractionWithUser()
+  }, [props.visible]);
 
   useEffect(() => {
     getUserPhotos()
+    getUserPosts()
   }, []);
+  
+  const getInteractionWithUser = async() => {
+
+    const tokenVal = await SecureStore.getItemAsync('token');
+    response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/getInteractionWithUser', {
+      token: tokenVal,
+      userShown: selectedUser.username
+
+    }
+    ).catch(error => {
+      console.log("Error occurred while getting users:", error)
+    })
+    console.log(response.data)
+    setViewingSelf(response.data.viewingSelf)
+
+    interaction = response.data.interaction
+    if (interaction != null){
+    setUserLiked(interaction.liked_or_disliked =="liked" || false)
+    
+    setUserDisliked(interaction.liked_or_disliked =="disliked" || false)
+
+    setUserBookmarked(interaction.bookmarked || false)
+    
+    setIsBlocked(interaction.didBlocking || false)
+  }
+  }
+  const unblockUser = async() => {
+    const tokenVal = await SecureStore.getItemAsync('token')
+    const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/reportOtherUser/blockOtherUser', {
+      token: tokenVal,
+      userBlocked: selectedUser.username
+    }
+    ).catch(error => {
+      console.log("Error occurred while blocking users:", error)
+    })
+    setIsBlocked(!isBlocked)
+  }
+
+  const getUserPosts = async () => {
+    console.log("Loading posts for ", selectedUser.username)
+    const res = await axios.get(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/posts/getUsersPosts', {
+      params: {
+        user: selectedUser.username
+      }
+    }).catch(error => {
+      console.log("Error occurred while fetching posts: ", error);
+    });
+  
+    // Fails to fetch data
+    if (!res || !res.data || !res.data.postList) {
+      return;
+    }
+  
+    console.log("Posts found", res.data.postList)
+    setPosts(res.data.postList);
+  }
 
   /* Gets the URI's for all user photos */
   const getUserPhotos = async () => {
@@ -120,12 +182,12 @@ export default function userProfile(props) {
       </View>
     );
 }
-
   return (
 
     <View style={[modalStyles.modalContainer,{backgroundColor:theme.background}]}>
+      
       <View style={modalStyles.modalContent}>
-        <ScrollView style={{width: '70%'}}>
+          <ScrollView style={{width: '100%'}}>
           <Avatar
             size='xlarge'
             rounded
@@ -133,6 +195,8 @@ export default function userProfile(props) {
             containerStyle={{backgroundColor: 'grey', margin: 10, alignSelf: 'center'}}
             activeOpacity={0.8}
           />
+ { !isBlocked ? (
+        <View style={{width: '70%', alignSelf: 'center'}}>
 
           <Text style={[styles.subtitle,{color:theme.color}]}>Name: {selectedUser.information.firstName} {selectedUser.information.lastName}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Gender: {selectedUser.information.gender}</Text>
@@ -151,14 +215,6 @@ export default function userProfile(props) {
             />
           </View>
 
-          <Text style={[styles.title,{color:theme.color}]}>{'\n'}Information</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Year for Roommate: {selectedUser.information.yearForRoommate}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Sleeping Habits: {selectedUser.information.sleepingHabits}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Political Views: {selectedUser.information.politicalViews}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Drinking Habits: {selectedUser.information.drinkingHabits}</Text>
-          <Text style={[styles.subtitle,{color:theme.color}]}>Pets: {selectedUser.information.pets}</Text>
-          
-
           <Text style={[styles.title,{color:theme.color}]}>{'\n'}Housing Information</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Housing: {selectedUser.housingInformation.housing}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Confirmed Housing Situation: {selectedUser.housingInformation.confirmedHousingSituation}</Text>
@@ -171,8 +227,6 @@ export default function userProfile(props) {
           <Text style={[styles.subtitle,{color:theme.color}]}>Guests: {selectedUser.preferences.guests}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Clean: {selectedUser.preferences.clean}</Text>
           <Text style={[styles.subtitle,{color:theme.color}]}>Noise: {selectedUser.preferences.noise}</Text>
-                  
-
           {selectedUser.ratings && selectedUser.ratings.length > 0 ? (
           selectedUser.ratings.map((rating, index) => (
             <View key={index}>
@@ -196,17 +250,63 @@ export default function userProfile(props) {
         ) : (
           <Text style={styles.title}>No ratings</Text>
           )}
+          </View>
+          
+          )
+          
+          :
+          <View style={{width: '70%', alignSelf: 'center'}}>
+            <TouchableOpacity style={modalStyles.closeButton} onPress={unblockUser}>
+              <Text style={modalStyles.closeButtonText}>Unblock</Text>
+            </TouchableOpacity>
+          </View>}
+                  
+
+          <PostsList posts={posts} fetchPosts={getUserPosts} />
+          
           
 
 
           <Text style={[styles.subtitle,{color:theme.color}]}> {}</Text>
 
-          <Pressable style={modalStyles.closeButton} onPress={rateOrAwaitDecision}>
-          <Text style={modalStyles.closeButtonText}>Rate User</Text>
-          </Pressable>
           <RateModal visible={rateModalVisible} user={selectedUser.username} onClose={closeRateModal}/>
-          <AwaitRateModal visible={awaitModalVisible} currentUser={props.currentUser} username={selectedUser.username} onClose={closeAwaitModal} />
+          <AwaitRateModal visible={awaitModalVisible} username={selectedUser.username} onClose={closeAwaitModal} />
         </ScrollView>
+        
+        { !viewingSelf && !isBlocked ? (
+        <View style={modalStyles.iconRow}>
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() =>{setUserLiked(!userLiked); setUserDisliked(false); props.handleLikePress(selectedUser)}}>
+          <Ionicons
+            name={userLiked ? 'heart' : 'heart-outline'} 
+            color={userLiked ? 'red' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() => {setUserBookmarked(!userBookmarked); props.handleBookmarkPressed(selectedUser)}}>
+          <Ionicons
+            name={userBookmarked ? 'bookmark' : 'bookmark-outline'} 
+            color={userBookmarked ? 'gold' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={modalStyles.iconContainer} onPress={() => {setUserDisliked(!userDisliked); setUserLiked(false); props.handleDislikePress(selectedUser)}}>
+          <Ionicons
+            name={userDisliked ? 'heart-dislike' : 'heart-dislike-outline'} 
+            color={userDisliked? 'red' : 'gray'}
+            size={40}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={rateOrAwaitDecision}>
+        <MaterialIcons
+            name={'rate-review'} 
+            color={'grey'}
+            size={40}
+          />
+          </TouchableOpacity>
+      </View>
+        ):(<></>)}
+        
         <View style={modalStyles.closeButtonContainer}>
           
           <Pressable style={modalStyles.closeButton} onPress={props.closeModal}>
@@ -214,6 +314,7 @@ export default function userProfile(props) {
           </Pressable>
         </View>
       </View>
+     
     </View>
   );
 }
@@ -224,13 +325,21 @@ const modalStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 10,
-    backgroundColor: "white"
+    backgroundColor: "white",
   },
   modalContent: {
     flex: 'column', 
     width: '100%',
     height: '90%', 
     alignItems: 'center',
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    width: "60%"
+  },
+  iconContainer: {
+    paddingHorizontal: 5
   },
   closeButtonContainer: {
     flexDirection: 'column',
@@ -242,7 +351,7 @@ const modalStyles = StyleSheet.create({
     backgroundColor: "gold",
     borderRadius: 6,
     justifyContent: 'center',
-    width: 'auto',
+    width: '60%',
     alignSelf: 'center',
     padding: 10
   },

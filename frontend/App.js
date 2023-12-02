@@ -4,7 +4,11 @@ import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/
 import { createStackNavigator } from '@react-navigation/stack';
 import Landing from './screens/Landing'
 import Register from './screens/LoginRegister/Register'
-import Login from './screens/LoginRegister/Login'
+
+import Login from './screens/LoginRegister/Login';
+import registerNNPushToken from 'native-notify';
+import Getstarted from './screens/LoginRegister/Getstarted'
+
 
 import MainTabNavigator from './routes/MainTabNavigator';
 
@@ -16,11 +20,12 @@ import Profile from './screens/Profile/Profile';
 import ManagePreferences from './screens/Profile/ManagePreferences';
 import ManagePreferenceRankings from './screens/Profile/RankPreferences';
 import ManagePhotos from './screens/Profile/ManagePhotos';
-
+import BlockedUsers from './screens/Profile/BlockedUsers';
 import ForgotPassword from './screens/LoginRegister/ForgotPassword';
 import PinVerify from './screens/LoginRegister/PinVerify';
 import ResetPassword from './screens/LoginRegister/ResetPassword';
 import NotificationProvider from './NotificationContext';
+import ReadReceiptsProvider from './ReadReceiptsContext';
 import MainFeed from './screens/MainFeed/MainFeed';
 import { EventRegister } from 'react-native-event-listeners';
 import theme from './theme/theme';
@@ -35,11 +40,13 @@ import UpdateUsername from './screens/Settings/UpdateUsername'
 import UpdatePassword from './screens/Settings/UpdatePassword'
 import DeleteAccount from './screens/Settings/DeleteAccount'
 import Confirmation from './screens/Settings/Confirmation'
+import ReadReceiptsOptions from './screens/Settings/ReadReceiptsOptions'
 
 
 const Stack = createStackNavigator();
 
 export default function App() {
+ registerNNPushToken(14978, 'oHiP8zGvD4x4Y9I0PfDVNr');
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkMode, setDarkMode] = useState(false)
@@ -59,6 +66,7 @@ export default function App() {
   return (
     <themeContext.Provider value={darkMode === true ? theme.dark : theme.light}>
     <NotificationProvider>
+    <ReadReceiptsProvider>
     <NavigationContainer theme={darkMode === true ? DarkTheme : DefaultTheme}>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Landing" component={Landing} />
@@ -66,6 +74,9 @@ export default function App() {
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back", title: ""
         }}/>
         <Stack.Screen name = "Login" component={Login} options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+        <Stack.Screen name = "Getstarted" component={Getstarted} options={{
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
         }}/>
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{
@@ -113,8 +124,14 @@ export default function App() {
           headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
         }}/>
         <Stack.Screen name="ManagePhotos" component={ManagePhotos} />
+        <Stack.Screen name="BlockedUsers" component={BlockedUsers}  options={{
+          headerShown:true,  headerShadowVisible: true, headerBackTitle: "Back",  title: ""
+        }}/>
+
+        <Stack.Screen name="ReadReceiptsOptions" component={ReadReceiptsOptions} />
       </Stack.Navigator>
     </NavigationContainer>
+    </ReadReceiptsProvider>
     </NotificationProvider>
     </themeContext.Provider>
   );

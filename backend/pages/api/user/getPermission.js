@@ -18,15 +18,24 @@ export default async function handler(req, res) {
         })
     }
 
-    
+    const token = req.body.token;
+    const currentUsername = jwt.verify(token, 'MY_SECRET', (err, payload) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+            })
+        } else {
+            return payload.username
+        }
+    });
     const newUser = await userCollection.findOne({username: req.body.username})
-    const currentUser = await userCollection.findOne({username: req.body.currentUser})
+    
     
         
      /* Send email confirmation */
     const jwtData = {
         email: newUser.email,
-        currentUser: req.body.currentUser
+        currentUser: currentUsername
     }
     const newToken = jwt.sign(jwtData, 'ourSecretKey', { expiresIn: '100m' });    
     console.log(newToken)
@@ -35,7 +44,7 @@ export default async function handler(req, res) {
         from: 'boilermatchproj@gmail.com',
         to: newUser.email,
         subject: 'Give rating permissions on BoilerMatch',
-        text: `Hi, please visit http://localhost:3000/api/user/permit/${newToken} to allow ${currentUser.username} to leave a rating on your account!` 
+        text: `Hi, please visit http://localhost:3000/api/user/permit/${newToken} to allow ${currentUsername} to leave a rating on your account!` 
     }, function(error, info) {
         if (error) throw Error(error);
         console.log('Email Sent Successfully');

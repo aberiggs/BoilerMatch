@@ -14,7 +14,6 @@ export default function ChatRoom({navigation}) {
 
 
     const ConversationModal = () => {
-      console.log("aaa")
       return (
         <Modal
           animationType="slide"
