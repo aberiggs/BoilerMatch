@@ -1,4 +1,5 @@
 # BoilerMatch
+Sprocket Riggs, Bryson Smith, Abel Zajzon, Troy Tamura, Jiwon Park, Jacob Slutzky
 
 BoilerMatch is a Tinder-like app designed specifically for students to find roommates, connect with them through chat, and participate in discussions on a community board.
 
@@ -29,13 +30,6 @@ BoilerMatch is a Tinder-like app designed specifically for students to find room
 - **Deployment**: Hosted on Vercel for seamless scaling and deployment
 
 ## Getting Started
-
-### Prerequisites
-
-- Node.js installed on your machine
-- npm or yarn package manager
-- MongoDB installed and configured
-- Vercel account for deployment (optional)
 
 ### Installation
 
