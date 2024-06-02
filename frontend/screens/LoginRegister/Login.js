@@ -35,18 +35,23 @@ export default function Login({navigation}){
     }
 
     const loginThroughApi = async () => {
+        console.log(process.env.EXPO_PUBLIC_API_HOSTNAME)
+
         const response = await axios.post(process.env.EXPO_PUBLIC_API_HOSTNAME + '/api/user/login', {
           username: username,
           password: password,
           stayLoggedIn: stayLoggedIn,
         }).catch((error) => {
           if (error.response) {
+            console.log("err res")
             return error.response.data
           }
 
+          console.log("err")
           return
         })
 
+        console.log("good")
         return response.data
     }
 
@@ -144,7 +149,7 @@ export default function Login({navigation}){
             </Text>
           </View>
 
-        <Pressable style={styles.button} onPress={handleLogin}>
+        <Pressable style={styles.button} onPress={() => {handleLogin()}}>
         <Text style={styles.buttonText}> Sign in</Text>
         </Pressable>
 

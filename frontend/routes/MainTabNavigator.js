@@ -22,7 +22,7 @@ export default function MainTabNavigator() {
           let iconName;
         
           if (route.name === "Main Feed") {
-            iconName =  "ios-home"
+            iconName =  "home"
           } else if (route.name === "Messages") {
             iconName = "chatbubble"
           } else if (route.name === "Posts") {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Pressable, Image, ScrollView, Modal, SafeAreaView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Image, ScrollView, Modal, SafeAreaView, TouchableOpacity, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios'
